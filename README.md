@@ -20,6 +20,9 @@ Recommended to use Visual Studio Code as the code editor, though any code editor
 
 ## Develop
 
+> [!NOTE]
+> This step might probably change after we containerise the app.
+
 `bun dev` or `bun run dev` from the root of the repository will run all apps and microservices in dev mode. For the Vite apps, in dev mode, changes in the code will be instantly reflected in the browser in real time. For microservices, a refresh is needed.
 
 If you want to run only one particular microservice or app in dev mode, simply `cd` to that app and run `bun dev`.
@@ -31,9 +34,15 @@ bun dev
 
 ## Build
 
+> [!NOTE]
+> This step might probably change after we containerise the app.
+
 The dev mode above is not optimised. To build the app for use in production mode (for demo purpose, for deployment, etc.), run `bun run build` from the root of the repository.
 
 ## Start
+
+> [!NOTE]
+> This step might probably change after we containerise the app.
 
 After building, we can serve all apps and microservices in production mode using `bun start`, also from the root of the repository.
 
