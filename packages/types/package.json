@@ -1,0 +1,13 @@
+{
+  "name": "@peerprep/types",
+  "private": true,
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@peerprep/eslint-config": "workspace:*",
+    "@peerprep/tsconfig": "workspace:*",
+    "@types/bun": "1.1.8",
+    "typescript": "5.5.4"
+  }
+}
