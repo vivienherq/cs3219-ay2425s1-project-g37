@@ -1,7 +1,8 @@
 name: Build and lint
+on: push
 jobs:
-  my-job:
-    name: my-job
+  build-and-lint:
+    name: Build and lint job
     runs-on: ubuntu-latest
     steps:
       - name: Retrieve the repository code
