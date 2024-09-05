@@ -9,8 +9,8 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
-    "lint": "turbo lint",
+    "format": "prettier --write .",
+    "lint": "turbo lint && prettier --check .",
     "start": "turbo start"
   },
   "dependencies": {
