@@ -1,5 +1,5 @@
 {
-  "name": "@peerprep/user-service",
+  "name": "@peerprep/questions-service",
   "private": true,
   "scripts": {
     "build": "bun build src/index.ts --target bun --outdir ./dist",
