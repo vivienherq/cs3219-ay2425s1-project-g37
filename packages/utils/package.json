@@ -1,0 +1,21 @@
+{
+  "name": "@peerprep/utils",
+  "private": true,
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@peerprep/eslint-config": "workspace:*",
+    "@peerprep/tsconfig": "workspace:*",
+    "@types/bun": "1.1.8",
+    "elysia": "1.1.11",
+    "http-status-codes": "2.3.0",
+    "typescript": "5.5.4"
+  }
+}
