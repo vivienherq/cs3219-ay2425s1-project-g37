@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b && vite build",
-    "dev": "vite --port 3000",
+    "dev": "vite",
     "lint": "eslint .",
-    "start": "vite preview --port 3000"
+    "start": "vite preview"
   },
   "dependencies": {
     "@peerprep/eslint-config": "workspace:*",

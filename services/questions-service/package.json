@@ -8,6 +8,7 @@
     "start": "NODE_ENV=production bun src/index.ts"
   },
   "dependencies": {
+    "@peerprep/env": "workspace:*",
     "@peerprep/eslint-config": "workspace:*",
     "@peerprep/schemas": "workspace:*",
     "@peerprep/tsconfig": "workspace:*",
