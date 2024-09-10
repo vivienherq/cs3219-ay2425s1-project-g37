@@ -9,8 +9,8 @@ import {
   getUser,
   updateUser,
   updateUserPrivilege,
-} from "../controllers/users";
-import { checkAuthPlugin } from "../plugins/check-auth";
+} from "~/controllers/users";
+import { checkAuthPlugin } from "~/plugins/check-auth";
 
 const adminRoutes = new Elysia().use(checkAuthPlugin).guard(
   {
