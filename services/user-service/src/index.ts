@@ -1,8 +1,14 @@
-import type { Message } from "@peerprep/types";
+import { env } from "@peerprep/env";
+import { elysiaHandleErrorPlugin } from "@peerprep/utils";
 import { Elysia } from "elysia";
 
-const message: Message = "hello";
+import { authRoutes } from "~/routes/auth";
+import { userRoutes } from "~/routes/users";
 
-const app = new Elysia().get("/", () => `${message} world`).listen(process.env.PORT || 3001);
+const app = new Elysia()
+  .use(elysiaHandleErrorPlugin)
+  .use(userRoutes)
+  .use(authRoutes)
+  .listen(env.USER_SERVICE_PORT);
 
-console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
+console.log(`User service is running at ${app.server?.hostname}:${app.server?.port}`);

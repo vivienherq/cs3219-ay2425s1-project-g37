@@ -1,6 +1,14 @@
 {
-  "name": "@peerprep/types",
+  "name": "@peerprep/schemas",
   "private": true,
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    },
+    "./validators": {
+      "import": "./src/validators.ts"
+    }
+  },
   "scripts": {
     "build": "tsc --noEmit",
     "lint": "eslint ."
@@ -9,6 +17,7 @@
     "@peerprep/eslint-config": "workspace:*",
     "@peerprep/tsconfig": "workspace:*",
     "@types/bun": "1.1.8",
+    "elysia": "1.1.11",
     "typescript": "5.5.4"
   }
 }
