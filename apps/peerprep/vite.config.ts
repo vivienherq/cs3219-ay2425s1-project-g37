@@ -7,5 +7,6 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: { port: Number(process.env.PEERPREP_FRONTEND_PORT) },
+    resolve: { alias: { "~": "/src" } }, // Absolute path imports
   };
 });
