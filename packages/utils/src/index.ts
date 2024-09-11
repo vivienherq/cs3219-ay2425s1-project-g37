@@ -1,11 +1,11 @@
-// Error intentionally thrown in the code, indicating a user fault, not a code bug
-// To display a user-friendly error message to the user, compared to a generic "something went wrong"
 import { jwt } from "@elysiajs/jwt";
 import { db } from "@peerprep/db";
 import { env } from "@peerprep/env";
 import Elysia from "elysia";
 import type { StatusCodes } from "http-status-codes";
 
+// Error intentionally thrown in the code, indicating a user fault, not a code bug
+// To display a user-friendly error message to the user, compared to a generic "something went wrong"
 // We can differentiate errors with `instanceof`
 export class ExpectedError extends Error {
   statusCode: StatusCodes;

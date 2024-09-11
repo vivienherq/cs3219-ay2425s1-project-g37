@@ -8,8 +8,9 @@
   },
   "scripts": {
     "build": "tsc --noEmit",
-    "lint": "eslint .",
-    "prisma": "prisma"
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@peerprep/eslint-config": "workspace:*",
