@@ -16,8 +16,8 @@ const adminRoutes = new Elysia()
   .use(elysiaAuthPlugin)
   .onBeforeHandle(({ user, set }) => {
     if (!user?.isAdmin) {
-      set.status = StatusCodes.UNAUTHORIZED;
-      return { message: "Unauthorized" };
+      set.status = StatusCodes.FORBIDDEN;
+      return { message: "Forbidden" };
     }
   })
   .get("/", () => getAllUsers())
@@ -42,4 +42,7 @@ const publicRoutes = new Elysia().post("/", ({ body }) => createUser(body), {
   body: users.createSchema,
 });
 
-export const userRoutes = new Elysia().use(adminRoutes).use(protectedRoutes).use(publicRoutes);
+export const userRoutes = new Elysia({ prefix: "/users" })
+  .use(adminRoutes)
+  .use(protectedRoutes)
+  .use(publicRoutes);

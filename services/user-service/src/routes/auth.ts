@@ -3,7 +3,7 @@ import Elysia, { t } from "elysia";
 
 import { handleLogin } from "~/controllers/auth";
 
-export const authRoutes = new Elysia()
+export const authRoutes = new Elysia({ prefix: "/auth" })
   .use(elysiaAuthPlugin)
   .post(
     "/login",
