@@ -11,6 +11,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@elysiajs/jwt": "1.1.1",
+    "@peerprep/db": "workspace:*",
+    "@peerprep/env": "workspace:*",
     "@peerprep/eslint-config": "workspace:*",
     "@peerprep/tsconfig": "workspace:*",
     "@types/bun": "1.1.8",

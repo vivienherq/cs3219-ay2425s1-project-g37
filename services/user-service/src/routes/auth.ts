@@ -1,10 +1,10 @@
+import { elysiaAuthPlugin } from "@peerprep/utils";
 import Elysia, { t } from "elysia";
 
 import { handleLogin } from "~/controllers/auth";
-import { checkAuthPlugin } from "~/plugins/check-auth";
 
 export const authRoutes = new Elysia()
-  .use(checkAuthPlugin)
+  .use(elysiaAuthPlugin)
   .post(
     "/login",
     async ({ jwt, body: { email, password }, cookie: { auth_token } }) => {
