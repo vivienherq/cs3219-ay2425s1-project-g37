@@ -35,3 +35,5 @@ const publicRoutes = new Elysia()
 const app = new Elysia().use(adminOnlyRoutes).use(publicRoutes).listen(env.QUESTION_SERVICE_PORT);
 
 console.log(`Question service is running at ${app.server?.hostname}:${app.server?.port}`);
+
+export type QuestionsService = typeof app;

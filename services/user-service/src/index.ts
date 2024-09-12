@@ -12,3 +12,5 @@ const app = new Elysia()
   .listen(env.USER_SERVICE_PORT);
 
 console.log(`User service is running at ${app.server?.hostname}:${app.server?.port}`);
+
+export type UserService = typeof app;
