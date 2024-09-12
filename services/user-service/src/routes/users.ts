@@ -42,7 +42,4 @@ const publicRoutes = new Elysia().post("/", ({ body }) => createUser(body), {
   body: users.createSchema,
 });
 
-export const userRoutes = new Elysia({ prefix: "/users" })
-  .use(adminRoutes)
-  .use(protectedRoutes)
-  .use(publicRoutes);
+export const userRoutes = new Elysia().use(adminRoutes).use(protectedRoutes).use(publicRoutes);
