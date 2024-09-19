@@ -1,6 +1,6 @@
 import { env } from "@peerprep/env";
 import { questions } from "@peerprep/schemas/validators";
-import { elysiaAuthPlugin } from "@peerprep/utils";
+import { elysiaAuthPlugin, elysiaHandleErrorPlugin } from "@peerprep/utils";
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
 
@@ -32,7 +32,11 @@ const publicRoutes = new Elysia()
   .get("/", () => getAllQuestions())
   .get("/:id", ({ params }) => getQuestion(params.id));
 
-const app = new Elysia().use(adminOnlyRoutes).use(publicRoutes).listen(env.QUESTION_SERVICE_PORT);
+const app = new Elysia()
+  .use(elysiaHandleErrorPlugin)
+  .use(adminOnlyRoutes)
+  .use(publicRoutes)
+  .listen(env.QUESTION_SERVICE_PORT);
 
 console.log(`Question service is running at ${app.server?.hostname}:${app.server?.port}`);
 
