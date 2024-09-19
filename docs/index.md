@@ -115,8 +115,6 @@ It is more or less the same as the provided user service.
 | `POST`   | `/auth/login`           | Log in with a given email and password                                          |
 | `GET`    | `/auth/verify-token`    | Get the current authenticated user's data (similar to `/users/:id`)             |
 
-We need not worry about the type of the requests and responses, because we will use [Eden](https://elysiajs.com/eden/overview) to simplify this process.
-
 ### How authentication works
 
 When you log in via `/auth/login`, the response will set a JWT token as a cookie in the user browser. Subsequent requests from the browser automatically carries that token, so there is no need to explicitly attach a bearer token in the `Authorization` header.
