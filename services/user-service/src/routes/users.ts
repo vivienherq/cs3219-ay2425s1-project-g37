@@ -27,7 +27,6 @@ const adminRoutes = new Elysia()
 
 const protectedRoutes = new Elysia({ prefix: "/:id" })
   .use(elysiaAuthPlugin)
-  .guard({ params: t.Object({ id: t.String() }) }) // https://github.com/elysiajs/elysia/issues/820
   .onBeforeHandle(({ user, params, set }) => {
     if (user?.id !== params.id && !user?.isAdmin) {
       set.status = StatusCodes.UNAUTHORIZED;
