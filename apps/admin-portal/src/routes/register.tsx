@@ -3,19 +3,21 @@ import { TextInput } from "@peerprep/ui/text-input";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [adminSignupToken, setAdminSignupToken] = useState("");
   return (
     <div className="grid h-screen w-screen place-items-center">
       <form
         className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12"
         onSubmit={e => {
           e.preventDefault();
-          // log in
+          // sign up
         }}
       >
-        <h1 className="text-main-50 text-2xl">Login</h1>
+        <h1 className="text-main-50 text-2xl">Register</h1>
         <TextInput
           label="Email"
           type="email"
@@ -34,18 +36,32 @@ export default function LoginPage() {
           value={password}
           onValueChange={setPassword}
         />
+        <TextInput
+          label="Confirm Password"
+          type="password"
+          name="confirm-password"
+          required
+          pattern={password}
+          value={confirmPassword}
+          onValueChange={setConfirmPassword}
+        />
+        <TextInput
+          label="Admin Signup Token"
+          type="password"
+          required
+          value={adminSignupToken}
+          onValueChange={setAdminSignupToken}
+          helpText="Value of the ADMIN_SIGNUP_TOKEN environment variable. If you don't have this token, you cannot create an admin account."
+        />
         <Button variants={{ variant: "primary" }} type="submit">
-          Log in
+          Sign up
         </Button>
         <p>
           Or{" "}
-          <Link
-            to="/register"
-            className="text-main-50 font-bold underline-offset-4 hover:underline"
-          >
-            sign up
+          <Link to="/login" className="text-main-50 font-bold underline-offset-4 hover:underline">
+            log in
           </Link>{" "}
-          if you don't have an admin account yet.
+          if you already have an admin account.
         </p>
       </form>
     </div>
