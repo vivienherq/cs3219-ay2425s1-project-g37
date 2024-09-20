@@ -1,6 +1,6 @@
 import { env } from "@peerprep/env";
 import { questions } from "@peerprep/schemas/validators";
-import { elysiaAuthPlugin, elysiaFormatResponsePlugin } from "@peerprep/utils";
+import { elysiaAuthPlugin, elysiaCorsPlugin, elysiaFormatResponsePlugin } from "@peerprep/utils";
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
 
@@ -33,6 +33,7 @@ const publicRoutes = new Elysia()
   .get("/:id", ({ params }) => getQuestion(params.id));
 
 const app = new Elysia()
+  .use(elysiaCorsPlugin)
   .use(elysiaFormatResponsePlugin)
   .use(adminOnlyRoutes)
   .use(publicRoutes)

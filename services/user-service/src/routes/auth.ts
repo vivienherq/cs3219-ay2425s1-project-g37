@@ -17,4 +17,4 @@ export const authRoutes = new Elysia()
     },
     { body: t.Object({ email: t.String(), password: t.String() }) },
   )
-  .get("/verify-token", ({ user }) => ({ user }));
+  .get("/verify-token", ({ user }) => user);

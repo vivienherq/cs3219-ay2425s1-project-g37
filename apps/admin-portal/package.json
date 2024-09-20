@@ -11,7 +11,9 @@
   "dependencies": {
     "@peerprep/env": "workspace:*",
     "@peerprep/eslint-config": "workspace:*",
+    "@peerprep/schemas": "workspace:*",
     "@peerprep/tsconfig": "workspace:*",
+    "@peerprep/utils": "workspace:*",
     "@types/bun": "1.1.9",
     "@types/react": "18.3.7",
     "@types/react-dom": "18.3.0",

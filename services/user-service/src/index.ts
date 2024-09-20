@@ -1,11 +1,12 @@
 import { env } from "@peerprep/env";
-import { elysiaFormatResponsePlugin } from "@peerprep/utils";
+import { elysiaCorsPlugin, elysiaFormatResponsePlugin } from "@peerprep/utils";
 import { Elysia } from "elysia";
 
 import { authRoutes } from "~/routes/auth";
 import { userRoutes } from "~/routes/users";
 
 const app = new Elysia()
+  .use(elysiaCorsPlugin)
   .use(elysiaFormatResponsePlugin)
   .group("/users", app => app.use(userRoutes))
   .group("/auth", app => app.use(authRoutes))
