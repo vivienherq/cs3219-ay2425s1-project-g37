@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function RegisterPage() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,6 +20,16 @@ export default function RegisterPage() {
       >
         <h1 className="text-main-50 text-2xl">Register</h1>
         <TextInput
+          label="Username"
+          type="text"
+          name="username"
+          required
+          pattern="^[a-zA-Z0-9_]{4,32}$"
+          value={username}
+          onValueChange={setUsername}
+          helpText="Only letters, numbers, and underscores are allowed. Must be between 4 and 32 characters."
+        />
+        <TextInput
           label="Email"
           type="email"
           name="email"
@@ -26,25 +37,27 @@ export default function RegisterPage() {
           value={email}
           onValueChange={setEmail}
         />
-        <TextInput
-          label="Password"
-          type="password"
-          name="password"
-          required
-          minLength={8}
-          maxLength={128}
-          value={password}
-          onValueChange={setPassword}
-        />
-        <TextInput
-          label="Confirm Password"
-          type="password"
-          name="confirm-password"
-          required
-          pattern={password}
-          value={confirmPassword}
-          onValueChange={setConfirmPassword}
-        />
+        <div className="grid grid-cols-2 gap-6">
+          <TextInput
+            label="Password"
+            type="password"
+            name="password"
+            required
+            minLength={8}
+            maxLength={128}
+            value={password}
+            onValueChange={setPassword}
+          />
+          <TextInput
+            label="Confirm Password"
+            type="password"
+            name="confirm-password"
+            required
+            pattern={password}
+            value={confirmPassword}
+            onValueChange={setConfirmPassword}
+          />
+        </div>
         <TextInput
           label="Admin Signup Token"
           type="password"
