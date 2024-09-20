@@ -1,18 +1,23 @@
 import { Button } from "@peerprep/ui/button";
+import { TextInput } from "@peerprep/ui/text-input";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-
-import { FormControl } from "~/components/form";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   return (
     <div className="grid h-screen w-screen place-items-center">
-      <form className="flex w-full max-w-lg flex-col gap-6 bg-neutral-900 p-12">
-        <h1 className="text-2xl">Login</h1>
-        <FormControl label="Email" type="email" required value={email} onValueChange={setEmail} />
-        <FormControl
+      <form
+        className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12"
+        onSubmit={e => {
+          e.preventDefault();
+          // log in
+        }}
+      >
+        <h1 className="text-main-50 text-2xl">Login</h1>
+        <TextInput label="Email" type="email" required value={email} onValueChange={setEmail} />
+        <TextInput
           label="Password"
           type="password"
           required
@@ -21,8 +26,19 @@ export default function LoginPage() {
           value={password}
           onValueChange={setPassword}
         />
-        <Button>Log in</Button>
-        <Link to="/register">Register new admin</Link>
+        <Button variants={{ variant: "primary" }} type="submit">
+          Log in
+        </Button>
+        <p>
+          Or{" "}
+          <Link
+            to="/register"
+            className="text-main-50 font-bold underline-offset-4 hover:underline"
+          >
+            sign up
+          </Link>{" "}
+          if you don't have an admin account yet.
+        </p>
       </form>
     </div>
   );

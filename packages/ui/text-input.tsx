@@ -5,13 +5,13 @@ function Label({ ...props }: React.ComponentPropsWithoutRef<"label">) {
 function Input({ ...props }: React.ComponentPropsWithoutRef<"input">) {
   return (
     <input
-      className="w-full rounded-none border border-neutral-800 bg-neutral-800 px-4 py-2 outline-none placeholder:text-neutral-600 focus-within:border-neutral-500"
+      className="border-main-800 bg-main-800 placeholder:text-main-600 focus-within:border-main-500 w-full rounded-none border px-4 py-2 outline-none"
       {...props}
     />
   );
 }
 
-export function FormControl({
+export function TextInput({
   label,
   helpText,
   value,
@@ -25,9 +25,9 @@ export function FormControl({
 } & React.ComponentPropsWithoutRef<"input">) {
   return (
     <Label htmlFor={props.id}>
-      <span className="text-xs uppercase tracking-wider text-neutral-400">{label}</span>
+      <span className="text-main-400 text-xs uppercase tracking-wider">{label}</span>
       <Input {...props} value={value} onChange={e => onValueChange(e.currentTarget.value)} />
-      {helpText ? <div className="text-sm text-neutral-400">{helpText}</div> : null}
+      {helpText ? <div className="text-main-400 text-sm">{helpText}</div> : null}
     </Label>
   );
 }

@@ -1,8 +1,8 @@
+import "@peerprep/ui/tailwind/styles.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-import "~/index.css";
 import RouterErrorPage from "~/routes/_error";
 import RouterLayout from "~/routes/_layout";
 import IndexPage from "~/routes/index";
