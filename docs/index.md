@@ -193,7 +193,7 @@ Refer to existing usage of `@peerprep/schemas` for more information.
 
 ## `@peerprep/utils`
 
-### `ExpectedError` and `elysiaHandleErrorPlugin`
+### `ExpectedError`
 
 First we need to know that there are two different types of errors.
 
@@ -201,7 +201,7 @@ The first type is unexpected errors. They are errors thrown when everything shou
 
 The second type is expected errors. These occur when users make a mistake. For example: email already used by someone else, performing actions without logging in. In this scenario, it's not a code bug and we will give the user a friendly error message telling them what went wrong. These errors are 4xx errors ("user messed up" errors).
 
-`ExpectedError` and `elysiaHandleErrorPlugin` are written to handle user errors. Whenever such an error occurs, we provide `ExpectedError` with a user-friendly message and a status code, after which `elysiaHandleErrorPlugin` will handle it and return the correct message and status code to the user. Please use `http-status-codes` to make the code more readable.
+`ExpectedError` can be used in the backend microservices to handle the second type. Whenever such an error occurs, we provide `ExpectedError` with a user-friendly message and a status code, after which `elysiaFormatResponsePlugin` (see below) will handle it and return the correct message and status code to the user. Please use `http-status-codes` to make the code more readable.
 
 ```tsx
 import { ExpectedError } from "@peerprep/utils";
@@ -214,6 +214,25 @@ if (!email.includes("nus.edu")) {
   );
 }
 ```
+
+### `ServiceResponseBody<T>`
+
+This is the JSON type that all JSON endpoints in the microservices will conform to. In the frontend, you can do this
+
+```tsx
+const response = await(
+  fetch("http://localhost:3002/auth/verify-token").then(r => r.json()),
+) as ServiceResponseBody<User>;
+if (response.success) {
+  console.log(response.data.isAdmin);
+}
+```
+
+### `elysiaFormatResponsePlugin`
+
+This plugin uses Elysia hooks to ensure that all responses and errors are transformed into the valid response type with the body being `ServiceResponseBody<T>` documented above.
+
+There isn't much you need to know or care about this plugin. Simply put it at the start of every microservice.
 
 ### `elysiaAuthPlugin`
 

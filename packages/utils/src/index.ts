@@ -2,7 +2,7 @@ import { jwt } from "@elysiajs/jwt";
 import { db } from "@peerprep/db";
 import { env } from "@peerprep/env";
 import Elysia from "elysia";
-import type { StatusCodes } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 
 // Error intentionally thrown in the code, indicating a user fault, not a code bug
 // To display a user-friendly error message to the user, compared to a generic "something went wrong"
@@ -12,18 +12,53 @@ export class ExpectedError extends Error {
 
   constructor(message: string, statusCode?: StatusCodes) {
     super(message);
-    this.statusCode = statusCode || 400;
+    this.statusCode = statusCode || StatusCodes.BAD_REQUEST;
     this.name = "ExpectedError";
   }
 }
 
-export const elysiaHandleErrorPlugin = new Elysia({ name: "handle-error" })
+export type ServiceResponseBody<T> =
+  | { success: true; data: T; error?: never }
+  | { success: false; data?: never; error: string };
+
+class ServiceResponse<T = unknown> extends Response {
+  constructor(body: ServiceResponseBody<T>, init?: ResponseInit) {
+    super(JSON.stringify(body), init);
+  }
+}
+
+export const elysiaFormatResponsePlugin = new Elysia({ name: "handle-error" })
   .error({ ExpectedError })
-  .onError({ as: "global" }, ({ code, error, set }) => {
-    if (code === "ExpectedError") {
-      set.status = error.statusCode;
-      return { error: error.message };
+  .onError({ as: "global" }, ({ code, error }) => {
+    switch (code) {
+      case "ExpectedError":
+        return new ServiceResponse(
+          { success: false, error: error.message },
+          { status: error.statusCode },
+        );
+      case "NOT_FOUND":
+        return new ServiceResponse(
+          { success: false, error: "Not found" },
+          { status: error.status },
+        );
+      case "VALIDATION":
+      case "PARSE":
+        return new ServiceResponse(
+          { success: false, error: "Invalid request body" },
+          { status: error.status },
+        );
+      default:
+        return new ServiceResponse(
+          { success: false, error: "Something went wrong. We messed up. Sorry" },
+          { status: StatusCodes.INTERNAL_SERVER_ERROR },
+        );
     }
+  })
+  .mapResponse({ as: "global" }, ({ response }) => {
+    // If it's already a Response instance, it's already ready to be shipped, we don't touch it anymore
+    if (response instanceof Response) return response;
+    // Else we shape it to a valid JSON so the frontend can retrieve
+    return new ServiceResponse({ success: true, data: response });
   });
 
 export const elysiaAuthPlugin = new Elysia({ name: "check-auth" })

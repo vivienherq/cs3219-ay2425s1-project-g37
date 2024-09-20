@@ -1,12 +1,12 @@
 import { env } from "@peerprep/env";
-import { elysiaHandleErrorPlugin } from "@peerprep/utils";
+import { elysiaFormatResponsePlugin } from "@peerprep/utils";
 import { Elysia } from "elysia";
 
 import { authRoutes } from "~/routes/auth";
 import { userRoutes } from "~/routes/users";
 
 const app = new Elysia()
-  .use(elysiaHandleErrorPlugin)
+  .use(elysiaFormatResponsePlugin)
   .group("/users", app => app.use(userRoutes))
   .group("/auth", app => app.use(authRoutes))
   .listen(env.VITE_USER_SERVICE_PORT);
