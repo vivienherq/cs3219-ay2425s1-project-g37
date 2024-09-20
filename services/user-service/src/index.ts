@@ -1,5 +1,5 @@
 import { env } from "@peerprep/env";
-import { elysiaCorsPlugin, elysiaFormatResponsePlugin } from "@peerprep/utils";
+import { elysiaCorsPlugin, elysiaFormatResponsePlugin } from "@peerprep/utils/server";
 import { Elysia } from "elysia";
 
 import { authRoutes } from "~/routes/auth";

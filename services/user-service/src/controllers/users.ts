@@ -1,7 +1,7 @@
 import { Prisma, db } from "@peerprep/db";
 import { env } from "@peerprep/env";
 import type { NewUser, UpdateUser, User } from "@peerprep/schemas";
-import { ExpectedError } from "@peerprep/utils";
+import { ExpectedError } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
 export async function createUser(user: NewUser) {

@@ -205,7 +205,7 @@ The second type is expected errors. These occur when users make a mistake. For e
 `ExpectedError` can be used in the backend microservices to handle the second type. Whenever such an error occurs, we provide `ExpectedError` with a user-friendly message and a status code, after which `elysiaFormatResponsePlugin` (see below) will handle it and return the correct message and status code to the user. Please use `http-status-codes` to make the code more readable.
 
 ```tsx
-import { ExpectedError } from "@peerprep/utils";
+import { ExpectedError } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
 if (!email.includes("nus.edu")) {

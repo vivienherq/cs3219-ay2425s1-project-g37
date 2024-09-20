@@ -1,21 +1,41 @@
+import type { NewUser } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { TextInput } from "@peerprep/ui/text-input";
+import { userClient } from "@peerprep/utils/client";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function RegisterPage() {
+  const [pending, setPending] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [adminSignupToken, setAdminSignupToken] = useState("");
+  const [adminSignUpToken, setAdminSignUpToken] = useState("");
   return (
     <div className="grid h-screen w-screen place-items-center">
       <form
         className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12"
-        onSubmit={e => {
+        onSubmit={async e => {
           e.preventDefault();
-          // sign up
+          if (pending) return;
+          setPending(true);
+          try {
+            await userClient.post("users", {
+              json: {
+                username,
+                email,
+                password,
+                adminSignUpToken,
+                isAdmin: true,
+              } satisfies NewUser,
+            });
+            alert("Admin created successfully!");
+          } catch {
+            alert("Failed to create admin. Please try again.");
+          } finally {
+            setPending(false);
+          }
         }}
       >
         <h1 className="text-main-50 text-2xl">Register</h1>
@@ -62,11 +82,11 @@ export default function RegisterPage() {
           label="Admin Signup Token"
           type="password"
           required
-          value={adminSignupToken}
-          onValueChange={setAdminSignupToken}
+          value={adminSignUpToken}
+          onValueChange={setAdminSignUpToken}
           helpText="Value of the ADMIN_SIGNUP_TOKEN environment variable. If you don't have this token, you cannot create an admin account."
         />
-        <Button variants={{ variant: "primary" }} type="submit">
+        <Button variants={{ variant: "primary" }} type="submit" disabled={pending}>
           Sign up
         </Button>
         <p>

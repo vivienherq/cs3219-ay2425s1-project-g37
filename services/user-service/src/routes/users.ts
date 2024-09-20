@@ -1,5 +1,5 @@
 import { users } from "@peerprep/schemas/validators";
-import { elysiaAuthPlugin } from "@peerprep/utils";
+import { elysiaAuthPlugin } from "@peerprep/utils/server";
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
 

@@ -1,4 +1,4 @@
-import { elysiaAuthPlugin } from "@peerprep/utils";
+import { elysiaAuthPlugin } from "@peerprep/utils/server";
 import Elysia, { t } from "elysia";
 
 import { handleLogin } from "~/controllers/auth";

@@ -1,5 +1,5 @@
 import { db } from "@peerprep/db";
-import { ExpectedError } from "@peerprep/utils";
+import { ExpectedError } from "@peerprep/utils/server";
 
 export async function handleLogin(email: string, password: string) {
   const GENERIC_ERROR = new ExpectedError("Invalid email or password");

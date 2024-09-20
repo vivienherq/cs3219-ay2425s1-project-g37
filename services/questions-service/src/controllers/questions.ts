@@ -1,6 +1,6 @@
 import { Prisma, db } from "@peerprep/db";
 import type { NewQuestion, Question, UpdateQuestion } from "@peerprep/schemas";
-import { ExpectedError } from "@peerprep/utils";
+import { ExpectedError } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
 export async function createQuestions(questions: NewQuestion[]) {

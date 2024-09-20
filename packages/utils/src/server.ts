@@ -34,6 +34,7 @@ export const elysiaCorsPlugin = new Elysia({ name: "cors" }).use(
       `http://localhost:${env.VITE_PEERPREP_FRONTEND_PORT}`,
       `http://localhost:${env.VITE_PEERPREP_QUESTION_SPA_PORT}`,
     ],
+    methods: "*",
   }),
 );
 

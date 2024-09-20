@@ -2,8 +2,11 @@
   "name": "@peerprep/utils",
   "private": true,
   "exports": {
-    ".": {
-      "import": "./src/index.ts"
+    "./server": {
+      "import": "./src/server.ts"
+    },
+    "./client": {
+      "import": "./src/client.ts"
     }
   },
   "scripts": {
@@ -20,6 +23,7 @@
     "@types/bun": "1.1.9",
     "elysia": "1.1.13",
     "http-status-codes": "2.3.0",
+    "ky": "1.7.2",
     "typescript": "5.6.2"
   }
 }

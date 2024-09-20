@@ -1,6 +1,10 @@
 import { env } from "@peerprep/env";
 import { questions } from "@peerprep/schemas/validators";
-import { elysiaAuthPlugin, elysiaCorsPlugin, elysiaFormatResponsePlugin } from "@peerprep/utils";
+import {
+  elysiaAuthPlugin,
+  elysiaCorsPlugin,
+  elysiaFormatResponsePlugin,
+} from "@peerprep/utils/server";
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
 
