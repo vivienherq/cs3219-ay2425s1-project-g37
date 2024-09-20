@@ -13,6 +13,7 @@
     "@peerprep/eslint-config": "workspace:*",
     "@peerprep/schemas": "workspace:*",
     "@peerprep/tsconfig": "workspace:*",
+    "@peerprep/ui": "workspace:*",
     "@peerprep/utils": "workspace:*",
     "@types/bun": "1.1.9",
     "@types/react": "18.3.7",

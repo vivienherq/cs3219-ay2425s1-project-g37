@@ -1,3 +1,4 @@
+import { Button } from "@peerprep/ui/button";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -20,7 +21,7 @@ export default function LoginPage() {
           value={password}
           onValueChange={setPassword}
         />
-        <button>Log in</button>
+        <Button>Log in</Button>
         <Link to="/register">Register new admin</Link>
       </form>
     </div>
