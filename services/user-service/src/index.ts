@@ -9,6 +9,6 @@ const app = new Elysia()
   .use(elysiaHandleErrorPlugin)
   .group("/users", app => app.use(userRoutes))
   .group("/auth", app => app.use(authRoutes))
-  .listen(env.USER_SERVICE_PORT);
+  .listen(env.VITE_USER_SERVICE_PORT);
 
 console.log(`User service is running at ${app.server?.hostname}:${app.server?.port}`);

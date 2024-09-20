@@ -38,14 +38,14 @@ Create a file named `.env` at the root of the project directory. Copy the conten
 
 See the environment variable descriptions below for details.
 
-| Name                         | Type     | Required | Description                                                                                                                             |
-| ---------------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `PEERPREP_FRONTEND_PORT`     | `number` | ⚠️ Yes   | The port at which the PeerPrep frontend is run. Suggested value is `3000`, though you can select any free port.                         |
-| `PEERPREP_QUESTION_SPA_PORT` | `number` | ⚠️ Yes   | The port at which the question SPA frontend is run. Suggested value is `3001`, though you can select any free port.                     |
-| `USER_SERVICE_PORT`          | `number` | ⚠️ Yes   | The port at which the user service is run. Suggested value is `3002`, though you can select any free port.                              |
-| `QUESTION_SERVICE_PORT`      | `number` | ⚠️ Yes   | The port at which the question service is run. Suggested value is `3003`, though you can select any free port.                          |
-| `DATABASE_URL`               | `string` | ⚠️ Yes   | The database connection string above. You might need to add quotation marks, e.g. `DATABASE_URL="mongodb://localhost:27017/peerprep"`   |
-| `JWT_SECRET`                 | `string` | ⚠️ Yes   | A random string used as the secret to sign and verify JSON Web Tokens. You can go to https://generate-secret.vercel.app/32 to grab one. |
+| Name                              | Type     | Required | Description                                                                                                                             |
+| --------------------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_PEERPREP_FRONTEND_PORT`     | `number` | ⚠️ Yes   | The port at which the PeerPrep frontend is run. Suggested value is `3000`, though you can select any free port.                         |
+| `VITE_PEERPREP_QUESTION_SPA_PORT` | `number` | ⚠️ Yes   | The port at which the question SPA frontend is run. Suggested value is `3001`, though you can select any free port.                     |
+| `VITE_USER_SERVICE_PORT`          | `number` | ⚠️ Yes   | The port at which the user service is run. Suggested value is `3002`, though you can select any free port.                              |
+| `VITE_QUESTION_SERVICE_PORT`      | `number` | ⚠️ Yes   | The port at which the question service is run. Suggested value is `3003`, though you can select any free port.                          |
+| `DATABASE_URL`                    | `string` | ⚠️ Yes   | The database connection string above. You might need to add quotation marks, e.g. `DATABASE_URL="mongodb://localhost:27017/peerprep"`   |
+| `JWT_SECRET`                      | `string` | ⚠️ Yes   | A random string used as the secret to sign and verify JSON Web Tokens. You can go to https://generate-secret.vercel.app/32 to grab one. |
 
 ## Repository structure overview
 

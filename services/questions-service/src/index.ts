@@ -36,6 +36,6 @@ const app = new Elysia()
   .use(elysiaHandleErrorPlugin)
   .use(adminOnlyRoutes)
   .use(publicRoutes)
-  .listen(env.QUESTION_SERVICE_PORT);
+  .listen(env.VITE_QUESTION_SERVICE_PORT);
 
 console.log(`Question service is running at ${app.server?.hostname}:${app.server?.port}`);
