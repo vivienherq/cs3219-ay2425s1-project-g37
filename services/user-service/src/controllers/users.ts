@@ -1,9 +1,12 @@
 import { Prisma, db } from "@peerprep/db";
+import { env } from "@peerprep/env";
 import type { NewUser, UpdateUser, User } from "@peerprep/schemas";
 import { ExpectedError } from "@peerprep/utils";
 import { StatusCodes } from "http-status-codes";
 
 export async function createUser(user: NewUser) {
+  if (user.isAdmin && user.adminSignUpToken !== env.ADMIN_SIGNUP_TOKEN)
+    throw new ExpectedError("Invalid admin sign up token", StatusCodes.UNAUTHORIZED);
   try {
     const hash = await Bun.password.hash(user.password);
     await db.user.create({ data: { ...user, password: hash } });
