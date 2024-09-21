@@ -5,6 +5,9 @@ import { getKyErrorMessage, userClient } from "@peerprep/utils/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
+import { mutate } from "swr";
+
+import { SWR_KEY_USER } from "~/lib/auth";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -27,8 +30,9 @@ export default function RegisterPage() {
           try {
             const data: NewUser = { username, email, password, adminSignUpToken, isAdmin: true };
             await userClient.post("users", { json: data });
+            await mutate(SWR_KEY_USER);
             toast.success("Admin created successfully! Please log in with the new credentials.");
-            navigate("/login");
+            navigate("/");
           } catch (e) {
             toast.error(getKyErrorMessage(e));
           }

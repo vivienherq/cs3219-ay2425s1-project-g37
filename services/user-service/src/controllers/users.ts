@@ -4,8 +4,8 @@ import type { NewUser, UpdateUser, User } from "@peerprep/schemas";
 import { ExpectedError } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
-export async function createUser(user: NewUser) {
-  if (user.isAdmin && user.adminSignUpToken !== env.ADMIN_SIGNUP_TOKEN)
+export async function createUser({ adminSignUpToken, ...user }: NewUser) {
+  if (user.isAdmin && adminSignUpToken !== env.ADMIN_SIGNUP_TOKEN)
     throw new ExpectedError("Invalid admin sign up token", StatusCodes.UNAUTHORIZED);
   try {
     const hash = await Bun.password.hash(user.password);

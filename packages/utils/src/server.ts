@@ -61,6 +61,7 @@ export const elysiaFormatResponsePlugin = new Elysia({ name: "handle-error" })
           { status: error.status },
         );
       default:
+        console.error(error);
         return new ServiceResponse(
           { success: false, error: "Something went wrong. We messed up. Sorry" },
           { status: StatusCodes.INTERNAL_SERVER_ERROR },
