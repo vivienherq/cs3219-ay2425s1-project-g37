@@ -2,7 +2,7 @@
 
 This file contains the information needed to maintain this repository.
 
-Please read through the entire document at least once, since its organisation is pretty messy (sorry).
+Please read through the entire document at least once, since its organisation is pretty messy (sorry). Also do get yourself used to the main source code as well.
 
 ## Installation
 
@@ -206,7 +206,41 @@ We use the `t` utility imported from Elysia for validation, because we want to u
 
 Refer to existing usage of `@peerprep/schemas` for more information.
 
-## `@peerprep/utils`
+## `@peerprep/ui`
+
+This package has the UI components shared between the admin portal and the main PeerPrep frontend. In many components, [Radix UI Primitives](https://www.radix-ui.com/primitives) is used, based on a good styling configuration from [Shadcn UI](https://ui.shadcn.com).
+
+### `cn`
+
+This utility function exported from `@peerprep/ui/cn` should be used to make conditional classes rather than JS template strings.
+
+```tsx
+function Foo() {
+  const isHorizontal = false;
+  // ❌ Don't do this
+  return <div className={`flex ${isHorizontal ? "flex-row" : "flex-col"}`}>Hello</div>;
+  // ✅ Do this
+  return <div className={cn("flex", isHorizontal ? "flex-row" : "flex-col")}>Hello</div>;
+}
+```
+
+### `Button`
+
+In the `variants` prop of the `Button` or `LinkButton`, you can specify the variant and the size of the button.
+
+We have six sizes: `sm`, `md`, `lg` for textual buttons of different sizes, and `icon-sm`, `icon-md`, `icon-lg` for icon-only buttons.
+
+We have three variants: `primary`, `secondary` and `ghost`.
+
+### `Link`
+
+This component from `@peerprep/ui/link` should be used to make links instead of raw `<a>` or `react-router-dom`'s `<Link>`.
+
+Note that if the link should look like a button, `LinkButton` from `@peerprep/ui/button` should be used instead.
+
+## `@peerprep/utils/server`
+
+The `server` "subpackage" of the `@peerprep/utils` package contains the functions shared in all microservices (server-side). **This subpackage should not be imported into the frontend (client-side).**
 
 ### `ExpectedError`
 
@@ -230,18 +264,17 @@ if (!email.includes("nus.edu")) {
 }
 ```
 
-### `ServiceResponseBody<T>`
+### `ServiceResponseBodySuccess<T>`, `ServiceResponseBodyError` and `ServiceResponseBody<T>`
 
-This is the JSON type that all JSON endpoints in the microservices will conform to. In the frontend, you can do this
+`ServiceResponseBodySuccess<T>` is the JSON type of the successful responses from the microservices. For example, if the endpoint returns a list of users, the JSON body will have the type `ServiceResponseBodySuccess<User[]>`.
 
-```tsx
-const response = await(
-  fetch("http://localhost:3002/auth/verify-token").then(r => r.json()),
-) as ServiceResponseBody<User>;
-if (response.success) {
-  console.log(response.data.isAdmin);
-}
-```
+`ServiceResponseBodyError` is the JSON type of a failure response. It has the `error` field which contains a user-friendly error message that can be displayed to the user.
+
+`ServiceResponseBody<T>` is simply the merger of the above two types: the JSON type of all responses from the microservices.
+
+### `elysiaCorsPlugin`
+
+This plugin handles [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS). It should be leave as-is and used in all microservices.
 
 ### `elysiaFormatResponsePlugin`
 
@@ -273,6 +306,52 @@ new Elysia()
   // The user is guaranteed to be an admin now
   .get("/", () => getAllUsers());
 ```
+
+### `decorateUser`
+
+We don't save the user's image URL (which is a [Gravatar URL](https://docs.gravatar.com/api/avatars/)) in the database, hence the raw database query will not return an image URL. This function's sole purpose is to add the image URL field from existing data returned from the database.
+
+## `@peerprep/utils/client`
+
+The `client` "subpackage" of the `@peerprep/utils` package contains the functions shared in all frontends. **This subpackage should not be imported into the microservices (server-side).**
+
+Aside from the types `ServiceResponseBodySuccess<T>`, `ServiceResponseBodyError` and `ServiceResponseBody<T>` which are the same as described above (exported from here for use in the frontend), this subpackage exports a few more things.
+
+### `ky` stuffs
+
+Now before we continue, we should note that the frontend makes JSON requests to the microservices via [`ky`](https://github.com/sindresorhus/ky). It is a good `fetch` wrapper that simplifies things a bit for us. Please check the `ky` documentation for more details.
+
+`@peerprep/utils/client` exports `userClient`, `questionsClient`, etc. which are the `ky` instances to send requests to the corresponding microservices. It also exports `getKyErrorMessage` which can be used to extract the user-friendly error message from the backend to display in the frontend.
+
+Examples:
+
+- Getting data in a [SWR fetcher](https://swr.vercel.app/docs/data-fetching):
+
+  ```tsx
+  try {
+    const response = await questionsClient.get<ServiceResponseBodySuccess<Question[]>>("");
+    const data = await response.json();
+    return data.data;
+  } catch (e) {
+    throw new Error(getKyErrorMessage(e));
+  }
+  ```
+
+- Mutating data:
+
+  ```tsx
+  try {
+    await userClient.post("auth/logout");
+    await mutate(SWR_KEY_USER); // We tell SWR that the user state has changed
+    toast.success("Log out successfully. See you again!");
+  } catch (e) {
+    toast.error(getKyErrorMessage(e));
+  }
+  ```
+
+### `SWRHookResult<T>`
+
+This type is the return type of all SWR hooks that we make to query data. See more on data fetching above.
 
 ## Style guide
 
