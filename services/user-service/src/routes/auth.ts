@@ -1,3 +1,4 @@
+import type { User } from "@peerprep/schemas";
 import { elysiaAuthPlugin } from "@peerprep/utils/server";
 import Elysia, { t } from "elysia";
 
@@ -15,4 +16,4 @@ export const authRoutes = new Elysia()
     { body: t.Object({ email: t.String(), password: t.String() }) },
   )
   .post("/logout", async ({ cookie: { auth_token } }) => auth_token.remove())
-  .get("/verify-token", ({ user }) => user);
+  .get("/verify-token", ({ user }): User | null => user);

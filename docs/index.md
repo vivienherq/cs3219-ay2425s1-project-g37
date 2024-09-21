@@ -121,20 +121,92 @@ We can serve all apps and microservices in production mode using `bun start`, al
 
 The port used by each project is declared in the environment variable file.
 
+## Frontend stuff
+
+### Routing
+
+We use [React Router](https://reactrouter.com), version 6. We only use the basic features of it though, because React Router likes to have crazy breaking changes in major releases that will mess it up if we integrate too deeply with the library. So don't use the loader feature; for data fetching, use SWR (see below).
+
+Keep in mind that we use `<Link>` imported from `@peerprep/ui` instead of the `<Link>` from `react-router-dom`, so that we can support both internal links and external links.
+
+### Data fetching
+
+We fetch data with [SWR](https://swr.vercel.app). It is a pretty to use and lightweight library, quite similar to React Query. Please go to the link to check it out.
+
+Each type of data should have a unique key to identify it. The hook should return the type `SWRHookResult` for consistent handling throughout the codebase. Example:
+
+```tsx
+import type { Question } from "@peerprep/schemas";
+import {
+  type SWRHookResult,
+  type ServiceResponseBodySuccess,
+  getKyErrorMessage,
+  questionsClient,
+} from "@peerprep/utils/client";
+import useSWR from "swr";
+
+async function questionsFetcher() {
+  try {
+    const response = await questionsClient.get<ServiceResponseBodySuccess<Question[]>>("");
+    const data = await response.json();
+    return data.data;
+  } catch (e) {
+    throw new Error(getKyErrorMessage(e));
+  }
+}
+
+export const SWR_KEY_QUESTIONS = "questions";
+
+export function useQuestions(): SWRHookResult<Question[]> {
+  const { data } = useSWR(SWR_KEY_QUESTIONS, questionsFetcher);
+  return data === undefined ? { data: undefined, isLoading: true } : { data, isLoading: false };
+}
+```
+
+Thanks to SWR's [deduplication](https://swr.vercel.app/docs/advanced/performance.en-US#deduplication), we can reuse this hook anywhere we need the data in the app without having to use global state management libraries, contexts or prop drilling.
+
+Afterwards, whenever we update the data, we can then call `mutate` on the key to tell SWR to revalidate the data:
+
+```tsx
+import { mutate } from "swr";
+
+async function addQuestion() {
+  // ...
+  await mutate(SWR_KEY_QUESTIONS);
+}
+```
+
+### Styling
+
+We use [Tailwind CSS](https://tailwindcss.com). Many components use [Radix UI Primitives](https://www.radix-ui.com/primitives)/[Shadcn UI](https://ui.shadcn.com).
+
+### Toasts
+
+We use toasts to handle system messages sent to the user. Specifically, we use [`react-hot-toast`](https://react-hot-toast.com) to handle toasts. The toasts are already styled, so you only need to know that
+
+```tsx
+import toast from "react-hot-toast";
+```
+
+- Whenever something good happens, `toast.success("You won the jackpot, congrats!")`
+
+- Whenever something bad happens, `toast.failure("You didn't win anything this time")`
+
 ## User service documentation
 
 It is more or less the same as the provided user service.
 
-| Method   | Route                   | Description                                                                     |
-| -------- | ----------------------- | ------------------------------------------------------------------------------- |
-| `POST`   | `/users`                | Create user                                                                     |
-| `GET`    | `/users`                | Get all users (requires admin account)                                          |
-| `GET`    | `/users/:id`            | Get user `id` (requires either admin account or authentication as user `id`)    |
-| `PATCH`  | `/users/:id`            | Update user `id` (requires either admin account or authentication as user `id`) |
-| `PATCH`  | `/users/:id/privileges` | Update user `id`'s admin status (requires admin account)                        |
-| `DELETE` | `/users/:id`            | Delete user `id` (requires either admin account or authentication as user `id`) |
-| `POST`   | `/auth/login`           | Log in with a given email and password                                          |
-| `GET`    | `/auth/verify-token`    | Get the current authenticated user's data (similar to `/users/:id`)             |
+| Method   | Route                   | Returned type                 | Description                                                                                                                  |
+| -------- | ----------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `POST`   | `/users`                | `void`                        | Create user **and also log that user in**                                                                                    |
+| `GET`    | `/users`                | `User[]`                      | Get all users (requires admin account)                                                                                       |
+| `GET`    | `/users/:id`            | `User`                        | Get user `id` (requires either admin account or authentication as user `id`). Return 404 response if the user doesn't exist. |
+| `PATCH`  | `/users/:id`            | `void`                        | Update user `id` (requires either admin account or authentication as user `id`)                                              |
+| `PATCH`  | `/users/:id/privileges` | `void`                        | Update user `id`'s admin status (requires admin account)                                                                     |
+| `DELETE` | `/users/:id`            | `void`                        | Delete user `id` (requires either admin account or authentication as user `id`)                                              |
+| `POST`   | `/auth/login`           | `void`                        | Log in with a given email and password                                                                                       |
+| `POST`   | `/auth/logout`          | `void`                        | Log the current user out                                                                                                     |
+| `GET`    | `/auth/verify-token`    | <code>User &#124; null</code> | Get the current authenticated user's data (similar to `/users/:id`, but return `null` when the request is not authenticated) |
 
 ### How authentication works
 
@@ -144,7 +216,7 @@ The token is shared across all `localhost` ports, so even though the user servic
 
 The token expires after 1 month. There are currently no token rotation mechanism (i.e. you have to log in again after one month, regardless of how active or inactive you are) and no CSRF mitigation measures (which are not necessary[^1]).
 
-[^1] We handle actions via JSON-based requests, not `<form>` `POST` actions, so CSRF attacks are not applicable.
+[^1]: We handle actions via JSON-based requests, not `<form>` `POST` actions, so CSRF attacks are not applicable.
 
 In Elysia, we can check for the auth token using the auth plugin from `@peerprep/utils`.
 
@@ -156,13 +228,13 @@ new Elysia().use(elysiaAuthPlugin).get("/", ({ user }) => {
 
 ## Question service documentation
 
-| Method   | Route  | Description                                   |
-| -------- | ------ | --------------------------------------------- |
-| `POST`   | `/`    | Create new questions (requires admin account) |
-| `GET`    | `/`    | Get all questions                             |
-| `GET`    | `/:id` | Get question `id`                             |
-| `PATCH`  | `/:id` | Update question `id` (requires admin account) |
-| `DELETE` | `/:id` | Delete question `id` (requires admin account) |
+| Method   | Route  | Returned type | Description                                                    |
+| -------- | ------ | ------------- | -------------------------------------------------------------- |
+| `POST`   | `/`    | `void`        | Create new questions (requires admin account)                  |
+| `GET`    | `/`    | `Question[]`  | Get all questions                                              |
+| `GET`    | `/:id` | `Question`    | Get question `id`. 404 response if the question doesn't exist. |
+| `PATCH`  | `/:id` | `void`        | Update question `id` (requires admin account)                  |
+| `DELETE` | `/:id` | `void`        | Delete question `id` (requires admin account)                  |
 
 ## `@peerprep/db`
 

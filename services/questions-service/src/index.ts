@@ -27,7 +27,7 @@ const adminOnlyRoutes = new Elysia()
   .post("/", ({ body: questions }) => createQuestions(questions), {
     body: t.Array(questions.createSchema),
   })
-  .put("/:id", ({ params, body: question }) => updateQuestion(params.id, question), {
+  .patch("/:id", ({ params, body: question }) => updateQuestion(params.id, question), {
     body: questions.updateSchema,
   })
   .delete("/:id", ({ params }) => deleteQuestion(params.id));
