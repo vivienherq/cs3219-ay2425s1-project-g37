@@ -18,7 +18,18 @@ We use MongoDB as the database of choice.
 
 #### Use a local database (recommended)
 
-Simply run `docker-compose up`. It will install the MongoDB Community Server and set up a MongoDB database running on port 27017. When you finish the development session, run `docker-compose down` to end the service. The database data is persisted between sessions.
+Simply run `docker-compose up -d`. It will install the MongoDB Community Server and set up a MongoDB database running on port 27017. Use `-d` so that the container runs in the background and doesn't take up your terminal.
+
+When you finish the development session, run `docker-compose down` to end the service. The database data is persisted between sessions.
+
+<details>
+<summary>What to do if you forgot the <code>-d</code> in <code>docker-compose up -d</code></summary>
+
+Please don't use Ctrl+C to force-terminate the process. It probably still works but may cause the MongoDB process to not exit cleanly and lead to weird errors/warnings in the next run (I faced it).
+
+To terminate, open a new terminal and run `docker-compose down` there, or open Docker Desktop and press **Stop** in the container entry.
+
+</details>
 
 If you choose this option, the connection string is
 
