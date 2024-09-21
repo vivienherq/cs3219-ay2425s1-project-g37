@@ -9,7 +9,8 @@ export async function createUser(user: NewUser) {
     throw new ExpectedError("Invalid admin sign up token", StatusCodes.UNAUTHORIZED);
   try {
     const hash = await Bun.password.hash(user.password);
-    await db.user.create({ data: { ...user, password: hash } });
+    const { id } = await db.user.create({ data: { ...user, password: hash } });
+    return id;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")
       throw new ExpectedError("Username or email already exists", StatusCodes.CONFLICT);

@@ -11,6 +11,7 @@ import {
   updateUser,
   updateUserPrivilege,
 } from "~/controllers/users";
+import { getJwt } from "~/lib/get-jwt";
 
 const adminRoutes = new Elysia()
   .use(elysiaAuthPlugin)
@@ -37,8 +38,13 @@ const protectedRoutes = new Elysia({ prefix: "/:id" })
   .patch("/", ({ params, body }) => updateUser(params.id, body), { body: users.updateSchema })
   .delete("/", ({ params }) => deleteUser(params.id));
 
-const publicRoutes = new Elysia().post("/", ({ body }) => createUser(body), {
-  body: users.createSchema,
-});
+const publicRoutes = new Elysia().use(elysiaAuthPlugin).post(
+  "/",
+  async ({ jwt, body, cookie: { auth_token } }) => {
+    const id = await createUser(body);
+    auth_token.set(await getJwt(id, jwt.sign));
+  },
+  { body: users.createSchema },
+);
 
 export const userRoutes = new Elysia().use(adminRoutes).use(protectedRoutes).use(publicRoutes);
