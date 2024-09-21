@@ -1,8 +1,8 @@
 import type { VariantProps } from "cva";
 import { forwardRef } from "react";
-import { Link } from "react-router-dom";
 
 import { cn, cva } from "./cn";
+import { Link } from "./link";
 
 const buttonVariants = cva({
   base: "inline-flex w-full shrink-0 flex-row items-center justify-center gap-[--button-gap] rounded-none transition disabled:cursor-not-allowed disabled:opacity-40",

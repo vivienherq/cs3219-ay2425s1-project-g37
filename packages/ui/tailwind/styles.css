@@ -5,3 +5,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Scale with font size */
+.lucide {
+  width: 1.5em;
+  height: 1.5em;
+}
