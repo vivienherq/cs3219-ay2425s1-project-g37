@@ -18,9 +18,11 @@ export class ExpectedError extends Error {
   }
 }
 
+export type ServiceResponseBodySuccess<T = unknown> = { success: true; data: T; error?: never };
+export type ServiceResponseBodyError = { success: false; data?: never; error: string };
 export type ServiceResponseBody<T = unknown> =
-  | { success: true; data: T; error?: never }
-  | { success: false; data?: never; error: string };
+  | ServiceResponseBodySuccess<T>
+  | ServiceResponseBodyError;
 
 class ServiceResponse<T = unknown> extends Response {
   constructor(body: ServiceResponseBody<T>, init?: ResponseInit) {

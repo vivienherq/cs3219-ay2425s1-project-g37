@@ -1,17 +1,21 @@
 import type { NewUser } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { TextInput } from "@peerprep/ui/text-input";
-import { userClient } from "@peerprep/utils/client";
+import { getKyErrorMessage, userClient } from "@peerprep/utils/client";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function RegisterPage() {
+  const navigate = useNavigate();
+
   const [pending, setPending] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [adminSignUpToken, setAdminSignUpToken] = useState("");
+
   return (
     <div className="grid h-screen w-screen place-items-center">
       <form
@@ -21,21 +25,14 @@ export default function RegisterPage() {
           if (pending) return;
           setPending(true);
           try {
-            await userClient.post("users", {
-              json: {
-                username,
-                email,
-                password,
-                adminSignUpToken,
-                isAdmin: true,
-              } satisfies NewUser,
-            });
-            alert("Admin created successfully!");
-          } catch {
-            alert("Failed to create admin. Please try again.");
-          } finally {
-            setPending(false);
+            const data: NewUser = { username, email, password, adminSignUpToken, isAdmin: true };
+            await userClient.post("users", { json: data });
+            toast.success("Admin created successfully! Please log in with the new credentials.");
+            navigate("/login");
+          } catch (e) {
+            toast.error(getKyErrorMessage(e));
           }
+          setPending(false);
         }}
       >
         <h1 className="text-main-50 text-2xl">Register</h1>
