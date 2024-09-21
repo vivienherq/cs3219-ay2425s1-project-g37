@@ -14,6 +14,8 @@ export {
   type ServiceResponseBodyError,
 };
 
+export type SWRHookResult<T> = { data: T; isLoading: false } | { data: undefined; isLoading: true };
+
 export function getKyErrorMessage(e: unknown) {
   return e instanceof HTTPError ? e.message : "Something went wrong. Please try again.";
 }

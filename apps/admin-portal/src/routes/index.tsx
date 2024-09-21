@@ -1,11 +1,12 @@
-import { useUser } from "~/lib/auth";
+import { useQuestions } from "~/lib/questions";
 
 export default function IndexPage() {
-  const user = useUser();
-  if (user.isLoading || !user.data) return null;
+  const { isLoading, data: questions } = useQuestions();
+  if (isLoading) return null;
   return (
     <div>
-      <h1>Welcome to PeerPrep, @{user.data.username}!</h1>
+      <div>The questions added so far:</div>
+      <pre>{JSON.stringify(questions, null, 2)}</pre>
     </div>
   );
 }
