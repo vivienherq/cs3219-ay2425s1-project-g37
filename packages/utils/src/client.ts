@@ -29,10 +29,12 @@ async function formatKyError(error: HTTPError): Promise<HTTPError> {
 
 export const userClient = ky.create({
   prefixUrl: `http://localhost:${env.VITE_USER_SERVICE_PORT}`,
+  credentials: "include",
   hooks: { beforeError: [formatKyError] },
 });
 
 export const questionsClient = ky.create({
   prefixUrl: `http://localhost:${env.VITE_QUESTION_SERVICE_PORT}`,
+  credentials: "include",
   hooks: { beforeError: [formatKyError] },
 });
