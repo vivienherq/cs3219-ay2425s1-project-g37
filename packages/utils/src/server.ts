@@ -2,6 +2,7 @@ import cors from "@elysiajs/cors";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "@peerprep/db";
 import { env } from "@peerprep/env";
+import type { User } from "@peerprep/schemas";
 import Elysia from "elysia";
 import { StatusCodes } from "http-status-codes";
 
@@ -75,6 +76,13 @@ export const elysiaFormatResponsePlugin = new Elysia({ name: "handle-error" })
     return new ServiceResponse({ success: true, data: response });
   });
 
+export function decorateUser(user: Omit<User, "imageUrl">): User {
+  return {
+    ...user,
+    imageUrl: `https://www.gravatar.com/avatar/${new Bun.CryptoHasher("sha256").update(user.email.toLowerCase()).digest("hex")}?d=identicon&size=256`,
+  };
+}
+
 export const elysiaAuthPlugin = new Elysia({ name: "check-auth" })
   .use(jwt({ name: "jwt", secret: env.JWT_SECRET }))
   .derive({ as: "scoped" }, async ({ jwt, cookie: { auth_token } }) => {
@@ -87,5 +95,5 @@ export const elysiaAuthPlugin = new Elysia({ name: "check-auth" })
     if (!id) return { user: null };
 
     const user = await db.user.findUnique({ where: { id } });
-    return { user };
+    return { user: user ? decorateUser(user) : null };
   });
