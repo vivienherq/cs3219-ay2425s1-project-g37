@@ -6,6 +6,8 @@ export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd(), "") };
   return {
     plugins: [react()],
-    server: { port: Number(process.env.PEERPREP_FRONTEND_PORT) },
+    server: { port: Number(process.env.VITE_PEERPREP_FRONTEND_PORT), strictPort: true },
+    preview: { port: Number(process.env.VITE_PEERPREP_FRONTEND_PORT), strictPort: true },
+    resolve: { alias: { "~": "/src" } }, // Absolute path imports
   };
 });

@@ -2,7 +2,7 @@
 
 This file contains the information needed to maintain this repository.
 
-Please read through the entire document at least once, since its organisation is pretty messy (sorry).
+Please read through the entire document at least once, since its organisation is pretty messy (sorry). Also do get yourself used to the main source code as well.
 
 ## Installation
 
@@ -18,15 +18,31 @@ We use MongoDB as the database of choice.
 
 #### Use a local database (recommended)
 
-Simply run `docker-compose up`. It will install the MongoDB Community Server and set up a MongoDB database running on port 27017. When you finish the development session, run `docker-compose down` to end the service. The database data is persisted between sessions.
+Simply run `docker-compose up -d`. It will install the MongoDB Community Server and set up a MongoDB database running on port 27017. Use `-d` so that the container runs in the background and doesn't take up your terminal.
 
-If you choose this option, the **connection string** of the database is `mongodb://localhost:27017/peerprep`. This string will be important when setting up environment variables.
+When you finish the development session, run `docker-compose down` to end the service. The database data is persisted between sessions.
+
+<details>
+<summary>What to do if you forgot the <code>-d</code> in <code>docker-compose up -d</code></summary>
+
+Please don't use Ctrl+C to force-terminate the process. It probably still works but may cause the MongoDB process to not exit cleanly and lead to weird errors/warnings in the next run (I faced it).
+
+To terminate, open a new terminal and run `docker-compose down` there, or open Docker Desktop and press **Stop** in the container entry.
+
+</details>
+
+If you choose this option, the connection string is
+
+`mongodb://root:root@localhost:27017/peerprep?authSource=admin&replicaSet=rs0&retryWrites=true&w=majority&directConnection=true`
 
 **Inspection:** If you want to view the content of the database visually, you can install any MongoDB inspection softwares, such as [MongoDB Compass](https://www.mongodb.com/products/tools/compass), the [official MongoDB VSCode extension](https://marketplace.visualstudio.com/items?itemName=mongodb.mongodb-vscode), etc.
 
 #### Use MongoDB Atlas
 
 You can also choose to use MongoDB Atlas. In that case, simply open an account there, create a database and follow the instructions to get the database connection string.
+
+> [!IMPORTANT]
+> NUS wi-fi [blocks connections](https://www.reddit.com/r/nus/comments/us5chw/mongodb_connection_issue_for_work_from_nus/) to MongoDB Atlas servers. You may need to use a VPN or mobile data to connect to it.
 
 ### Install dependencies
 
@@ -38,14 +54,19 @@ Create a file named `.env` at the root of the project directory. Copy the conten
 
 See the environment variable descriptions below for details.
 
-| Name                         | Type     | Required | Description                                                                                                                             |
-| ---------------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `PEERPREP_FRONTEND_PORT`     | `number` | ⚠️ Yes   | The port at which the PeerPrep frontend is run. Suggested value is `3000`, though you can select any free port.                         |
-| `PEERPREP_QUESTION_SPA_PORT` | `number` | ⚠️ Yes   | The port at which the question SPA frontend is run. Suggested value is `3001`, though you can select any free port.                     |
-| `USER_SERVICE_PORT`          | `number` | ⚠️ Yes   | The port at which the user service is run. Suggested value is `3002`, though you can select any free port.                              |
-| `QUESTION_SERVICE_PORT`      | `number` | ⚠️ Yes   | The port at which the question service is run. Suggested value is `3003`, though you can select any free port.                          |
-| `DATABASE_URL`               | `string` | ⚠️ Yes   | The database connection string above. You might need to add quotation marks, e.g. `DATABASE_URL="mongodb://localhost:27017/peerprep"`   |
-| `JWT_SECRET`                 | `string` | ⚠️ Yes   | A random string used as the secret to sign and verify JSON Web Tokens. You can go to https://generate-secret.vercel.app/32 to grab one. |
+| Name                              | Type     | Required | Description                                                                                                                                       |
+| --------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_PEERPREP_FRONTEND_PORT`     | `number` | ⚠️ Yes   | The port at which the PeerPrep frontend is run. Suggested value is `3000`, though you can select any free port.                                   |
+| `VITE_PEERPREP_QUESTION_SPA_PORT` | `number` | ⚠️ Yes   | The port at which the question SPA frontend is run. Suggested value is `3001`, though you can select any free port.                               |
+| `VITE_USER_SERVICE_PORT`          | `number` | ⚠️ Yes   | The port at which the user service is run. Suggested value is `3002`, though you can select any free port.                                        |
+| `VITE_QUESTION_SERVICE_PORT`      | `number` | ⚠️ Yes   | The port at which the question service is run. Suggested value is `3003`, though you can select any free port.                                    |
+| `DATABASE_URL`                    | `string` | ⚠️ Yes   | The database connection string. You might need to add quotation marks, e.g. `DATABASE_URL="mongodb://..."`                                        |
+| `JWT_SECRET`                      | `string` | ⚠️ Yes   | A random string used as the secret to sign and verify JSON Web Tokens. You can go to https://generate-secret.vercel.app/32 to grab one.           |
+| `ADMIN_SIGNUP_TOKEN`              | `string` | ⚠️ Yes   | A random string that must be provided when signing up for a new admin account (we don't want any random person to be able to sign up as an admin) |
+
+### Sync database schema
+
+Run `bun db:push` from the root directory of the project.
 
 ## Repository structure overview
 
@@ -100,22 +121,92 @@ We can serve all apps and microservices in production mode using `bun start`, al
 
 The port used by each project is declared in the environment variable file.
 
+## Frontend stuff
+
+### Routing
+
+We use [React Router](https://reactrouter.com), version 6. We only use the basic features of it though, because React Router likes to have crazy breaking changes in major releases that will mess it up if we integrate too deeply with the library. So don't use the loader feature; for data fetching, use SWR (see below).
+
+Keep in mind that we use `<Link>` imported from `@peerprep/ui` instead of the `<Link>` from `react-router-dom`, so that we can support both internal links and external links.
+
+### Data fetching
+
+We fetch data with [SWR](https://swr.vercel.app). It is a pretty to use and lightweight library, quite similar to React Query. Please go to the link to check it out.
+
+Each type of data should have a unique key to identify it. The hook should return the type `SWRHookResult` for consistent handling throughout the codebase. Example:
+
+```tsx
+import type { Question } from "@peerprep/schemas";
+import {
+  type SWRHookResult,
+  type ServiceResponseBodySuccess,
+  getKyErrorMessage,
+  questionsClient,
+} from "@peerprep/utils/client";
+import useSWR from "swr";
+
+async function questionsFetcher() {
+  try {
+    const response = await questionsClient.get<ServiceResponseBodySuccess<Question[]>>("");
+    const data = await response.json();
+    return data.data;
+  } catch (e) {
+    throw new Error(getKyErrorMessage(e));
+  }
+}
+
+export const SWR_KEY_QUESTIONS = "questions";
+
+export function useQuestions(): SWRHookResult<Question[]> {
+  const { data } = useSWR(SWR_KEY_QUESTIONS, questionsFetcher);
+  return data === undefined ? { data: undefined, isLoading: true } : { data, isLoading: false };
+}
+```
+
+Thanks to SWR's [deduplication](https://swr.vercel.app/docs/advanced/performance.en-US#deduplication), we can reuse this hook anywhere we need the data in the app without having to use global state management libraries, contexts or prop drilling.
+
+Afterwards, whenever we update the data, we can then call `mutate` on the key to tell SWR to revalidate the data:
+
+```tsx
+import { mutate } from "swr";
+
+async function addQuestion() {
+  // ...
+  await mutate(SWR_KEY_QUESTIONS);
+}
+```
+
+### Styling
+
+We use [Tailwind CSS](https://tailwindcss.com). Many components use [Radix UI Primitives](https://www.radix-ui.com/primitives)/[Shadcn UI](https://ui.shadcn.com).
+
+### Toasts
+
+We use toasts to handle system messages sent to the user. Specifically, we use [`react-hot-toast`](https://react-hot-toast.com) to handle toasts. The toasts are already styled, so you only need to know that
+
+```tsx
+import toast from "react-hot-toast";
+```
+
+- Whenever something good happens, `toast.success("You won the jackpot, congrats!")`
+
+- Whenever something bad happens, `toast.failure("You didn't win anything this time")`
+
 ## User service documentation
 
 It is more or less the same as the provided user service.
 
-| Method   | Route                   | Description                                                                     |
-| -------- | ----------------------- | ------------------------------------------------------------------------------- |
-| `POST`   | `/users`                | Create user                                                                     |
-| `GET`    | `/users`                | Get all users (requires admin account)                                          |
-| `GET`    | `/users/:id`            | Get user `id` (requires either admin account or authentication as user `id`)    |
-| `PATCH`  | `/users/:id`            | Update user `id` (requires either admin account or authentication as user `id`) |
-| `PATCH`  | `/users/:id/privileges` | Update user `id`'s admin status (requires admin account)                        |
-| `DELETE` | `/users/:id`            | Delete user `id` (requires either admin account or authentication as user `id`) |
-| `POST`   | `/auth/login`           | Log in with a given email and password                                          |
-| `GET`    | `/auth/verify-token`    | Get the current authenticated user's data (similar to `/users/:id`)             |
-
-We need not worry about the type of the requests and responses, because we will use [Eden](https://elysiajs.com/eden/overview) to simplify this process.
+| Method   | Route                   | Returned type                 | Description                                                                                                                  |
+| -------- | ----------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `POST`   | `/users`                | `void`                        | Create user **and also log that user in**                                                                                    |
+| `GET`    | `/users`                | `User[]`                      | Get all users (requires admin account)                                                                                       |
+| `GET`    | `/users/:id`            | `User`                        | Get user `id` (requires either admin account or authentication as user `id`). Return 404 response if the user doesn't exist. |
+| `PATCH`  | `/users/:id`            | `void`                        | Update user `id` (requires either admin account or authentication as user `id`)                                              |
+| `PATCH`  | `/users/:id/privileges` | `void`                        | Update user `id`'s admin status (requires admin account)                                                                     |
+| `DELETE` | `/users/:id`            | `void`                        | Delete user `id` (requires either admin account or authentication as user `id`)                                              |
+| `POST`   | `/auth/login`           | `void`                        | Log in with a given email and password                                                                                       |
+| `POST`   | `/auth/logout`          | `void`                        | Log the current user out                                                                                                     |
+| `GET`    | `/auth/verify-token`    | <code>User &#124; null</code> | Get the current authenticated user's data (similar to `/users/:id`, but return `null` when the request is not authenticated) |
 
 ### How authentication works
 
@@ -125,7 +216,7 @@ The token is shared across all `localhost` ports, so even though the user servic
 
 The token expires after 1 month. There are currently no token rotation mechanism (i.e. you have to log in again after one month, regardless of how active or inactive you are) and no CSRF mitigation measures (which are not necessary[^1]).
 
-[^1] We handle actions via JSON-based requests, not `<form>` `POST` actions, so CSRF attacks are not applicable.
+[^1]: We handle actions via JSON-based requests, not `<form>` `POST` actions, so CSRF attacks are not applicable.
 
 In Elysia, we can check for the auth token using the auth plugin from `@peerprep/utils`.
 
@@ -137,13 +228,13 @@ new Elysia().use(elysiaAuthPlugin).get("/", ({ user }) => {
 
 ## Question service documentation
 
-| Method   | Route  | Description                                   |
-| -------- | ------ | --------------------------------------------- |
-| `POST`   | `/`    | Create new questions (requires admin account) |
-| `GET`    | `/`    | Get all questions                             |
-| `GET`    | `/:id` | Get question `id`                             |
-| `PATCH`  | `/:id` | Update question `id` (requires admin account) |
-| `DELETE` | `/:id` | Delete question `id` (requires admin account) |
+| Method   | Route  | Returned type | Description                                                    |
+| -------- | ------ | ------------- | -------------------------------------------------------------- |
+| `POST`   | `/`    | `void`        | Create new questions (requires admin account)                  |
+| `GET`    | `/`    | `Question[]`  | Get all questions                                              |
+| `GET`    | `/:id` | `Question`    | Get question `id`. 404 response if the question doesn't exist. |
+| `PATCH`  | `/:id` | `void`        | Update question `id` (requires admin account)                  |
+| `DELETE` | `/:id` | `void`        | Delete question `id` (requires admin account)                  |
 
 ## `@peerprep/db`
 
@@ -164,6 +255,11 @@ const users = await db.user.findMany();
 If the update is not a breaking change and doesn't affect existing data (e.g., the addition of a new database collection): Simply edit the schema file, then run `bun db:push` to send the update to the database.
 
 If the update is a breaking change: Are you sure you want to do it?
+
+That's why,
+
+> [!IMPORTANT]
+> Please avoid adding breaking changes to the schema. As such, please think of the schema design carefully when you design them so we don't have to do the tedious process of migrating database data later on.
 
 ## `@peerprep/env`
 
@@ -193,9 +289,43 @@ We use the `t` utility imported from Elysia for validation, because we want to u
 
 Refer to existing usage of `@peerprep/schemas` for more information.
 
-## `@peerprep/utils`
+## `@peerprep/ui`
 
-### `ExpectedError` and `elysiaHandleErrorPlugin`
+This package has the UI components shared between the admin portal and the main PeerPrep frontend. In many components, [Radix UI Primitives](https://www.radix-ui.com/primitives) is used, based on a good styling configuration from [Shadcn UI](https://ui.shadcn.com).
+
+### `cn`
+
+This utility function exported from `@peerprep/ui/cn` should be used to make conditional classes rather than JS template strings.
+
+```tsx
+function Foo() {
+  const isHorizontal = false;
+  // ❌ Don't do this
+  return <div className={`flex ${isHorizontal ? "flex-row" : "flex-col"}`}>Hello</div>;
+  // ✅ Do this
+  return <div className={cn("flex", isHorizontal ? "flex-row" : "flex-col")}>Hello</div>;
+}
+```
+
+### `Button`
+
+In the `variants` prop of the `Button` or `LinkButton`, you can specify the variant and the size of the button.
+
+We have six sizes: `sm`, `md`, `lg` for textual buttons of different sizes, and `icon-sm`, `icon-md`, `icon-lg` for icon-only buttons.
+
+We have three variants: `primary`, `secondary` and `ghost`.
+
+### `Link`
+
+This component from `@peerprep/ui/link` should be used to make links instead of raw `<a>` or `react-router-dom`'s `<Link>`.
+
+Note that if the link should look like a button, `LinkButton` from `@peerprep/ui/button` should be used instead.
+
+## `@peerprep/utils/server`
+
+The `server` "subpackage" of the `@peerprep/utils` package contains the functions shared in all microservices (server-side). **This subpackage should not be imported into the frontend (client-side).**
+
+### `ExpectedError`
 
 First we need to know that there are two different types of errors.
 
@@ -203,10 +333,10 @@ The first type is unexpected errors. They are errors thrown when everything shou
 
 The second type is expected errors. These occur when users make a mistake. For example: email already used by someone else, performing actions without logging in. In this scenario, it's not a code bug and we will give the user a friendly error message telling them what went wrong. These errors are 4xx errors ("user messed up" errors).
 
-`ExpectedError` and `elysiaHandleErrorPlugin` are written to handle user errors. Whenever such an error occurs, we provide `ExpectedError` with a user-friendly message and a status code, after which `elysiaHandleErrorPlugin` will handle it and return the correct message and status code to the user. Please use `http-status-codes` to make the code more readable.
+`ExpectedError` can be used in the backend microservices to handle the second type. Whenever such an error occurs, we provide `ExpectedError` with a user-friendly message and a status code, after which `elysiaFormatResponsePlugin` (see below) will handle it and return the correct message and status code to the user. Please use `http-status-codes` to make the code more readable.
 
 ```tsx
-import { ExpectedError } from "@peerprep/utils";
+import { ExpectedError } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
 if (!email.includes("nus.edu")) {
@@ -216,6 +346,24 @@ if (!email.includes("nus.edu")) {
   );
 }
 ```
+
+### `ServiceResponseBodySuccess<T>`, `ServiceResponseBodyError` and `ServiceResponseBody<T>`
+
+`ServiceResponseBodySuccess<T>` is the JSON type of the successful responses from the microservices. For example, if the endpoint returns a list of users, the JSON body will have the type `ServiceResponseBodySuccess<User[]>`.
+
+`ServiceResponseBodyError` is the JSON type of a failure response. It has the `error` field which contains a user-friendly error message that can be displayed to the user.
+
+`ServiceResponseBody<T>` is simply the merger of the above two types: the JSON type of all responses from the microservices.
+
+### `elysiaCorsPlugin`
+
+This plugin handles [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS). It should be leave as-is and used in all microservices.
+
+### `elysiaFormatResponsePlugin`
+
+This plugin uses Elysia hooks to ensure that all responses and errors are transformed into the valid response type with the body being `ServiceResponseBody<T>` documented above.
+
+There isn't much you need to know or care about this plugin. Simply put it at the start of every microservice.
 
 ### `elysiaAuthPlugin`
 
@@ -241,6 +389,52 @@ new Elysia()
   // The user is guaranteed to be an admin now
   .get("/", () => getAllUsers());
 ```
+
+### `decorateUser`
+
+We don't save the user's image URL (which is a [Gravatar URL](https://docs.gravatar.com/api/avatars/)) in the database, hence the raw database query will not return an image URL. This function's sole purpose is to add the image URL field from existing data returned from the database.
+
+## `@peerprep/utils/client`
+
+The `client` "subpackage" of the `@peerprep/utils` package contains the functions shared in all frontends. **This subpackage should not be imported into the microservices (server-side).**
+
+Aside from the types `ServiceResponseBodySuccess<T>`, `ServiceResponseBodyError` and `ServiceResponseBody<T>` which are the same as described above (exported from here for use in the frontend), this subpackage exports a few more things.
+
+### `ky` stuffs
+
+Now before we continue, we should note that the frontend makes JSON requests to the microservices via [`ky`](https://github.com/sindresorhus/ky). It is a good `fetch` wrapper that simplifies things a bit for us. Please check the `ky` documentation for more details.
+
+`@peerprep/utils/client` exports `userClient`, `questionsClient`, etc. which are the `ky` instances to send requests to the corresponding microservices. It also exports `getKyErrorMessage` which can be used to extract the user-friendly error message from the backend to display in the frontend.
+
+Examples:
+
+- Getting data in a [SWR fetcher](https://swr.vercel.app/docs/data-fetching):
+
+  ```tsx
+  try {
+    const response = await questionsClient.get<ServiceResponseBodySuccess<Question[]>>("");
+    const data = await response.json();
+    return data.data;
+  } catch (e) {
+    throw new Error(getKyErrorMessage(e));
+  }
+  ```
+
+- Mutating data:
+
+  ```tsx
+  try {
+    await userClient.post("auth/logout");
+    await mutate(SWR_KEY_USER); // We tell SWR that the user state has changed
+    toast.success("Log out successfully. See you again!");
+  } catch (e) {
+    toast.error(getKyErrorMessage(e));
+  }
+  ```
+
+### `SWRHookResult<T>`
+
+This type is the return type of all SWR hooks that we make to query data. See more on data fetching above.
 
 ## Style guide
 

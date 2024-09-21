@@ -1,6 +1,10 @@
 import { env } from "@peerprep/env";
 import { questions } from "@peerprep/schemas/validators";
-import { elysiaAuthPlugin } from "@peerprep/utils";
+import {
+  elysiaAuthPlugin,
+  elysiaCorsPlugin,
+  elysiaFormatResponsePlugin,
+} from "@peerprep/utils/server";
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
 
@@ -23,7 +27,7 @@ const adminOnlyRoutes = new Elysia()
   .post("/", ({ body: questions }) => createQuestions(questions), {
     body: t.Array(questions.createSchema),
   })
-  .put("/:id", ({ params, body: question }) => updateQuestion(params.id, question), {
+  .patch("/:id", ({ params, body: question }) => updateQuestion(params.id, question), {
     body: questions.updateSchema,
   })
   .delete("/:id", ({ params }) => deleteQuestion(params.id));
@@ -32,6 +36,11 @@ const publicRoutes = new Elysia()
   .get("/", () => getAllQuestions())
   .get("/:id", ({ params }) => getQuestion(params.id));
 
-const app = new Elysia().use(adminOnlyRoutes).use(publicRoutes).listen(env.QUESTION_SERVICE_PORT);
+const app = new Elysia()
+  .use(elysiaCorsPlugin)
+  .use(elysiaFormatResponsePlugin)
+  .use(adminOnlyRoutes)
+  .use(publicRoutes)
+  .listen(env.VITE_QUESTION_SERVICE_PORT);
 
 console.log(`Question service is running at ${app.server?.hostname}:${app.server?.port}`);

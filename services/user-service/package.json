@@ -8,14 +8,15 @@
     "start": "NODE_ENV=production bun src/index.ts"
   },
   "dependencies": {
+    "@elysiajs/jwt": "1.1.1",
     "@peerprep/env": "workspace:*",
     "@peerprep/eslint-config": "workspace:*",
     "@peerprep/schemas": "workspace:*",
     "@peerprep/tsconfig": "workspace:*",
     "@peerprep/utils": "workspace:*",
-    "@types/bun": "1.1.8",
-    "elysia": "1.1.11",
+    "@types/bun": "1.1.9",
+    "elysia": "1.1.13",
     "http-status-codes": "2.3.0",
-    "typescript": "5.5.4"
+    "typescript": "5.6.2"
   }
 }

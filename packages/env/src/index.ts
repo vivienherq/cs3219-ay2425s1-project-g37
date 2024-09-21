@@ -4,16 +4,17 @@ import { z } from "zod";
 // https://env.t3.gg/docs/core
 export const env = createEnv({
   server: {
-    PEERPREP_FRONTEND_PORT: z.coerce.number(),
-    PEERPREP_QUESTION_SPA_PORT: z.coerce.number(),
-    USER_SERVICE_PORT: z.coerce.number(),
-    QUESTION_SERVICE_PORT: z.coerce.number(),
-
     DATABASE_URL: z.string().url(),
     JWT_SECRET: z.string().min(1),
+    ADMIN_SIGNUP_TOKEN: z.string().min(1),
   },
   clientPrefix: "VITE_",
-  client: {},
+  client: {
+    VITE_PEERPREP_FRONTEND_PORT: z.coerce.number(),
+    VITE_PEERPREP_QUESTION_SPA_PORT: z.coerce.number(),
+    VITE_USER_SERVICE_PORT: z.coerce.number(),
+    VITE_QUESTION_SERVICE_PORT: z.coerce.number(),
+  },
   runtimeEnv: import.meta.env, // Both Vite and Bun use `import.meta.env`
   emptyStringAsUndefined: true,
 });
