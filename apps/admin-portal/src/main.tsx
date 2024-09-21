@@ -3,8 +3,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-import RouterErrorPage from "~/routes/_error";
-import RouterLayout from "~/routes/_layout";
+import ErrorPage from "~/error";
+import AuthProtectedLayout from "~/layouts/auth-protected";
+import PublicNotAuthLayout from "~/layouts/public-not-auth";
+import RootLayout from "~/layouts/root";
 import IndexPage from "~/routes/index";
 import LoginPage from "~/routes/login";
 import RegisterPage from "~/routes/register";
@@ -15,12 +17,20 @@ if (!root) throw new Error("Root element not found");
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RouterLayout />,
-    errorElement: <RouterErrorPage />,
+    element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <IndexPage /> },
-      { path: "/login", element: <LoginPage /> },
-      { path: "/register", element: <RegisterPage /> },
+      {
+        element: <PublicNotAuthLayout />,
+        children: [
+          { path: "/login", element: <LoginPage /> },
+          { path: "/register", element: <RegisterPage /> },
+        ],
+      },
+      {
+        element: <AuthProtectedLayout />,
+        children: [{ index: true, element: <IndexPage /> }],
+      },
     ],
   },
 ]);

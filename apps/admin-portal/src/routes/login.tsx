@@ -3,14 +3,12 @@ import { TextInput } from "@peerprep/ui/text-input";
 import { getKyErrorMessage, userClient } from "@peerprep/utils/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { mutate } from "swr";
 
 import { SWR_KEY_USER } from "~/lib/auth";
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-
   const [pending, setPending] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +24,6 @@ export default function LoginPage() {
             await userClient.post("auth/login", { json: { email, password } });
             await mutate(SWR_KEY_USER);
             toast.success("Welcome back!");
-            navigate("/");
           } catch (e) {
             toast.error(getKyErrorMessage(e));
           }
