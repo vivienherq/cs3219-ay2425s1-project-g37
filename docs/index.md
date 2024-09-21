@@ -20,13 +20,18 @@ We use MongoDB as the database of choice.
 
 Simply run `docker-compose up`. It will install the MongoDB Community Server and set up a MongoDB database running on port 27017. When you finish the development session, run `docker-compose down` to end the service. The database data is persisted between sessions.
 
-If you choose this option, the **connection string** of the database is `mongodb://localhost:27017/peerprep`. This string will be important when setting up environment variables.
+If you choose this option, the connection string is
+
+`mongodb://root:root@localhost:27017/peerprep?authSource=admin&replicaSet=rs0&retryWrites=true&w=majority&directConnection=true`
 
 **Inspection:** If you want to view the content of the database visually, you can install any MongoDB inspection softwares, such as [MongoDB Compass](https://www.mongodb.com/products/tools/compass), the [official MongoDB VSCode extension](https://marketplace.visualstudio.com/items?itemName=mongodb.mongodb-vscode), etc.
 
 #### Use MongoDB Atlas
 
 You can also choose to use MongoDB Atlas. In that case, simply open an account there, create a database and follow the instructions to get the database connection string.
+
+> [!IMPORTANT]
+> NUS wi-fi [blocks connections](https://www.reddit.com/r/nus/comments/us5chw/mongodb_connection_issue_for_work_from_nus/) to MongoDB Atlas servers. You may need to use a VPN or mobile data to connect to it.
 
 ### Install dependencies
 
@@ -44,9 +49,13 @@ See the environment variable descriptions below for details.
 | `VITE_PEERPREP_QUESTION_SPA_PORT` | `number` | ⚠️ Yes   | The port at which the question SPA frontend is run. Suggested value is `3001`, though you can select any free port.                               |
 | `VITE_USER_SERVICE_PORT`          | `number` | ⚠️ Yes   | The port at which the user service is run. Suggested value is `3002`, though you can select any free port.                                        |
 | `VITE_QUESTION_SERVICE_PORT`      | `number` | ⚠️ Yes   | The port at which the question service is run. Suggested value is `3003`, though you can select any free port.                                    |
-| `DATABASE_URL`                    | `string` | ⚠️ Yes   | The database connection string above. You might need to add quotation marks, e.g. `DATABASE_URL="mongodb://localhost:27017/peerprep"`             |
+| `DATABASE_URL`                    | `string` | ⚠️ Yes   | The database connection string. You might need to add quotation marks, e.g. `DATABASE_URL="mongodb://..."`                                        |
 | `JWT_SECRET`                      | `string` | ⚠️ Yes   | A random string used as the secret to sign and verify JSON Web Tokens. You can go to https://generate-secret.vercel.app/32 to grab one.           |
 | `ADMIN_SIGNUP_TOKEN`              | `string` | ⚠️ Yes   | A random string that must be provided when signing up for a new admin account (we don't want any random person to be able to sign up as an admin) |
+
+### Sync database schema
+
+Run `bun db:push` from the root directory of the project.
 
 ## Repository structure overview
 
@@ -163,6 +172,11 @@ const users = await db.user.findMany();
 If the update is not a breaking change and doesn't affect existing data (e.g., the addition of a new database collection): Simply edit the schema file, then run `bun db:push` to send the update to the database.
 
 If the update is a breaking change: Are you sure you want to do it?
+
+That's why,
+
+> [!IMPORTANT]
+> Please avoid adding breaking changes to the schema. As such, please think of the schema design carefully when you design them so we don't have to do the tedious process of migrating database data later on.
 
 ## `@peerprep/env`
 

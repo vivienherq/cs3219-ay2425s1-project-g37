@@ -1,11 +1,25 @@
 services:
-  mongodb:
-    image: mongodb/mongodb-community-server:latest
-    container_name: mongodb
+  mongo:
+    # https://ginkcode.com/post/how-to-set-up-mongodb-with-replica-set-via-docker-compose
+    build:
+      context: mongo
+      dockerfile: Dockerfile
+    container_name: mongodb-replicaset
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
     ports:
-      - "27017:27017"
+      - 27017:27017
+    command: --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all --port 27017
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'127.0.0.1:27017'}]}) }" | mongosh --port 27017 -u root -p root --authenticationDatabase admin
+      interval: 5s
+      timeout: 15s
+      start_period: 15s
+      retries: 10
     volumes:
-      - mongo-data:/data/db
+      - data:/data/db
 
 volumes:
-  mongo-data:
+  data: {}
