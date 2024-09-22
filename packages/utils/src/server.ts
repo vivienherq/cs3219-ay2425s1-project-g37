@@ -5,6 +5,7 @@ import { env } from "@peerprep/env";
 import type { User } from "@peerprep/schemas";
 import Elysia from "elysia";
 import { StatusCodes } from "http-status-codes";
+import { parse, stringify } from "superjson";
 
 // Error intentionally thrown in the code, indicating a user fault, not a code bug
 // To display a user-friendly error message to the user, compared to a generic "something went wrong"
@@ -27,7 +28,10 @@ export type ServiceResponseBody<T = unknown> =
 
 class ServiceResponse<T = unknown> extends Response {
   constructor(body: ServiceResponseBody<T>, init?: ResponseInit) {
-    super(JSON.stringify(body), init);
+    super(stringify(body), {
+      ...init,
+      headers: { ...init?.headers, "Content-Type": "application/superjson" },
+    });
   }
 }
 
@@ -74,6 +78,9 @@ export const elysiaFormatResponsePlugin = new Elysia({ name: "handle-error" })
     if (response instanceof Response) return response;
     // Else we shape it to a valid JSON so the frontend can retrieve
     return new ServiceResponse({ success: true, data: response });
+  })
+  .onParse({ as: "global" }, async ({ request, contentType }) => {
+    if (contentType === "application/superjson") return parse(await request.text());
   });
 
 export function decorateUser(user: Omit<User, "imageUrl">): User {

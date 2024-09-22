@@ -1,5 +1,6 @@
 import { env } from "@peerprep/env";
 import ky, { HTTPError } from "ky";
+import { parse, stringify } from "superjson";
 
 import type {
   ServiceResponseBody,
@@ -33,10 +34,16 @@ export const userClient = ky.create({
   prefixUrl: `http://localhost:${env.VITE_USER_SERVICE_PORT}`,
   credentials: "include",
   hooks: { beforeError: [formatKyError] },
+  headers: { "Content-Type": "application/superjson" },
+  parseJson: parse,
+  stringifyJson: stringify,
 });
 
 export const questionsClient = ky.create({
   prefixUrl: `http://localhost:${env.VITE_QUESTION_SERVICE_PORT}`,
   credentials: "include",
   hooks: { beforeError: [formatKyError] },
+  headers: { "Content-Type": "application/superjson" },
+  parseJson: parse,
+  stringifyJson: stringify,
 });

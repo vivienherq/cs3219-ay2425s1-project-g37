@@ -24,6 +24,7 @@
     "elysia": "1.1.13",
     "http-status-codes": "2.3.0",
     "ky": "1.7.2",
+    "superjson": "2.2.1",
     "typescript": "5.6.2"
   }
 }
