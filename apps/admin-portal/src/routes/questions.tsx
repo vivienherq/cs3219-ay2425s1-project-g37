@@ -11,10 +11,13 @@ export default function QuestionsPage() {
       Questions Page
       <div>
         {questions.map(q => (
-          <div className="bg-main-900 my-4 flex items-center justify-between rounded-lg p-4">
-            <span>{q.id}</span>
+          <div
+            key={q.id}
+            className="bg-main-900 my-4 flex items-center justify-between rounded-lg p-4"
+          >
+            <span>{q.title}</span>
             <div className="ml-auto">
-              <Link href={`/${q.id}`}>
+              <Link href={`/questions/${q.id}`}>
                 <Button variants={{ variant: "primary" }}>View</Button>
               </Link>
             </div>
