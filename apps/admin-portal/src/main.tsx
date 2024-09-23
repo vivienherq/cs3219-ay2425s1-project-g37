@@ -11,6 +11,9 @@ import IndexPage from "~/routes/index";
 import LoginPage from "~/routes/login";
 import RegisterPage from "~/routes/register";
 
+import QuestionPage from "./routes/question";
+import QuestionsPage from "./routes/questions";
+
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
 
@@ -29,7 +32,11 @@ const router = createBrowserRouter([
       },
       {
         element: <AuthProtectedLayout />,
-        children: [{ index: true, element: <IndexPage /> }],
+        children: [
+          { index: true, element: <IndexPage /> },
+          { path: "/questions", element: <QuestionsPage /> },
+          { path: "/questions/:id", element: <QuestionPage /> },
+        ],
       },
     ],
   },

@@ -17,6 +17,16 @@ async function questionsFetcher() {
   }
 }
 
+async function fetchQuestionById(id: string): Promise<Question> {
+  try {
+    const response = await questionsClient.get<ServiceResponseBodySuccess<Question>>(`/${id}`);
+    const data = await response.json();
+    return data.data;
+  } catch (e) {
+    throw new Error(getKyErrorMessage(e));
+  }
+}
+
 export const SWR_KEY_QUESTIONS = "questions";
 
 const dummyData: Question[] = [
@@ -47,4 +57,15 @@ export function useQuestions(): SWRHookResult<Question[]> {
   return data === undefined
     ? { data: undefined, isLoading: true }
     : { data: [...dummyData, ...data], isLoading: false };
+}
+
+export function useQuestion(id: string): SWRHookResult<Question | undefined> {
+  const { data } = useSWR(id ? `question/${id}` : null, () => fetchQuestionById(id));
+
+  const dummyQuestion: Question | undefined = dummyData.find(question => question.id === id);
+
+  return {
+    data: data ?? dummyQuestion,
+    isLoading: !data && !dummyQuestion,
+  } as SWRHookResult<Question | undefined>;
 }
