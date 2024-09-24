@@ -400,6 +400,8 @@ Examples:
   }
   ```
 
+Note that where possible, we would prefer to use `useSWR` and `useSWRMutation` from `swr` to handle queries and mutations. Please check the SWR documentation and some sample code, such as `apps/admin-portal/src/lib/auth.ts`, for more details.
+
 ## Style guide
 
 Please set up ESLint and Prettier in your code editor. If you are using VSCode, install these extensions:

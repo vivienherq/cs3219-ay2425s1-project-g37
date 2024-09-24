@@ -1,15 +1,14 @@
-import type { NewUser } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { TextInput } from "@peerprep/ui/text-input";
-import { getHTTPErrorMessage, userClient } from "@peerprep/utils/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import { mutateAuth } from "~/lib/auth";
+import { useRegister } from "~/lib/auth";
 
 export default function RegisterPage() {
-  const [pending, setPending] = useState(false);
+  const { trigger, isMutating } = useRegister();
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,17 +20,8 @@ export default function RegisterPage() {
       className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12"
       onSubmit={async e => {
         e.preventDefault();
-        if (pending) return;
-        setPending(true);
-        try {
-          const data: NewUser = { username, email, password, adminSignUpToken, isAdmin: true };
-          await userClient.post("/users", { json: data });
-          await mutateAuth();
-          toast.success("Admin created successfully! Please log in with the new credentials.");
-        } catch (e) {
-          toast.error(getHTTPErrorMessage(e));
-        }
-        setPending(false);
+        await trigger({ username, email, password, adminSignUpToken, isAdmin: true });
+        toast.success("Admin created successfully! Please log in with the new credentials.");
       }}
     >
       <h1 className="text-main-50 text-2xl">Register</h1>
@@ -87,7 +77,7 @@ export default function RegisterPage() {
           </>
         }
       />
-      <Button variants={{ variant: "primary" }} type="submit" disabled={pending}>
+      <Button variants={{ variant: "primary" }} type="submit" disabled={isMutating}>
         Sign up
       </Button>
       <p>

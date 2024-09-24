@@ -10,16 +10,16 @@ import {
   DropdownMenuTrigger,
 } from "@peerprep/ui/dropdown-menu";
 import { Link } from "@peerprep/ui/link";
-import { getHTTPErrorMessage, userClient } from "@peerprep/utils/client";
 import { ArrowUpRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { Navigate, Outlet } from "react-router-dom";
 
 import { NavLogo } from "~/components/nav-logo";
-import { mutateAuth, useAuth } from "~/lib/auth";
+import { useAuth, useLogout } from "~/lib/auth";
 
 function NavAvatar() {
   const { data: user } = useAuth();
+  const { trigger } = useLogout();
   if (!user) return null;
   return (
     <DropdownMenu>
@@ -52,13 +52,8 @@ function NavAvatar() {
           <DropdownMenuItem asChild>
             <button
               onClick={async () => {
-                try {
-                  await userClient.post("/auth/logout");
-                  await mutateAuth();
-                  toast.success("Log out successfully. See you again!");
-                } catch (e) {
-                  toast.error(getHTTPErrorMessage(e));
-                }
+                await trigger();
+                toast.success("Log out successfully. See you again!");
               }}
             >
               Log out

@@ -1,14 +1,14 @@
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { TextInput } from "@peerprep/ui/text-input";
-import { getHTTPErrorMessage, userClient } from "@peerprep/utils/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import { mutateAuth } from "~/lib/auth";
+import { useLogin } from "~/lib/auth";
 
 export default function LoginPage() {
-  const [pending, setPending] = useState(false);
+  const { trigger, isMutating } = useLogin();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   return (
@@ -16,16 +16,9 @@ export default function LoginPage() {
       className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12"
       onSubmit={async e => {
         e.preventDefault();
-        if (pending) return;
-        setPending(true);
-        try {
-          await userClient.post("/auth/login", { json: { email, password } });
-          await mutateAuth();
-          toast.success("Welcome back!");
-        } catch (e) {
-          toast.error(getHTTPErrorMessage(e));
-        }
-        setPending(false);
+        if (isMutating) return;
+        await trigger({ email, password });
+        toast.success("Welcome back!");
       }}
     >
       <h1 className="text-main-50 text-2xl">Login</h1>
@@ -47,7 +40,7 @@ export default function LoginPage() {
         value={password}
         onValueChange={setPassword}
       />
-      <Button variants={{ variant: "primary" }} type="submit">
+      <Button variants={{ variant: "primary" }} disabled={isMutating} type="submit">
         Log in
       </Button>
       <p>
