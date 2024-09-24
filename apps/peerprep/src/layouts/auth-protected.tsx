@@ -32,21 +32,22 @@ function NavAvatar() {
             <div>Logged in as</div>
             <div className="max-w-full truncate text-base text-white">@{user.username}</div>
           </DropdownMenuLabel>
+          <DropdownMenuItem>View profile</DropdownMenuItem>
+          <DropdownMenuItem>User settings</DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href={`http://localhost:${env.VITE_PEERPREP_FRONTEND_PORT}`}>
-              PeerPrep app
-              <ArrowUpRight />
-            </Link>
-          </DropdownMenuItem>
-          {/* TODO */}
-          <DropdownMenuItem>
-            User settings
-            <ArrowUpRight />
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+        {user.isAdmin ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem asChild>
+                <Link href={`http://localhost:${env.VITE_PEERPREP_QUESTION_SPA_PORT}`}>
+                  Admin portal
+                  <ArrowUpRight />
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
@@ -69,7 +70,7 @@ function NavAvatar() {
 export default function AuthProtectedLayout() {
   const { data: user } = useAuth();
   if (user === undefined) return null; // loading state
-  if (user === null || !user.isAdmin) return <Navigate to="/login" />;
+  if (user === null) return <Navigate to="/login" />;
   return (
     <div>
       <nav className="container flex flex-row justify-between py-6">

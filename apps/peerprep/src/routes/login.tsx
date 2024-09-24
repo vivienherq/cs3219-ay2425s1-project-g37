@@ -51,7 +51,7 @@ export default function LoginPage() {
         >
           sign up
         </Link>{" "}
-        if you don't have an admin account yet.
+        if you don't have an account yet.
       </p>
     </form>
   );

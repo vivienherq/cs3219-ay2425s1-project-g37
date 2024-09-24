@@ -24,9 +24,7 @@ export function useLogin() {
     ) => {
       const email = emailOrUsername.includes("@") ? emailOrUsername : undefined;
       const username = email ? undefined : emailOrUsername;
-      await userClient.post("/auth/login", {
-        json: { email, username, password, forceAdmin: true },
-      });
+      await userClient.post("/auth/login", { json: { email, username, password } });
     },
   );
 }
