@@ -1,5 +1,5 @@
 name: Build and lint
-on: push
+on: [push, pull_request]
 jobs:
   build-and-lint:
     name: Build and lint job
