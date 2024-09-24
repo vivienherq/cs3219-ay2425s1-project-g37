@@ -39,12 +39,10 @@ function createClient(baseUrl: string) {
       // We enforce a slash here so the syntax becomes userClient.get("/users") which is more
       // readable. ky's convention enforcing ky.get("users") makes sense but is not so intuitive.
       if (!url.startsWith("/")) throw new Error("url should start with a slash for consistency");
-      console.log(url, method);
-      const response = await kyClient[method]<ServiceResponseBodySuccess<T>>(url.slice(1), {
+      const { data } = (await kyClient[method]<ServiceResponseBodySuccess<T>>(url.slice(1), {
         ...options,
         json: options?.json ?? (method === "get" || method === "head" ? undefined : {}),
-      });
-      const { data } = await response.json();
+      }).json()) as ServiceResponseBodySuccess<T>;
       return data;
     };
   }
