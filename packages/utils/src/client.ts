@@ -22,7 +22,7 @@ function createClient(baseUrl: string) {
     prefixUrl: baseUrl,
     credentials: "include",
     hooks: { beforeError: [formatKyError] },
-    // headers: { "Content-Type": "application/superjson" },
+    headers: { "Content-Type": "application/superjson" },
     parseJson: parse,
     stringifyJson: stringify,
   });
@@ -43,12 +43,6 @@ function createClient(baseUrl: string) {
       const response = await kyClient[method]<ServiceResponseBodySuccess<T>>(url.slice(1), {
         ...options,
         json: options?.json ?? (method === "get" || method === "head" ? undefined : {}),
-        headers: {
-          ...options?.headers,
-          ...(method === "get" || method === "head"
-            ? {}
-            : { "Content-Type": "application/superjson" }),
-        },
       });
       const { data } = await response.json();
       return data;
