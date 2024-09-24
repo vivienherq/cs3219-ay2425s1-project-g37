@@ -13,15 +13,14 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [adminSignUpToken, setAdminSignUpToken] = useState("");
 
   return (
     <form
       className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12"
       onSubmit={async e => {
         e.preventDefault();
-        await trigger({ username, email, password, adminSignUpToken, isAdmin: true });
-        toast.success("Admin account created successfully.");
+        await trigger({ username, email, password });
+        toast.success("Account created successfully. Welcome to PeerPrep!");
       }}
     >
       <h1 className="text-main-50 text-2xl">Register</h1>
@@ -64,19 +63,6 @@ export default function RegisterPage() {
           onValueChange={setConfirmPassword}
         />
       </div>
-      <TextInput
-        label="Admin Signup Token"
-        type="password"
-        required
-        value={adminSignUpToken}
-        onValueChange={setAdminSignUpToken}
-        helpText={
-          <>
-            Value of the <code>ADMIN_SIGNUP_TOKEN</code> environment variable. If you don't have
-            this token, you cannot create an admin account.
-          </>
-        }
-      />
       <Button variants={{ variant: "primary" }} type="submit" disabled={isMutating}>
         Sign up
       </Button>
@@ -85,7 +71,7 @@ export default function RegisterPage() {
         <Link href="/login" className="text-main-50 font-bold underline-offset-4 hover:underline">
           log in
         </Link>{" "}
-        if you already have an admin account.
+        if you already have an account.
       </p>
     </form>
   );
