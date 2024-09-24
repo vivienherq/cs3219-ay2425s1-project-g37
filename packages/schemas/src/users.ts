@@ -23,7 +23,7 @@ export type UpdateUser = Static<typeof updateSchema>;
 export const schema = t.Intersect([
   baseSchema,
   t.Object({
-    id: t.String(),
+    id: t.String({ pattern: "^[a-f0-9]{24}$" }),
     password: t.Optional(t.Never()),
     createdAt: t.Date(),
     updatedAt: t.Date(),
