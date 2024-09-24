@@ -381,10 +381,8 @@ We can use this to guard endpoints against unauthenticated requests, for example
 new Elysia()
   .use(elysiaAuthPlugin)
   .onBeforeHandle(({ user, set }) => {
-    if (!user?.isAdmin) {
-      set.status = StatusCodes.FORBIDDEN;
-      return { message: "Forbidden" };
-    }
+    if (!user?.isAdmin)
+      throw new ExpectedError("Only admins can perform this action", StatusCodes.UNAUTHORIZED);
   })
   // The user is guaranteed to be an admin now
   .get("/", () => getAllUsers());

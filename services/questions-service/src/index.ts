@@ -1,6 +1,7 @@
 import { env } from "@peerprep/env";
 import { questions } from "@peerprep/schemas/validators";
 import {
+  ExpectedError,
   elysiaAuthPlugin,
   elysiaCorsPlugin,
   elysiaFormatResponsePlugin,
@@ -18,11 +19,9 @@ import {
 
 const adminOnlyRoutes = new Elysia()
   .use(elysiaAuthPlugin)
-  .onBeforeHandle(({ user, set }) => {
-    if (!user?.isAdmin) {
-      set.status = StatusCodes.UNAUTHORIZED;
-      return { message: "Unauthorized" };
-    }
+  .onBeforeHandle(({ user }) => {
+    if (!user?.isAdmin)
+      throw new ExpectedError("Only admins can perform this action", StatusCodes.UNAUTHORIZED);
   })
   .post("/", ({ body: questions }) => createQuestions(questions), {
     body: t.Array(questions.createSchema),
