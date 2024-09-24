@@ -69,7 +69,7 @@ function NavAvatar() {
 export default function AuthProtectedLayout() {
   const { data: user } = useAuth();
   if (user === undefined) return null; // loading state
-  if (user === null) return <Navigate to="/login" />;
+  if (user === null || !user.isAdmin) return <Navigate to="/login" />;
   return (
     <div>
       <nav className="container flex flex-row justify-between py-6">

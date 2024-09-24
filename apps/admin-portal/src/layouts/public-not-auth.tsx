@@ -7,7 +7,7 @@ import { useAuth } from "~/lib/auth";
 export default function PublicNotAuthLayout() {
   const { data: user } = useAuth();
   if (user === undefined) return null;
-  if (user) return <Navigate to="/" />;
+  if (user && user.isAdmin) return <Navigate to="/" />;
   return (
     <div className="flex h-screen w-screen flex-col justify-center">
       <nav className="container fixed inset-x-0 top-0 flex flex-row justify-between py-6">

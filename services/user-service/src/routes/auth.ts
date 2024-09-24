@@ -9,11 +9,17 @@ export const authRoutes = new Elysia()
   .use(elysiaAuthPlugin)
   .post(
     "/login",
-    async ({ jwt, body: { email, password }, cookie: { auth_token } }) => {
-      const id = await handleLogin(email, password);
+    async ({ jwt, body: { email, password, forceAdmin }, cookie: { auth_token } }) => {
+      const id = await handleLogin(email, password, Boolean(forceAdmin));
       auth_token.set(await getJwt(id, jwt.sign));
     },
-    { body: t.Object({ email: t.String(), password: t.String() }) },
+    {
+      body: t.Object({
+        email: t.String(),
+        password: t.String(),
+        forceAdmin: t.Optional(t.Boolean()),
+      }),
+    },
   )
   .post("/logout", async ({ cookie: { auth_token } }) => auth_token.remove())
   .get("/verify-token", ({ user }): User | null => user);

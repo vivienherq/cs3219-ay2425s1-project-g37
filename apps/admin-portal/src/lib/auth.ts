@@ -17,7 +17,7 @@ export function useLogin() {
   return useSWRMutation(
     AUTH_KEY,
     (_, { arg: { email, password } }: { arg: { email: string; password: string } }) =>
-      userClient.post("/auth/login", { json: { email, password } }),
+      userClient.post("/auth/login", { json: { email, password, forceAdmin: true } }),
   );
 }
 
