@@ -14,6 +14,10 @@ export type UpdateQuestion = Static<typeof updateSchema>;
 
 export const schema = t.Intersect([
   createSchema,
-  t.Object({ id: t.String(), createdAt: t.Optional(t.Date()), updatedAt: t.Optional(t.Date()) }),
+  t.Object({
+    id: t.String({ pattern: "^[a-f0-9]{24}$" }),
+    createdAt: t.Optional(t.Date()),
+    updatedAt: t.Optional(t.Date()),
+  }),
 ]);
 export type Question = Static<typeof schema>;

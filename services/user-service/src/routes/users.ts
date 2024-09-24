@@ -1,5 +1,5 @@
 import { users } from "@peerprep/schemas/validators";
-import { elysiaAuthPlugin } from "@peerprep/utils/server";
+import { ExpectedError, elysiaAuthPlugin } from "@peerprep/utils/server";
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
 
@@ -15,11 +15,9 @@ import { getJwt } from "~/lib/get-jwt";
 
 const adminRoutes = new Elysia()
   .use(elysiaAuthPlugin)
-  .onBeforeHandle(({ user, set }) => {
-    if (!user?.isAdmin) {
-      set.status = StatusCodes.FORBIDDEN;
-      return { message: "Forbidden" };
-    }
+  .onBeforeHandle(({ user }) => {
+    if (!user?.isAdmin)
+      throw new ExpectedError("Only admins can perform this action", StatusCodes.UNAUTHORIZED);
   })
   .get("/", () => getAllUsers())
   .patch("/:id/privilege", ({ params, body }) => updateUserPrivilege(params.id, body.isAdmin), {
@@ -28,11 +26,9 @@ const adminRoutes = new Elysia()
 
 const protectedRoutes = new Elysia({ prefix: "/:id" })
   .use(elysiaAuthPlugin)
-  .onBeforeHandle(({ user, params, set }) => {
-    if (user?.id !== params.id && !user?.isAdmin) {
-      set.status = StatusCodes.UNAUTHORIZED;
-      return { message: "Unauthorized" };
-    }
+  .onBeforeHandle(({ user, params }) => {
+    if (user?.id !== params.id && !user?.isAdmin)
+      throw new ExpectedError("You may not perform this action", StatusCodes.UNAUTHORIZED);
   })
   .get("/", ({ params }) => getUser(params.id))
   .patch("/", ({ params, body }) => updateUser(params.id, body), { body: users.updateSchema })

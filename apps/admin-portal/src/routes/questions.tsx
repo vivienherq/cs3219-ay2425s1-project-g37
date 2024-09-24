@@ -4,8 +4,8 @@ import { Link } from "@peerprep/ui/link";
 import { useQuestions } from "~/lib/questions";
 
 export default function QuestionsPage() {
-  const { isLoading, data: questions } = useQuestions();
-  if (isLoading) return null;
+  const { data: questions } = useQuestions();
+  if (!questions) return null;
   return (
     <div>
       Questions Page

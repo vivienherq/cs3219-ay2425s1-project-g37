@@ -131,50 +131,25 @@ Keep in mind that we use `<Link>` imported from `@peerprep/ui` instead of the `<
 
 ### Data fetching
 
-We fetch data with [SWR](https://swr.vercel.app). It is a pretty to use and lightweight library, quite similar to React Query. Please go to the link to check it out.
-
-Each type of data should have a unique key to identify it. The hook should return the type `SWRHookResult` for consistent handling throughout the codebase. Example:
+We fetch data with [SWR](https://swr.vercel.app). It is a pretty to use and lightweight library, quite similar to React Query. Please go to the link to check it out. Example:
 
 ```tsx
 import type { Question } from "@peerprep/schemas";
-import {
-  type SWRHookResult,
-  type ServiceResponseBodySuccess,
-  getKyErrorMessage,
-  questionsClient,
-} from "@peerprep/utils/client";
-import useSWR from "swr";
+import { questionsClient } from "@peerprep/utils/client";
+import useSWR, { mutate } from "swr";
 
-async function questionsFetcher() {
-  try {
-    const response = await questionsClient.get<ServiceResponseBodySuccess<Question[]>>("");
-    const data = await response.json();
-    return data.data;
-  } catch (e) {
-    throw new Error(getKyErrorMessage(e));
-  }
+export function useQuestions() {
+  return useSWR("questions:/", questionsClient.swrFetcher<Question[]>);
 }
 
-export const SWR_KEY_QUESTIONS = "questions";
-
-export function useQuestions(): SWRHookResult<Question[]> {
-  const { data } = useSWR(SWR_KEY_QUESTIONS, questionsFetcher);
-  return data === undefined ? { data: undefined, isLoading: true } : { data, isLoading: false };
+export async function mutateQuestions() {
+  return mutate("questions:/");
 }
 ```
+
+`useQuestions()` will make a request to `/` of the questions service, getting the data whose type is `Question[]`. Whenever we make changes to the questions in the backend and want to tell SWR that the data has changed, we call `mutateQuestions()`, then it will send the request again and update the state in the frontend accordingly.
 
 Thanks to SWR's [deduplication](https://swr.vercel.app/docs/advanced/performance.en-US#deduplication), we can reuse this hook anywhere we need the data in the app without having to use global state management libraries, contexts or prop drilling.
-
-Afterwards, whenever we update the data, we can then call `mutate` on the key to tell SWR to revalidate the data:
-
-```tsx
-import { mutate } from "swr";
-
-async function addQuestion() {
-  // ...
-  await mutate(SWR_KEY_QUESTIONS);
-}
-```
 
 ### Styling
 
@@ -381,10 +356,8 @@ We can use this to guard endpoints against unauthenticated requests, for example
 new Elysia()
   .use(elysiaAuthPlugin)
   .onBeforeHandle(({ user, set }) => {
-    if (!user?.isAdmin) {
-      set.status = StatusCodes.FORBIDDEN;
-      return { message: "Forbidden" };
-    }
+    if (!user?.isAdmin)
+      throw new ExpectedError("Only admins can perform this action", StatusCodes.UNAUTHORIZED);
   })
   // The user is guaranteed to be an admin now
   .get("/", () => getAllUsers());
@@ -398,43 +371,36 @@ We don't save the user's image URL (which is a [Gravatar URL](https://docs.grava
 
 The `client` "subpackage" of the `@peerprep/utils` package contains the functions shared in all frontends. **This subpackage should not be imported into the microservices (server-side).**
 
-Aside from the types `ServiceResponseBodySuccess<T>`, `ServiceResponseBodyError` and `ServiceResponseBody<T>` which are the same as described above (exported from here for use in the frontend), this subpackage exports a few more things.
+The exported clients `userClient`, `questionsClient`, etc. can be used to send requests and get data from the corresponding microservices.
 
-### `ky` stuffs
-
-Now before we continue, we should note that the frontend makes JSON requests to the microservices via [`ky`](https://github.com/sindresorhus/ky). It is a good `fetch` wrapper that simplifies things a bit for us. Please check the `ky` documentation for more details.
-
-`@peerprep/utils/client` exports `userClient`, `questionsClient`, etc. which are the `ky` instances to send requests to the corresponding microservices. It also exports `getKyErrorMessage` which can be used to extract the user-friendly error message from the backend to display in the frontend.
+If the request fails, an error will be thrown. The function `getHTTPErrorMessage` is exported for you to get a user-friendly error message from that error.
 
 Examples:
 
-- Getting data in a [SWR fetcher](https://swr.vercel.app/docs/data-fetching):
+- Getting data:
 
   ```tsx
   try {
-    const response = await questionsClient.get<ServiceResponseBodySuccess<Question[]>>("");
-    const data = await response.json();
-    return data.data;
+    const questionId = "12345";
+    const question = await questionsClient.get<Question>(`/${questionId}`);
+    console.log(question);
   } catch (e) {
-    throw new Error(getKyErrorMessage(e));
+    console.error(getHTTPErrorMessage(e));
   }
   ```
 
-- Mutating data:
+- Posting data:
 
   ```tsx
   try {
-    await userClient.post("auth/logout");
-    await mutate(SWR_KEY_USER); // We tell SWR that the user state has changed
-    toast.success("Log out successfully. See you again!");
+    await userClient.post("/auth/login", { json: { email, password } });
+    console.log("Successfully logged in");
   } catch (e) {
-    toast.error(getKyErrorMessage(e));
+    console.error(getHTTPErrorMessage(e));
   }
   ```
 
-### `SWRHookResult<T>`
-
-This type is the return type of all SWR hooks that we make to query data. See more on data fetching above.
+Note that where possible, we would prefer to use `useSWR` and `useSWRMutation` from `swr` to handle queries and mutations. Please check the SWR documentation and some sample code, such as `apps/admin-portal/src/lib/auth.ts`, for more details.
 
 ## Style guide
 

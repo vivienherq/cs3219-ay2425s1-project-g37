@@ -1,33 +1,6 @@
 import type { Question } from "@peerprep/schemas";
-import {
-  type SWRHookResult,
-  type ServiceResponseBodySuccess,
-  getKyErrorMessage,
-  questionsClient,
-} from "@peerprep/utils/client";
-import useSWR from "swr";
-
-async function questionsFetcher() {
-  try {
-    const response = await questionsClient.get<ServiceResponseBodySuccess<Question[]>>("");
-    const data = await response.json();
-    return data.data;
-  } catch (e) {
-    throw new Error(getKyErrorMessage(e));
-  }
-}
-
-async function fetchQuestionById(id: string): Promise<Question> {
-  try {
-    const response = await questionsClient.get<ServiceResponseBodySuccess<Question>>(`/${id}`);
-    const data = await response.json();
-    return data.data;
-  } catch (e) {
-    throw new Error(getKyErrorMessage(e));
-  }
-}
-
-export const SWR_KEY_QUESTIONS = "questions";
+import { questionsClient } from "@peerprep/utils/client";
+import useSWR, { mutate } from "swr";
 
 const dummyData: Question[] = [
   {
@@ -52,20 +25,33 @@ const dummyData: Question[] = [
   },
 ];
 
-export function useQuestions(): SWRHookResult<Question[]> {
-  const { data } = useSWR(SWR_KEY_QUESTIONS, questionsFetcher);
-  return data === undefined
-    ? { data: undefined, isLoading: true }
-    : { data: [...dummyData, ...data], isLoading: false };
+export function useQuestions() {
+  // If the dummy questions are not necessary anymore:
+  // return useSWR("questions:/", questionsClient.swrFetcher<Question[]>);
+
+  // Now we do this to add the dummy questions
+  return useSWR("questions:/", async key => {
+    const data = await questionsClient.swrFetcher<Question[]>(key);
+    return [...dummyData, ...data];
+  });
 }
 
-export function useQuestion(id: string): SWRHookResult<Question | undefined> {
-  const { data } = useSWR(id ? `question/${id}` : null, () => fetchQuestionById(id));
+export async function mutateQuestions() {
+  return mutate("questions:/");
+}
 
-  const dummyQuestion: Question | undefined = dummyData.find(question => question.id === id);
+export function useQuestion(id: string) {
+  // If the dummy questions are not necessary anymore:
+  // return useSWR(`questions:/${id}`, questionsClient.swrFetcher<Question>);
 
-  return {
-    data: data ?? dummyQuestion,
-    isLoading: !data && !dummyQuestion,
-  } as SWRHookResult<Question | undefined>;
+  // Now we do this to add the dummy questions
+  return useSWR(`questions:/${id}`, key => {
+    if (key === "questions:/dummy1") return dummyData[0];
+    if (key === "questions:/dummy2") return dummyData[1];
+    return questionsClient.swrFetcher<Question>(key);
+  });
+}
+
+export async function mutateQuestion(id: string) {
+  return mutate(`questions:/${id}`);
 }
