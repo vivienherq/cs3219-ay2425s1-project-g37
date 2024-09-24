@@ -2,12 +2,11 @@ import type { NewUser } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { TextInput } from "@peerprep/ui/text-input";
-import { getKyErrorMessage, userClient } from "@peerprep/utils/client";
+import { getHTTPErrorMessage, userClient } from "@peerprep/utils/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { mutate } from "swr";
 
-import { SWR_KEY_USER } from "~/lib/auth";
+import { mutateAuth } from "~/lib/auth";
 
 export default function RegisterPage() {
   const [pending, setPending] = useState(false);
@@ -26,11 +25,11 @@ export default function RegisterPage() {
         setPending(true);
         try {
           const data: NewUser = { username, email, password, adminSignUpToken, isAdmin: true };
-          await userClient.post("users", { json: data });
-          await mutate(SWR_KEY_USER);
+          await userClient.post("/users", { json: data });
+          await mutateAuth();
           toast.success("Admin created successfully! Please log in with the new credentials.");
         } catch (e) {
-          toast.error(getKyErrorMessage(e));
+          toast.error(getHTTPErrorMessage(e));
         }
         setPending(false);
       }}

@@ -10,17 +10,16 @@ import {
   DropdownMenuTrigger,
 } from "@peerprep/ui/dropdown-menu";
 import { Link } from "@peerprep/ui/link";
-import { getKyErrorMessage, userClient } from "@peerprep/utils/client";
+import { getHTTPErrorMessage, userClient } from "@peerprep/utils/client";
 import { ArrowUpRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { Navigate, Outlet } from "react-router-dom";
-import { mutate } from "swr";
 
 import { NavLogo } from "~/components/nav-logo";
-import { SWR_KEY_USER, useUser } from "~/lib/auth";
+import { mutateAuth, useAuth } from "~/lib/auth";
 
 function NavAvatar() {
-  const { data: user } = useUser();
+  const { data: user } = useAuth();
   if (!user) return null;
   return (
     <DropdownMenu>
@@ -54,11 +53,11 @@ function NavAvatar() {
             <button
               onClick={async () => {
                 try {
-                  await userClient.post("auth/logout");
-                  await mutate(SWR_KEY_USER);
+                  await userClient.post("/auth/logout");
+                  await mutateAuth();
                   toast.success("Log out successfully. See you again!");
                 } catch (e) {
-                  toast.error(getKyErrorMessage(e));
+                  toast.error(getHTTPErrorMessage(e));
                 }
               }}
             >
@@ -73,9 +72,9 @@ function NavAvatar() {
 
 // Redirect away from this layout if the user is not authenticated
 export default function AuthProtectedLayout() {
-  const { isLoading, data: user } = useUser();
-  if (isLoading) return null;
-  if (!user) return <Navigate to="/login" />;
+  const { data: user } = useAuth();
+  if (user === undefined) return null; // loading state
+  if (user === null) return <Navigate to="/login" />;
   return (
     <div>
       <nav className="container flex flex-row justify-between py-6">

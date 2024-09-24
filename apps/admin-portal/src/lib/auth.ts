@@ -1,26 +1,11 @@
 import type { User } from "@peerprep/schemas";
-import {
-  type SWRHookResult,
-  type ServiceResponseBodySuccess,
-  getKyErrorMessage,
-  userClient,
-} from "@peerprep/utils/client";
-import useSWR from "swr";
+import { userClient } from "@peerprep/utils/client";
+import useSWR, { mutate } from "swr";
 
-async function userFetcher() {
-  try {
-    const response =
-      await userClient.get<ServiceResponseBodySuccess<User | null>>("auth/verify-token");
-    const data = await response.json();
-    return data.data;
-  } catch (e) {
-    throw new Error(getKyErrorMessage(e));
-  }
+export function useAuth() {
+  return useSWR("user:/auth/verify-token", userClient.swrFetcher<User | null>);
 }
 
-export const SWR_KEY_USER = "user";
-
-export function useUser(): SWRHookResult<User | null> {
-  const { data } = useSWR(SWR_KEY_USER, userFetcher);
-  return data === undefined ? { data: undefined, isLoading: true } : { data, isLoading: false };
+export function mutateAuth() {
+  return mutate("user:/auth/verify-token");
 }
