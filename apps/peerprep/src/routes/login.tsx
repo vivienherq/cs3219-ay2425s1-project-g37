@@ -9,7 +9,7 @@ import { useLogin } from "~/lib/auth";
 export default function LoginPage() {
   const { trigger, isMutating } = useLogin();
 
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   return (
     <form
@@ -17,18 +17,18 @@ export default function LoginPage() {
       onSubmit={async e => {
         e.preventDefault();
         if (isMutating) return;
-        await trigger({ email, password });
+        await trigger({ emailOrUsername, password });
         toast.success("Welcome back!");
       }}
     >
       <h1 className="text-main-50 text-2xl">Login</h1>
       <TextInput
-        label="Email"
-        type="email"
-        name="email"
+        label="Email or username"
+        type="text"
+        name="email-or-username"
         required
-        value={email}
-        onValueChange={setEmail}
+        value={emailOrUsername}
+        onValueChange={setEmailOrUsername}
       />
       <TextInput
         label="Password"

@@ -16,8 +16,18 @@ export function mutateAuth() {
 export function useLogin() {
   return useSWRMutation(
     AUTH_KEY,
-    (_, { arg: { email, password } }: { arg: { email: string; password: string } }) =>
-      userClient.post("/auth/login", { json: { email, password, forceAdmin: true } }),
+    async (
+      _,
+      {
+        arg: { emailOrUsername, password },
+      }: { arg: { emailOrUsername: string; password: string } },
+    ) => {
+      const email = emailOrUsername.includes("@") ? emailOrUsername : undefined;
+      const username = email ? undefined : emailOrUsername;
+      await userClient.post("/auth/login", {
+        json: { email, username, password, forceAdmin: true },
+      });
+    },
   );
 }
 

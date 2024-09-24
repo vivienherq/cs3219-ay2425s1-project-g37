@@ -9,14 +9,15 @@ export const authRoutes = new Elysia()
   .use(elysiaAuthPlugin)
   .post(
     "/login",
-    async ({ jwt, body: { email, password, forceAdmin }, cookie: { auth_token } }) => {
-      const id = await handleLogin(email, password, Boolean(forceAdmin));
+    async ({ jwt, body: { email, username, password, forceAdmin }, cookie: { auth_token } }) => {
+      const id = await handleLogin(email, username, password, Boolean(forceAdmin));
       auth_token.set(await getJwt(id, jwt.sign));
     },
     {
       body: t.Object({
-        email: t.String(),
-        password: t.String(),
+        email: t.Optional(t.String({ format: "email" })),
+        username: t.Optional(t.String({ pattern: "^[a-zA-Z0-9_]{4,32}$" })),
+        password: t.String({ minLength: 8, maxLength: 128 }),
         forceAdmin: t.Optional(t.Boolean()),
       }),
     },
