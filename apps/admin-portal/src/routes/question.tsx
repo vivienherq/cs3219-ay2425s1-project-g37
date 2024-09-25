@@ -1,3 +1,4 @@
+import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
 import { Tags } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -28,7 +29,17 @@ export default function QuestionPage() {
   }
   return (
     <div className="bg-main-900 p-12">
-      <h1 className="text-main-50 mb-2 text-2xl">{question?.title}</h1>
+      <div className="mb-2 flex items-center justify-between">
+        <h1 className="text-main-50 text-2xl">{question?.title}</h1>
+        <div className="flex space-x-2">
+          <button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
+            Edit
+          </button>
+          <button className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600">
+            Delete
+          </button>
+        </div>
+      </div>
       <div className="mb-4 flex items-center">
         <div
           className={`inline-flex items-center justify-center px-2 py-1 text-white ${chipColor} text-sm`}
@@ -42,8 +53,7 @@ export default function QuestionPage() {
           <div className="ml-2 text-sm">{question.tags.join(", ")}</div>
         </div>
       </div>
-
-      <div>{question?.content}</div>
+      <MarkdownRenderer question={question} />
     </div>
   );
 }
