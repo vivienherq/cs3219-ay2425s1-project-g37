@@ -8,13 +8,13 @@ interface Question {
   difficulty: string;
   tags: string[];
   leetCodeLink: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export function MarkdownRenderer({ question }: { question: Question }) {
   return (
-    <div>
+    <div className="prose max-w-full">
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{question.content}</ReactMarkdown>
     </div>
   );

@@ -1,3 +1,4 @@
+import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
 import { Tags } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -42,8 +43,7 @@ export default function QuestionPage() {
           <div className="ml-2 text-sm">{question.tags.join(", ")}</div>
         </div>
       </div>
-
-      <div>{question?.content}</div>
+      <MarkdownRenderer question={question} />
     </div>
   );
 }
