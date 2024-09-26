@@ -7,15 +7,16 @@
     "services/*"
   ],
   "scripts": {
-    "build": "turbo build",
-    "db:generate": "turbo db:generate",
-    "db:push": "turbo db:push",
-    "dev": "turbo dev",
+    "build": "dotenvx run -- turbo build",
+    "db:generate": "dotenvx run -- turbo db:generate",
+    "db:push": "dotenvx run -- turbo db:push",
+    "dev": "dotenvx run -- turbo dev",
     "format": "prettier --write .",
     "lint": "turbo lint && prettier --check .",
-    "start": "turbo start"
+    "start": "dotenvx run -- turbo start"
   },
   "dependencies": {
+    "@dotenvx/dotenvx": "1.14.1",
     "@peerprep/tsconfig": "workspace:*",
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
     "@types/bun": "1.1.9",

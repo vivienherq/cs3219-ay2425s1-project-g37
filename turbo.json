@@ -1,14 +1,21 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "VITE_PEERPREP_FRONTEND_PORT",
+    "VITE_PEERPREP_QUESTION_SPA_PORT",
+    "VITE_USER_SERVICE_PORT",
+    "VITE_QUESTION_SERVICE_PORT",
+    "DATABASE_URL",
+    "JWT_SECRET",
+    "ADMIN_SIGNUP_TOKEN"
+  ],
   "tasks": {
     "db:generate": {
-      "cache": false,
-      "env": ["DATABASE_URL"]
+      "cache": false
     },
     "db:push": {
-      "cache": false,
-      "env": ["DATABASE_URL"]
+      "cache": false
     },
     "lint": {
       "dependsOn": ["^lint"]

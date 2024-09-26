@@ -6,14 +6,6 @@ Please read through the entire document at least once, since its organisation is
 
 ## Installation
 
-### A Unix/Linux-based operating system
-
-If you are using Linux or macOS, you are all set.
-
-If you are using Windows, please install Windows Subsystem for Linux and do all of the below steps in there. The reason we cannot use Windows is that, we use symbolic links to "broadcast" environment variables to all apps and services, but Windows [seems to not be able to understand these symbolic links](https://superuser.com/q/636141).
-
-This restriction will be lifted when we Dockerise the app in Milestone 3, so if your computer is low on storage, you can uninstall WSL after Dockerisation is complete. But I highly recommend you to stick with WSL for the remaining of the project, since we will be running commands and developing features on Unix/Linux (and the Docker image will use a Linux distro as the base) and we don't want weird Windows incompatibility like the symbolic link issue above to affect us.
-
 ### Install necessary softwares
 
 - [Node.js](https://nodejs.org) v20+
@@ -265,6 +257,7 @@ console.log(`The JWT secret is ${env.JWT_SECRET}`);
 - Add it to `packages/env/src/index.ts`. Refer to [T3 Env documentation](https://env.t3.gg/docs/core) for more information.
 - Document it in section "Set up environment variables" above.
 - Add it to `.env.example`. If it is a sensitive value, remove the value there, only keep the environment variable name.
+- Add the environment variable name to the [`globalEnv` array in `turbo.json`](https://turbo.build/repo/docs/crafting-your-repository/using-environment-variables#environment-modes).
 
 ## `@peerprep/schemas`
 
@@ -463,17 +456,3 @@ Simply copy an existing app/package/service and modify it. I would advise agains
 Please remember to update the `name` field in `package.json`. Each app, package and service must have a distinct `name`. Name the new entity using the format `@peerprep/...` to avoid clashing with NPM package names.
 
 If in doubt just ask me (@joulev) I will do this for you.
-
-### Make an app/package/service have access to environment variables
-
-The app/package/service **must** have its own `.env` (e.g., `services/questions-service/.env`) to be able to read environment variables. But we don't want to maintain a million different `.env` files at the same time, that's why all of these "child" `.env` files are made to be symlinks to the root `.env` file, so that changes to the root `.env` file is reflected in all "child" `.env` files.
-
-To create a new symlink child `.env`, run this command
-
-```sh
-# macOS/Linux only
-cd services/questions-service # this step is important
-ln -s ../../.env .env
-```
-
-These child `.env` files should be added to version control. Don't worry, the secrets are safe inside the root `.env` and are not uploaded to GitHub.
