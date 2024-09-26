@@ -18,15 +18,13 @@
       "cache": false
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "cache": false
     },
     "dev": {
-      "dependsOn": ["^db:generate"],
       "cache": false,
       "persistent": true
     },
     "build": {
-      "dependsOn": ["^build", "^db:generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
