@@ -6,6 +6,14 @@ Please read through the entire document at least once, since its organisation is
 
 ## Installation
 
+### A Unix/Linux-based operating system
+
+If you are using Linux or macOS, you are all set.
+
+If you are using Windows, please install Windows Subsystem for Linux and do all of the below steps in there. The reason we cannot use Windows is that, we use symbolic links to "broadcast" environment variables to all apps and services, but Windows [seems to not be able to understand these symbolic links](https://superuser.com/q/636141).
+
+This restriction will be lifted when we Dockerise the app in Milestone 3, so if your computer is low on storage, you can uninstall WSL after Dockerisation is complete. But I highly recommend you to stick with WSL for the remaining of the project, since we will be running commands and developing features on Unix/Linux (and the Docker image will use a Linux distro as the base) and we don't want weird Windows incompatibility like the symbolic link issue above to affect us.
+
 ### Install necessary softwares
 
 - [Node.js](https://nodejs.org) v20+
@@ -469,5 +477,3 @@ ln -s ../../.env .env
 ```
 
 These child `.env` files should be added to version control. Don't worry, the secrets are safe inside the root `.env` and are not uploaded to GitHub.
-
-If you are running Windows, please either migrate to Windows Subsystem for Linux or ping me.
