@@ -9,7 +9,22 @@ export default function QuestionsPage() {
   if (!questions) return null;
   return (
     <div>
-      Questions Page
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Questions Page</h1>
+        <div>  
+          <input  
+            type="file"  
+            accept=".json"  
+            className="hidden"  
+            id="file-upload"  
+          />  
+          <label htmlFor="file-upload">  
+            <Button variants={{ variant: "primary" }}>  
+              Add Questions  
+            </Button>  
+          </label>  
+        </div> 
+      </div>
       <div>
         {questions.map(question => (
           <div
