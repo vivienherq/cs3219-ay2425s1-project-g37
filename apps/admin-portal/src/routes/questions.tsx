@@ -1,59 +1,58 @@
+import type { NewQuestion } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { Tags } from "lucide-react";
-
-import { useQuestions, addQuestion } from "~/lib/questions";
-
-import { useState, useRef } from "react"; 
-import type { NewQuestion } from "@peerprep/schemas";  
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
+
+import { addQuestion, useQuestions } from "~/lib/questions";
 
 export default function QuestionsPage() {
   const { data: questions } = useQuestions();
-  const [isAddingQuestion, setIsAddingQuestion] = useState(false);  
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);  
+  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {  
-    if (event.target.files) {  
-      setSelectedFile(event.target.files[0]); 
-      setIsAddingQuestion(true); 
-    }  
-  };  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedFile(event.target.files[0]);
+      setIsAddingQuestion(true);
+    }
+  };
 
-  const handleAddQuestion = async () => {  
-    if (!selectedFile) {  
-      fileInputRef.current?.click();  
-      return;  
-    }  
+  const handleAddQuestion = async () => {
+    if (!selectedFile) {
+      fileInputRef.current?.click();
+      return;
+    }
 
-    try {  
-      if (selectedFile.type !== 'application/json') {  
-        toast.error('Please select a valid JSON file.');  
-        return;  
-      }  
-  
-      const json = await selectedFile.text();  
-      const newQuestion: NewQuestion = JSON.parse(json);  
-      await addQuestion(newQuestion);   
-      setIsAddingQuestion(false);  
-      setSelectedFile(null);  
-      toast.success('Succesfully added the new questions!');
-    } catch (error) {  
-      toast.error('Failed to add new question.');  
-      console.error(error);  
-    }   
-  }; 
+    try {
+      if (selectedFile.type !== "application/json") {
+        toast.error("Please select a valid JSON file.");
+        return;
+      }
+
+      const json = await selectedFile.text();
+      const newQuestion: NewQuestion = JSON.parse(json);
+      await addQuestion(newQuestion);
+      setIsAddingQuestion(false);
+      setSelectedFile(null);
+      toast.success("Succesfully added the new questions!");
+    } catch (error) {
+      toast.error("Failed to add new question.");
+      console.error(error);
+    }
+  };
 
   if (!questions) return null;
   return (
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Questions Page</h1>
-        <div>    
-          <Button onClick={handleAddQuestion} variants={{ variant: "primary" }}>  
-            Add Questions  
-          </Button>  
+        <div>
+          <Button onClick={handleAddQuestion} variants={{ variant: "primary" }}>
+            Add Questions
+          </Button>
           <input
             type="file"
             accept=".json"
@@ -63,17 +62,13 @@ export default function QuestionsPage() {
           />
           {isAddingQuestion && (
             <div>
-              {selectedFile && (
-                <div>
-                  Selected file: {selectedFile.name}
-                </div>
-              )}
-              <Button onClick={handleAddQuestion} variants={{ variant: "primary"}}>
+              {selectedFile && <div>Selected file: {selectedFile.name}</div>}
+              <Button onClick={handleAddQuestion} variants={{ variant: "primary" }}>
                 Upload Question
               </Button>
             </div>
           )}
-        </div> 
+        </div>
       </div>
       <div>
         {questions.map(question => (

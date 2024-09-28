@@ -1,4 +1,4 @@
-import type { Question, NewQuestion } from "@peerprep/schemas";
+import type { NewQuestion, Question } from "@peerprep/schemas";
 import { questionsClient } from "@peerprep/utils/client";
 import useSWR, { mutate } from "swr";
 
@@ -87,6 +87,6 @@ export async function mutateQuestion(id: string) {
 }
 
 export async function addQuestion(newQuestion: NewQuestion) {
-  await questionsClient.post("/", { json: newQuestion});
+  await questionsClient.post("/", { json: newQuestion });
   await mutateQuestions();
 }
