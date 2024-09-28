@@ -1,114 +1,79 @@
-import type { NewQuestion } from "@peerprep/schemas";
-import { Button } from "@peerprep/ui/button";
+import { type Static, TypeCompiler, questions, t } from "@peerprep/schemas/validators";
+import { buttonVariants } from "@peerprep/ui/button-variants";
+import { cn } from "@peerprep/ui/cn";
 import { Link } from "@peerprep/ui/link";
+import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
 import { Tags } from "lucide-react";
-import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-import { addQuestion, useQuestions } from "~/lib/questions";
+import { useAddQuestions, useQuestions } from "~/lib/questions";
+
+const createSchema = t.Union([t.Array(questions.createSchema), questions.createSchema]);
+const compiledCreateSchema = TypeCompiler.Compile(createSchema);
 
 export default function QuestionsPage() {
   const { data: questions } = useQuestions();
-  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { trigger, isMutating } = useAddQuestions();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setSelectedFile(event.target.files[0]);
-      setIsAddingQuestion(true);
-    }
-  };
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    if (isMutating) return;
 
-  const handleAddQuestion = async () => {
-    if (!selectedFile) {
-      fileInputRef.current?.click();
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const json = JSON.parse(await file.text());
+    if (!compiledCreateSchema.Check(json)) {
+      toast.error(
+        <>
+          Invalid JSON file. Content must be <code>Question</code> or <code>Question[]</code>.
+        </>,
+      );
       return;
     }
 
-    try {
-      if (selectedFile.type !== "application/json") {
-        toast.error("Please select a valid JSON file.");
-        return;
-      }
-
-      const json = await selectedFile.text();
-      const newQuestion: NewQuestion = JSON.parse(json);
-      await addQuestion(newQuestion);
-      setIsAddingQuestion(false);
-      setSelectedFile(null);
-      toast.success("Succesfully added the new questions!");
-    } catch (error) {
-      toast.error("Failed to add new question.");
-      console.error(error);
-    }
-  };
+    const data: Static<typeof createSchema> = json;
+    await trigger(data);
+    toast.success("Succesfully added the new questions!");
+  }
 
   if (!questions) return null;
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Questions Page</h1>
-        <div>
-          <Button onClick={handleAddQuestion} variants={{ variant: "primary" }}>
-            Add Questions
-          </Button>
+    <div className="mx-auto flex max-w-prose flex-col gap-6">
+      <div className="flex flex-row justify-between">
+        <h1 className="text-3xl font-semibold">Questions</h1>
+        <label>
           <input
+            id="new-question"
             type="file"
             accept=".json"
+            className="hidden"
             onChange={handleFileChange}
-            ref={fileInputRef}
-            style={{ display: "none" }}
+            disabled={isMutating}
           />
-          {isAddingQuestion && (
-            <div>
-              {selectedFile && <div>Selected file: {selectedFile.name}</div>}
-              <Button onClick={handleAddQuestion} variants={{ variant: "primary" }}>
-                Upload Question
-              </Button>
-            </div>
-          )}
-        </div>
+          <span className={cn("cursor-pointer", buttonVariants({ variant: "primary" }))}>
+            Add questions via JSON
+          </span>
+        </label>
       </div>
-      <div>
+      <ul className="flex flex-col gap-6">
         {questions.map(question => (
-          <div
-            key={question.id}
-            className="bg-main-900 my-4 flex items-center justify-between rounded-lg p-4"
-          >
-            <div>
-              <span className="flex-grow truncate">{question.title}</span>
-              <div className="flex items-center">
-                <div
-                  className={`inline-flex items-center justify-center px-2 py-1 text-sm text-white`}
-                >
-                  {question.difficulty}
-                </div>
-                <div className="ml-4 flex items-center">
-                  <div className="text-sm">
-                    <Tags />
-                  </div>
-                  <div className="ml-2 text-sm">{question.tags.join(", ")}</div>
+          <li key={question.id}>
+            <Link
+              href={`/questions/${question.id}`}
+              className="bg-main-900 flex flex-col gap-1.5 p-6"
+            >
+              <h2 className="line-clamp-2 text-lg text-white">{question.title}</h2>
+              <div className="flex flex-row items-center gap-6">
+                <QuestionDifficultyLabel difficulty={question.difficulty} />
+                <div className="text-main-500 flex flex-row items-center gap-1.5 text-sm">
+                  <Tags />
+                  <span>{question.tags.join(", ")}</span>
                 </div>
               </div>
-            </div>
-
-            <div className="flex flex-shrink-0 space-x-2">
-              <Link href={`/questions/${question.id}`}>
-                <Button variants={{ variant: "primary" }} className="w-24">
-                  View
-                </Button>
-              </Link>
-              <Button variants={{ variant: "primary" }} className="w-24">
-                Edit
-              </Button>
-              <Button variants={{ variant: "primary" }} className="w-24">
-                Delete
-              </Button>
-            </div>
-          </div>
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }

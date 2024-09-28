@@ -1,9 +1,16 @@
 import { type Static, t } from "elysia";
 
+export const difficultySchema = t.Union([
+  t.Literal("EASY"),
+  t.Literal("MEDIUM"),
+  t.Literal("HARD"),
+]);
+export type Difficulty = Static<typeof difficultySchema>;
+
 export const createSchema = t.Object({
   title: t.String({ minLength: 1, maxLength: 128 }),
   content: t.String({ minLength: 1, maxLength: 4096 }),
-  difficulty: t.Union([t.Literal("EASY"), t.Literal("MEDIUM"), t.Literal("HARD")]),
+  difficulty: difficultySchema,
   tags: t.Array(t.String()),
   leetCodeLink: t.String(),
 });

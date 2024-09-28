@@ -3,7 +3,7 @@ import type { NewQuestion, Question, UpdateQuestion } from "@peerprep/schemas";
 import { ExpectedError } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
-export async function createQuestions(questions: NewQuestion[]) {
+export async function createQuestions(questions: NewQuestion | NewQuestion[]) {
   try {
     await db.question.createMany({ data: questions });
   } catch (error) {
