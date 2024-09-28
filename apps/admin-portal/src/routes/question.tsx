@@ -53,7 +53,9 @@ export default function QuestionPage() {
           <div className="ml-2 text-sm">{question.tags.join(", ")}</div>
         </div>
       </div>
-      <MarkdownRenderer markdown={question.content} />
+      <div className="prose prose-stone prose-invert max-w-full">
+        <MarkdownRenderer markdown={question.content} />
+      </div>
     </div>
   );
 }

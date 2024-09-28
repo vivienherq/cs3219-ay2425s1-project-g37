@@ -4,6 +4,7 @@ import { cn } from "@peerprep/ui/cn";
 import { Link } from "@peerprep/ui/link";
 import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
 import { Tags } from "lucide-react";
+import { useRef } from "react";
 import toast from "react-hot-toast";
 
 import { useAddQuestions, useQuestions } from "~/lib/questions";
@@ -13,27 +14,42 @@ const compiledCreateSchema = TypeCompiler.Compile(createSchema);
 
 export default function QuestionsPage() {
   const { data: questions } = useQuestions();
+
+  const addQuestionInputRef = useRef<HTMLInputElement>(null);
   const { trigger, isMutating } = useAddQuestions();
 
+  function clearInput() {
+    if (addQuestionInputRef.current) addQuestionInputRef.current.value = "";
+  }
+
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    if (isMutating) return;
+    if (isMutating) {
+      clearInput();
+      return;
+    }
 
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      clearInput();
+      return;
+    }
 
     const json = JSON.parse(await file.text());
     if (!compiledCreateSchema.Check(json)) {
       toast.error(
         <>
-          Invalid JSON file. Content must be <code>Question</code> or <code>Question[]</code>.
+          Invalid JSON file. Content must be <code>NewQuestion</code> or <code>NewQuestion[]</code>.
         </>,
       );
+      clearInput();
       return;
     }
 
     const data: Static<typeof createSchema> = json;
     await trigger(data);
     toast.success("Succesfully added the new questions!");
+
+    clearInput();
   }
 
   if (!questions) return null;
@@ -49,6 +65,7 @@ export default function QuestionsPage() {
             className="hidden"
             onChange={handleFileChange}
             disabled={isMutating}
+            ref={addQuestionInputRef}
           />
           <span className={cn("cursor-pointer", buttonVariants({ variant: "primary" }))}>
             Add questions via JSON
