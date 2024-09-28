@@ -89,19 +89,19 @@ More documentation on each of these packages is provided below.
 
 ## How to run the project
 
+<details>
+<summary>If the commands below fail with the error "<code>@prisma/client</code> did not initialize yet. Please run <code>prisma generate</code> and try to import it again.":</summary>
+
+Simply need to run `bun db:generate` from the root directory and try again.
+
+</details>
+
 ### In development mode
 
 > [!NOTE]
 > This step might probably change after we containerise the app.
 
-`bun dev` or `bun run dev` from the root of the repository will run all apps and microservices in dev mode. For the Vite apps, in dev mode, changes in the code will be instantly reflected in the browser in real time. For microservices, a refresh is needed.
-
-If you want to run only one particular microservice or app in dev mode, simply `cd` to that app and run `bun dev`.
-
-```
-cd apps/peerprep
-bun dev
-```
+`bun dev` or `bun run dev` from the root of the repository will run all apps and microservices in dev mode. For the Vite apps, in dev mode, changes in the code will be instantly reflected in the browser in real time.
 
 ### Building for production
 
