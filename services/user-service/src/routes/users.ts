@@ -1,4 +1,4 @@
-import { users } from "@peerprep/schemas/validators";
+import { id, users } from "@peerprep/schemas/validators";
 import { ExpectedError, elysiaAuthPlugin } from "@peerprep/utils/server";
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
@@ -22,10 +22,12 @@ const adminRoutes = new Elysia()
   .get("/", () => getAllUsers())
   .patch("/:id/privilege", ({ params, body }) => updateUserPrivilege(params.id, body.isAdmin), {
     body: t.Object({ isAdmin: t.Boolean() }),
+    params: t.Object({ id }),
   });
 
 const protectedRoutes = new Elysia({ prefix: "/:id" })
   .use(elysiaAuthPlugin)
+  .guard({ params: t.Object({ id }) })
   .onBeforeHandle(({ user, params }) => {
     if (user?.id !== params.id && !user?.isAdmin)
       throw new ExpectedError("You may not perform this action", StatusCodes.UNAUTHORIZED);

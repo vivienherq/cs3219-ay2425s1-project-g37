@@ -1,5 +1,7 @@
 import { type Static, t } from "elysia";
 
+import { id } from "./validate-id";
+
 const baseSchema = t.Object({
   username: t.String({ minLength: 4, maxLength: 32, pattern: "^[a-zA-Z0-9_]{4,32}$" }),
   email: t.String({ format: "email" }),
@@ -23,7 +25,7 @@ export type UpdateUser = Static<typeof updateSchema>;
 export const schema = t.Intersect([
   baseSchema,
   t.Object({
-    id: t.String({ pattern: "^[a-f0-9]{24}$" }),
+    id,
     password: t.Optional(t.Never()),
     createdAt: t.Date(),
     updatedAt: t.Date(),

@@ -1,5 +1,7 @@
 import { type Static, t } from "elysia";
 
+import { id } from "./validate-id";
+
 export const difficultySchema = t.Union([
   t.Literal("EASY"),
   t.Literal("MEDIUM"),
@@ -22,7 +24,7 @@ export type UpdateQuestion = Static<typeof updateSchema>;
 export const schema = t.Intersect([
   createSchema,
   t.Object({
-    id: t.String({ pattern: "^[a-f0-9]{24}$" }),
+    id,
     createdAt: t.Optional(t.Date()),
     updatedAt: t.Optional(t.Date()),
   }),
