@@ -24,7 +24,7 @@ const adminOnlyRoutes = new Elysia()
       throw new ExpectedError("Only admins can perform this action", StatusCodes.UNAUTHORIZED);
   })
   .post("/", ({ body: questions }) => createQuestions(questions), {
-    body: t.Array(questions.createSchema),
+    body: t.Union([t.Array(questions.createSchema), questions.createSchema]),
   })
   .patch("/:id", ({ params, body: question }) => updateQuestion(params.id, question), {
     body: questions.updateSchema,

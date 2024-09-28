@@ -1,21 +1,11 @@
+import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-interface Question {
-  id: string;
-  title: string;
-  content: string;
-  difficulty: string;
-  tags: string[];
-  leetCodeLink: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export function MarkdownRenderer({ question }: { question: Question }) {
+export const MarkdownRenderer = memo(function MarkdownRenderer({ markdown }: { markdown: string }) {
   return (
-    <div className="prose max-w-full">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{question.content}</ReactMarkdown>
+    <div className="prose prose-stone prose-invert max-w-full">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
     </div>
   );
-}
+});
