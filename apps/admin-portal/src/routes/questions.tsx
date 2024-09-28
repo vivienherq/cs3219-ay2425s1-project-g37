@@ -55,25 +55,29 @@ export default function QuestionsPage() {
           </span>
         </label>
       </div>
-      <ul className="flex flex-col gap-6">
-        {questions.map(question => (
-          <li key={question.id}>
-            <Link
-              href={`/questions/${question.id}`}
-              className="bg-main-900 flex flex-col gap-1.5 p-6"
-            >
-              <h2 className="line-clamp-2 text-lg text-white">{question.title}</h2>
-              <div className="flex flex-row items-center gap-6">
-                <QuestionDifficultyLabel difficulty={question.difficulty} />
-                <div className="text-main-500 flex flex-row items-center gap-1.5 text-sm">
-                  <Tags />
-                  <span>{question.tags.join(", ")}</span>
+      {questions.length === 0 ? (
+        <div>Nothing here yet. Please add some.</div>
+      ) : (
+        <ul className="flex flex-col gap-6">
+          {questions.map(question => (
+            <li key={question.id}>
+              <Link
+                href={`/questions/${question.id}`}
+                className="bg-main-900 flex flex-col gap-1.5 p-6"
+              >
+                <h2 className="line-clamp-2 text-lg text-white">{question.title}</h2>
+                <div className="flex flex-row items-center gap-6">
+                  <QuestionDifficultyLabel difficulty={question.difficulty} />
+                  <div className="text-main-500 flex flex-row items-center gap-1.5 text-sm">
+                    <Tags />
+                    <span>{question.tags.join(", ")}</span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
