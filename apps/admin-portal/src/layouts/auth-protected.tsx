@@ -76,7 +76,7 @@ export default function AuthProtectedLayout() {
         <NavLogo />
         <NavAvatar />
       </nav>
-      <main className="container py-6">
+      <main className="container py-6 pb-12">
         <Outlet />
       </main>
     </div>

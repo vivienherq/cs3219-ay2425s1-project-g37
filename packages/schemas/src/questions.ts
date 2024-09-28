@@ -25,8 +25,8 @@ export const schema = t.Intersect([
   createSchema,
   t.Object({
     id,
-    createdAt: t.Optional(t.Date()),
-    updatedAt: t.Optional(t.Date()),
+    createdAt: t.Date(),
+    updatedAt: t.Date(),
   }),
 ]);
 export type Question = Static<typeof schema>;

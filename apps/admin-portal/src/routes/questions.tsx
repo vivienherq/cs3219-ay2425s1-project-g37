@@ -12,6 +12,11 @@ import { useAddQuestions, useQuestions } from "~/lib/questions";
 const createSchema = t.Union([t.Array(questions.createSchema), questions.createSchema]);
 const compiledCreateSchema = TypeCompiler.Compile(createSchema);
 
+function getTagString(tags: string[]) {
+  if (tags.length >= 4) return `${tags.slice(0, 3).join(", ")}, +${tags.length - 3}`;
+  return tags.join(", ");
+}
+
 export default function QuestionsPage() {
   const { data: questions } = useQuestions();
 
@@ -56,7 +61,7 @@ export default function QuestionsPage() {
   return (
     <div className="mx-auto flex max-w-prose flex-col gap-6">
       <div className="flex flex-row justify-between">
-        <h1 className="text-3xl font-semibold">Questions</h1>
+        <h1 className="text-3xl font-semibold text-white">Questions</h1>
         <label>
           <input
             id="new-question"
@@ -86,8 +91,8 @@ export default function QuestionsPage() {
                 <div className="flex flex-row items-center gap-6">
                   <QuestionDifficultyLabel difficulty={question.difficulty} />
                   <div className="text-main-500 flex flex-row items-center gap-1.5 text-sm">
-                    <Tags />
-                    <span>{question.tags.join(", ")}</span>
+                    <Tags className="shrink-0" />
+                    <span>{getTagString(question.tags)}</span>
                   </div>
                 </div>
               </Link>
