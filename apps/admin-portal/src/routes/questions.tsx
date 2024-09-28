@@ -1,4 +1,4 @@
-import { type Static, TypeCompiler, questions, t } from "@peerprep/schemas/validators";
+import { questions, t, validate } from "@peerprep/schemas/validators";
 import { buttonVariants } from "@peerprep/ui/button-variants";
 import { cn } from "@peerprep/ui/cn";
 import { Link } from "@peerprep/ui/link";
@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 import { useAddQuestions, useQuestions } from "~/lib/questions";
 
 const createSchema = t.Union([t.Array(questions.createSchema), questions.createSchema]);
-const compiledCreateSchema = TypeCompiler.Compile(createSchema);
 
 function getTagString(tags: string[]) {
   if (tags.length >= 4) return `${tags.slice(0, 3).join(", ")}, +${tags.length - 3}`;
@@ -28,32 +27,24 @@ export default function QuestionsPage() {
   }
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    if (isMutating) {
-      clearInput();
-      return;
-    }
+    if (isMutating) return clearInput();
 
     const file = event.target.files?.[0];
-    if (!file) {
-      clearInput();
-      return;
-    }
+    if (!file) return clearInput();
 
     const json = JSON.parse(await file.text());
-    if (!compiledCreateSchema.Check(json)) {
+    const { data, success } = validate(createSchema, json);
+    if (!success) {
       toast.error(
         <>
           Invalid JSON file. Content must be <code>NewQuestion</code> or <code>NewQuestion[]</code>.
         </>,
       );
-      clearInput();
-      return;
+      return clearInput();
     }
 
-    const data: Static<typeof createSchema> = json;
     await trigger(data);
     toast.success("Succesfully added the new questions!");
-
     clearInput();
   }
 
