@@ -53,7 +53,7 @@ export default function QuestionPage() {
           <div className="ml-2 text-sm">{question.tags.join(", ")}</div>
         </div>
       </div>
-      <MarkdownRenderer question={question} />
+      <MarkdownRenderer markdown={question.content} />
     </div>
   );
 }

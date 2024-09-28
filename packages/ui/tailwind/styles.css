@@ -11,3 +11,11 @@
   width: 1.5em;
   height: 1.5em;
 }
+
+.prose code {
+  @apply bg-main-700 inline-block px-1 [font-weight:inherit] before:content-[''] after:content-[''];
+}
+
+.prose pre code {
+  @apply bg-transparent px-0;
+}
