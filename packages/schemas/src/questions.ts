@@ -9,7 +9,7 @@ export type Difficulty = Static<typeof difficultySchema>;
 
 export const createSchema = t.Object({
   title: t.String({ minLength: 1, maxLength: 128 }),
-  content: t.String({ minLength: 1, maxLength: 4096 }),
+  content: t.String({ minLength: 1, maxLength: 65536 }),
   difficulty: difficultySchema,
   tags: t.Array(t.String()),
   leetCodeLink: t.String(),
