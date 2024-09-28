@@ -456,3 +456,34 @@ Simply copy an existing app/package/service and modify it. I would advise agains
 Please remember to update the `name` field in `package.json`. Each app, package and service must have a distinct `name`. Name the new entity using the format `@peerprep/...` to avoid clashing with NPM package names.
 
 If in doubt just ask me (@joulev) I will do this for you.
+
+### Fix merge conflicts in lockfiles
+
+If your PR has conflicts in lockfiles and cannot be merged, follow these steps. All of the commands should be run inside the branch you are trying to merge (not `main`):
+
+1. Merge changes in `main` to your branch
+
+   ```sh
+   $ git merge main
+   warning: Cannot merge binary files: bun.lockb (HEAD vs. main)
+   Auto-merging bun.lockb
+   CONFLICT (content): Merge conflict in bun.lockb
+   Automatic merge failed; fix conflicts and then commit the result.
+   ```
+
+2. Remove the broken lockfile and recreate a new working lockfile
+
+   ```sh
+   $ rm bun.lockb
+   $ bun i
+   ```
+
+3. Commit the new lockfile and push it
+
+   ```sh
+   $ git add .
+   $ git commit -m "fix merge conflicts in bun.lockb"
+   $ git push
+   ```
+
+Now the merge conflict should be removed.
