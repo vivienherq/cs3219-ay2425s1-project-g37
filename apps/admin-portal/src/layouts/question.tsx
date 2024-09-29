@@ -2,9 +2,27 @@ import { Button, LinkButton } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
 import { ChevronLeft, Pen, Trash2 } from "lucide-react";
-import { Outlet, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 
-import { useQuestion } from "~/lib/questions";
+import { useDeleteQuestion, useQuestion } from "~/lib/questions";
+
+function DeleteButton({ id }: { id: string }) {
+  const { isMutating, trigger } = useDeleteQuestion(id);
+  const navigate = useNavigate();
+  async function handleDelete() {
+    if (isMutating) return;
+    await trigger();
+    navigate("/questions");
+    toast.success("Question deleted successfully.");
+  }
+  return (
+    <Button variants={{ variant: "secondary" }} disabled={isMutating} onClick={handleDelete}>
+      <Trash2 />
+      Delete
+    </Button>
+  );
+}
 
 export default function QuestionLayout() {
   const { id } = useParams<{ id: string }>();
@@ -35,10 +53,7 @@ export default function QuestionLayout() {
               <Pen />
               Edit
             </LinkButton>
-            <Button variants={{ variant: "secondary" }}>
-              <Trash2 />
-              Delete
-            </Button>
+            <DeleteButton id={id} />
           </div>
           <dl className="[&_dt]:label -mb-6 mt-6 [&_dd]:mb-6 [&_dt]:mb-1.5">
             <dt>Difficulty</dt>
