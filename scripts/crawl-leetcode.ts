@@ -32,18 +32,18 @@ function getGraphqlQuery(slug: string) {
     operationName: "questionData",
     variables: { titleSlug: slug },
     query: `
-    query questionData($titleSlug: String!) {
-      question(titleSlug: $titleSlug) {
-        title
-        titleSlug
-        content
-        difficulty
-        topicTags {
-          name
+      query questionData($titleSlug: String!) {
+        question(titleSlug: $titleSlug) {
+          title
+          titleSlug
+          content
+          difficulty
+          topicTags {
+            name
+          }
         }
       }
-    }
-  `,
+    `,
   };
 }
 
