@@ -1,21 +1,12 @@
-function Label({ ...props }: React.ComponentPropsWithoutRef<"label">) {
-  return <label className="flex flex-col gap-1.5" {...props} />;
-}
+import { cn } from "./cn";
+import { FormControl } from "./form-control";
 
-function Input({ ...props }: React.ComponentPropsWithoutRef<"input">) {
-  return (
-    <input
-      className="border-main-800 bg-main-800 placeholder:text-main-600 focus-within:border-main-500 w-full rounded-none border px-4 py-2 outline-none"
-      {...props}
-    />
-  );
-}
-
-export function TextInput({
+export function Input({
   label,
   helpText,
   value,
   onValueChange,
+  className,
   ...props
 }: {
   label: string;
@@ -24,10 +15,44 @@ export function TextInput({
   onValueChange: (value: string) => void;
 } & React.ComponentPropsWithoutRef<"input">) {
   return (
-    <Label htmlFor={props.id}>
-      <span className="text-main-400 text-xs uppercase tracking-wider">{label}</span>
-      <Input {...props} value={value} onChange={e => onValueChange(e.currentTarget.value)} />
-      {helpText ? <div className="text-main-400 text-sm">{helpText}</div> : null}
-    </Label>
+    <FormControl id={props.id} label={label} helpText={helpText}>
+      <input
+        {...props}
+        className={cn(
+          "border-main-800 bg-main-800 placeholder:text-main-600 focus-within:border-main-500 w-full rounded-none border px-4 py-2 outline-none",
+          className,
+        )}
+        value={value}
+        onChange={e => onValueChange(e.currentTarget.value)}
+      />
+    </FormControl>
+  );
+}
+
+export function Textarea({
+  label,
+  helpText,
+  value,
+  onValueChange,
+  className,
+  ...props
+}: {
+  label: string;
+  helpText?: React.ReactNode;
+  value: string;
+  onValueChange: (value: string) => void;
+} & React.ComponentPropsWithoutRef<"textarea">) {
+  return (
+    <FormControl id={props.id} label={label} helpText={helpText}>
+      <textarea
+        {...props}
+        className={cn(
+          "border-main-800 bg-main-800 placeholder:text-main-600 focus-within:border-main-500 h-36 w-full rounded-none border px-4 py-2 outline-none",
+          className,
+        )}
+        value={value}
+        onChange={e => onValueChange(e.currentTarget.value)}
+      />
+    </FormControl>
   );
 }

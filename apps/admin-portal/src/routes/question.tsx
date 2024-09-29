@@ -76,7 +76,7 @@ export default function QuestionPage() {
               Delete
             </Button>
           </div>
-          <dl className="[&_dt]:text-main-400 -mb-6 mt-6 [&_dd]:mb-6 [&_dt]:mb-1.5 [&_dt]:text-xs [&_dt]:uppercase [&_dt]:tracking-wider">
+          <dl className="[&_dt]:label -mb-6 mt-6 [&_dd]:mb-6 [&_dt]:mb-1.5">
             <dt>Difficulty</dt>
             <dd>
               <QuestionDifficultyLabel size="lg" difficulty={question.difficulty} />

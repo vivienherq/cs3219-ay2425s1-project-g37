@@ -1,6 +1,6 @@
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
-import { TextInput } from "@peerprep/ui/text-input";
+import { Input } from "@peerprep/ui/text-input";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -24,7 +24,7 @@ export default function RegisterPage() {
       }}
     >
       <h1 className="text-main-50 text-2xl">Register</h1>
-      <TextInput
+      <Input
         label="Username"
         type="text"
         name="username"
@@ -34,7 +34,7 @@ export default function RegisterPage() {
         onValueChange={setUsername}
         helpText="Only letters, numbers, and underscores are allowed. Must be between 4 and 32 characters."
       />
-      <TextInput
+      <Input
         label="Email"
         type="email"
         name="email"
@@ -43,7 +43,7 @@ export default function RegisterPage() {
         onValueChange={setEmail}
       />
       <div className="grid grid-cols-2 gap-6">
-        <TextInput
+        <Input
           label="Password"
           type="password"
           name="password"
@@ -53,7 +53,7 @@ export default function RegisterPage() {
           value={password}
           onValueChange={setPassword}
         />
-        <TextInput
+        <Input
           label="Confirm Password"
           type="password"
           name="confirm-password"

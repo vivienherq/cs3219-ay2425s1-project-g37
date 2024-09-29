@@ -11,6 +11,7 @@
     "@peerprep/tsconfig": "workspace:*",
     "@radix-ui/react-avatar": "1.1.0",
     "@radix-ui/react-dropdown-menu": "2.1.1",
+    "@radix-ui/react-select": "2.1.1",
     "@tailwindcss/typography": "0.5.15",
     "@types/react": "18.3.7",
     "@types/react-dom": "18.3.0",

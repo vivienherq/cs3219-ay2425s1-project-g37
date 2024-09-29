@@ -1,6 +1,6 @@
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
-import { TextInput } from "@peerprep/ui/text-input";
+import { Input } from "@peerprep/ui/text-input";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -22,7 +22,7 @@ export default function LoginPage() {
       }}
     >
       <h1 className="text-main-50 text-2xl">Login</h1>
-      <TextInput
+      <Input
         label="Email or username"
         type="text"
         name="email-or-username"
@@ -30,7 +30,7 @@ export default function LoginPage() {
         value={emailOrUsername}
         onValueChange={setEmailOrUsername}
       />
-      <TextInput
+      <Input
         label="Password"
         type="password"
         name="password"
