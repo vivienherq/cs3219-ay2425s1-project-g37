@@ -33,7 +33,7 @@ export function Toaster() {
       {t => (
         <ToastBar toast={t} position="bottom-right" style={{ padding: 0, borderRadius: 0 }}>
           {({ message }) => (
-            <div className="group/toast bg-main-800 text-main-300 relative flex w-96 flex-row items-center gap-3 p-6">
+            <div className="group/toast bg-main-800 text-main-300 relative flex w-96 flex-row items-center gap-3 p-6 text-sm">
               <div className={getToastIconColourClass(t.type)}>
                 <ToastIcon type={t.type} />
               </div>

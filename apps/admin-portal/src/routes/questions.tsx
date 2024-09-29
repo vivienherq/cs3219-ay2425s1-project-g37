@@ -43,9 +43,14 @@ export default function QuestionsPage() {
       return clearInput();
     }
 
-    const info = await trigger(data);
-    toast.success(info);
-    clearInput();
+    try {
+      const info = await trigger(data);
+      toast.success(info);
+    } catch {
+      /* Empty */
+    } finally {
+      clearInput();
+    }
   }
 
   if (!questions) return null;
