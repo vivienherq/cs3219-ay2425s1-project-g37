@@ -3,7 +3,7 @@ import { buttonVariants } from "@peerprep/ui/button-variants";
 import { cn } from "@peerprep/ui/cn";
 import { Link } from "@peerprep/ui/link";
 import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
-import { Tags } from "lucide-react";
+import { Plus, Tags } from "lucide-react";
 import { useRef } from "react";
 import toast from "react-hot-toast";
 
@@ -69,6 +69,7 @@ export default function QuestionsPage() {
             ref={addQuestionInputRef}
           />
           <span className={cn("cursor-pointer", buttonVariants({ variant: "primary" }))}>
+            <Plus />
             Add questions via JSON
           </span>
         </label>

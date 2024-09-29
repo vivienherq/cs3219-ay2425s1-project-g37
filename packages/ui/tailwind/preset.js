@@ -9,8 +9,8 @@ module.exports = {
       padding: "1.5rem",
     },
     fontFamily: {
-      sans: '"Overpass", sans-serif',
-      mono: '"Overpass Mono", monospace',
+      sans: '"Hanken Grotesk", sans-serif',
+      mono: '"Reddit Mono", monospace',
     },
     extend: {
       colors: {
