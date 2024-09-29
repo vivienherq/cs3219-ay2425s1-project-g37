@@ -43,8 +43,8 @@ export default function QuestionsPage() {
       return clearInput();
     }
 
-    await trigger(data);
-    toast.success("Succesfully added the new questions!");
+    const info = await trigger(data);
+    toast.success(info);
     clearInput();
   }
 

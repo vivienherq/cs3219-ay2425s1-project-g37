@@ -21,7 +21,7 @@ export async function mutateQuestion(id: string) {
 
 export function useAddQuestions() {
   return useSWRMutation("questions:/", (_, { arg }: { arg: NewQuestion | NewQuestion[] }) =>
-    questionsClient.post("/", { json: arg }),
+    questionsClient.post<string>("/", { json: arg }),
   );
 }
 
