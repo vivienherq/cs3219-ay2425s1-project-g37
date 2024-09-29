@@ -1,13 +1,13 @@
+import type { Question } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
 import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
 import { ChevronLeft, Pen, Trash2 } from "lucide-react";
-import { useParams } from "react-router-dom";
 import { useState } from "react";
-import type { Question } from "@peerprep/schemas";
+import { useParams } from "react-router-dom";
 
-import { useQuestion, useEditQuestion } from "~/lib/questions";
+import { useEditQuestion, useQuestion } from "~/lib/questions";
 
 export default function QuestionPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,13 +34,15 @@ export default function QuestionPage() {
     setIsEditing(true);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
 
     if (editedQuestion) {
       setEditedQuestion({
         ...editedQuestion,
-        [name]: name === 'tags' ? value.split(",").map(tag => tag.trim()) : value,
+        [name]: name === "tags" ? value.split(",").map(tag => tag.trim()) : value,
       });
     }
   };
@@ -120,7 +122,7 @@ export default function QuestionPage() {
                 name="content"
                 value={editedQuestion?.content || ""}
                 onChange={handleChange}
-                className="min-h-[200px] p-3 bg-main-800 text-white rounded-md border border-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 transition duration-200"
+                className="bg-main-800 border-main-700 focus:ring-main-500 min-h-[200px] rounded-md border p-3 text-white transition duration-200 focus:outline-none focus:ring-2"
                 placeholder="Edit question content"
               />
             </div>
@@ -134,7 +136,7 @@ export default function QuestionPage() {
                 name="difficulty"
                 value={editedQuestion?.difficulty || ""}
                 onChange={handleChange}
-                className="p-3 bg-main-800 text-white rounded-md border border-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 transition duration-200"
+                className="bg-main-800 border-main-700 focus:ring-main-500 rounded-md border p-3 text-white transition duration-200 focus:outline-none focus:ring-2"
               >
                 <option value="EASY">Easy</option>
                 <option value="MEDIUM">Medium</option>
@@ -151,7 +153,7 @@ export default function QuestionPage() {
                 name="tags"
                 value={editedQuestion?.tags.join(", ") || ""}
                 onChange={handleChange}
-                className="p-3 bg-main-800 text-white rounded-md border border-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 transition duration-200"
+                className="bg-main-800 border-main-700 focus:ring-main-500 rounded-md border p-3 text-white transition duration-200 focus:outline-none focus:ring-2"
                 placeholder="Edit tags (comma separated)"
               />
             </div>
