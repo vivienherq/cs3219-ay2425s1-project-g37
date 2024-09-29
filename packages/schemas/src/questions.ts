@@ -13,8 +13,8 @@ export const createSchema = t.Object({
   title: t.String({ minLength: 1, maxLength: 128 }),
   content: t.String({ minLength: 1, maxLength: 65536 }),
   difficulty: difficultySchema,
-  tags: t.Array(t.String()),
-  leetCodeLink: t.String(),
+  tags: t.Array(t.String({ minLength: 1 }), { minItems: 1, maxItems: 16 }),
+  leetCodeLink: t.String({ format: "uri" }),
 });
 export type NewQuestion = Static<typeof createSchema>;
 
