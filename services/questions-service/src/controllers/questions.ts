@@ -12,7 +12,7 @@ async function createQuestion(question: NewQuestion) {
     if (existingQuestion)
       await db.question.update({
         where: { id: existingQuestion.id },
-        data: { ...question, deletedAt: null },
+        data: { ...question, deletedAt: null, createdAt: new Date() },
       });
     else await db.question.create({ data: question });
     return true;
