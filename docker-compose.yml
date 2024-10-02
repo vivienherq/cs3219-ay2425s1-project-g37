@@ -20,6 +20,25 @@ services:
       retries: 10
     volumes:
       - data:/data/db
+    networks:
+      - peerprep_network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: ./services/user-service/Dockerfile
+    container_name: user-service
+    restart: always
+    ports:
+      - 3002:3002
+    depends_on:
+      - mongo
+    networks:
+      - peerprep_network
 
 volumes:
   data: {}
+
+networks:
+  peerprep_network:
+    external: true
