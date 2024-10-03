@@ -1,28 +1,29 @@
 # syntax=docker/dockerfile:1.7-labs
 # Above for the --parents flag in COPY, https://stackoverflow.com/a/78393564
 
-FROM node:20-alpine AS raw
+FROM node:20 AS raw
+
+ARG SERVICE_NAME
+ENV SERVICE_NAME=$SERVICE_NAME
 
 FROM raw AS base
-RUN apk update
-RUN apk add --no-cache libc6-compat
 RUN npm install -g bun
 ENV PATH="$PATH:/root/.bun/bin"
 
 FROM base AS installer
 RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
+COPY package.json bun.lockb turbo.json /temp/dev/
 COPY --parents apps/*/package.json /temp/dev/
 COPY --parents packages/*/package.json /temp/dev/
 COPY --parents services/*/package.json /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
+COPY packages/db/prisma/schema.prisma /temp/dev/packages/db/prisma/
+RUN cd /temp/dev && bun install --frozen-lockfile && bun db:generate
 
 FROM base AS builder
 WORKDIR /app
 COPY . .
 COPY --from=installer /temp/dev/node_modules ./node_modules
-# We don't need to do this since Bun can run TypeScript files directly
-# RUN bun build --filter=@peerprep/questions-service
+RUN bun run build --filter=$SERVICE_NAME
 
 FROM base AS runner
 WORKDIR /app
@@ -33,4 +34,4 @@ USER peerprep
 COPY --chown=peerprep:peerprep --from=builder . /app/
 
 EXPOSE $PORT
-CMD cd app && ls -lAh && cat package.json && bun start --filter=@peerprep/questions-service
+CMD cd app && bun start --filter=$SERVICE_NAME
