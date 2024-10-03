@@ -20,6 +20,26 @@ services:
       retries: 10
     volumes:
       - data:/data/db
+    networks:
+      - webnet
+
+  questions:
+    build:
+      context: .
+      dockerfile: services/questions-service/Dockerfile
+    container_name: questions
+    restart: always
+    environment:
+      - PORT=${VITE_QUESTION_SERVICE_PORT}
+    ports:
+      - ${VITE_QUESTION_SERVICE_PORT}:${VITE_QUESTION_SERVICE_PORT}
+    depends_on:
+      - mongo
+    networks:
+      - webnet
 
 volumes:
-  data: {}
+  data:
+
+networks:
+  webnet:
