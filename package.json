@@ -9,7 +9,7 @@
   "scripts": {
     "build": "bun env -- turbo build",
     "db:generate": "bun env -- turbo db:generate",
-    "db:push": "bun env -- turbo db:push",
+    "db:push": "DATABASE_URL='mongodb://root:root@localhost:27017/peerprep?authSource=admin&replicaSet=rs0&retryWrites=true&w=majority&directConnection=true' turbo db:push",
     "dev": "bun env -- turbo dev",
     "env": "bun run --env-file=.env",
     "format": "prettier --write .",
