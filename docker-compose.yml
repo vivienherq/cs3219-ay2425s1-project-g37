@@ -2,8 +2,8 @@ services:
   mongo:
     # https://ginkcode.com/post/how-to-set-up-mongodb-with-replica-set-via-docker-compose
     build:
-      context: mongo
-      dockerfile: Dockerfile
+      context: docker
+      dockerfile: mongo.Dockerfile
     container_name: mongodb-replicaset
     restart: always
     environment:
