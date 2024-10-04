@@ -33,7 +33,7 @@ const adminOnlyRoutes = new Elysia()
   .delete("/:id", ({ params }) => deleteQuestion(params.id), { params: t.Object({ id }) });
 
 const publicRoutes = new Elysia()
-  .get("/hello", () => new Response(`Hello, world! ${env.ADMIN_SIGNUP_TOKEN}`))
+  .get("/status", () => new Response("Online"))
   .get("/", () => getAllQuestions())
   .get("/:id", ({ params }) => getQuestion(params.id), { params: t.Object({ id }) });
 
