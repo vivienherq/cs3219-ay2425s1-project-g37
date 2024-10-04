@@ -21,13 +21,18 @@ COPY --parents services/*/package.json /temp/dev/
 COPY packages/db/prisma/schema.prisma /temp/dev/packages/db/prisma/
 RUN cd /temp/dev && bun install --frozen-lockfile && bun db:generate
 
+FROM base AS development
+WORKDIR /app
+COPY . .
+COPY --from=installer /temp/dev/node_modules ./node_modules
+
 FROM base AS builder
 WORKDIR /app
 COPY . .
 COPY --from=installer /temp/dev/node_modules ./node_modules
 RUN bun run build --filter=$SERVICE_NAME
 
-FROM base AS runner
+FROM base AS production
 WORKDIR /app
 RUN addgroup --system --gid 1001 peerprep
 RUN adduser --system --uid 1001 peerprep
