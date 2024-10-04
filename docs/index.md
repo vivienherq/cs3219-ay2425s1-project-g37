@@ -103,19 +103,25 @@ Simply need to run `bun db:generate` from the root directory and try again.
 
 `bun dev` or `bun run dev` from the root of the repository will run all apps and microservices in dev mode. For the Vite apps, in dev mode, changes in the code will be instantly reflected in the browser in real time.
 
-### Building for production
-
-> [!NOTE]
-> This step might probably change after we containerise the app.
-
-The dev mode above is not optimised. To build the app for use in production mode (for demo purpose, for deployment, etc.), run `bun run build` from the root of the repository.
-
 ### In production mode
 
-> [!NOTE]
-> This step might probably change after we containerise the app.
+This assumes you already have Docker Desktop installed. Node.js or Bun or any other softwares are not required.
 
-We can serve all apps and microservices in production mode using `bun start`, also from the root of the repository. You need to run build before running this.
+Ensure you have stable Internet connection via Wi-Fi. Using mobile data is not recommended since it is possible you will be downloading gigabytes of data (for Docker).
+
+In a terminal, simply navigate to the root of the directory and run:
+
+```
+docker-compose build
+```
+
+to build the Docker images, then run
+
+```
+docker-compose up -d
+```
+
+to run those images. Wait a few seconds for the images to be fully up, then you can access the frontends at http://localhost:3000 (main frontend) and http://localhost:3001 (admin portal).
 
 ### Ports
 

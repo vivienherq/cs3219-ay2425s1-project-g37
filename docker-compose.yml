@@ -26,7 +26,7 @@ services:
   user:
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: docker/Dockerfile
       args:
         - SERVICE_NAME=@peerprep/user-service
         - SERVICE_DIRECTORY=services/user-service
@@ -50,7 +50,7 @@ services:
   questions:
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: docker/Dockerfile
       args:
         - SERVICE_NAME=@peerprep/questions-service
         - SERVICE_DIRECTORY=services/questions-service
@@ -74,7 +74,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: docker/Dockerfile
       args:
         - SERVICE_NAME=peerprep
         - SERVICE_DIRECTORY=apps/peerprep
@@ -94,7 +94,7 @@ services:
   admin-portal:
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: docker/Dockerfile
       args:
         - SERVICE_NAME=@peerprep/admin-portal
         - SERVICE_DIRECTORY=apps/admin-portal
