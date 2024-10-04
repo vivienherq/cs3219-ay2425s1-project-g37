@@ -9,6 +9,6 @@ export async function getJwt(
     value: await sign({ sub: id }),
     httpOnly: true,
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 1 month
-    domain: env.VITE_SELF_HOST ? ".peerprep.joulev.dev" : undefined,
+    domain: env.VITE_SELF_HOST ? ".joulev.dev" : undefined,
   };
 }
