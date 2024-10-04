@@ -40,6 +40,22 @@ More documentation on each of these packages is provided below.
 
 Ensure you have stable Internet connection via Wi-Fi. Using mobile data is not recommended since it is possible you will be downloading gigabytes of data (for Docker).
 
+### Build the base OS image
+
+```
+docker build -t peerprep-base -f docker/base.Dockerfile .
+```
+
+This step you only need to do once.
+
+### Build the image with dependencies installed
+
+```
+docker build -t peerprep-installer -f docker/installer.Dockerfile .
+```
+
+This should be rerun whenever `package.json` is updated, so that new dependencies are properly installed.
+
 ### In production mode
 
 1. Build the Docker images:
