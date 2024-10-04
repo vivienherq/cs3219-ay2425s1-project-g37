@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && cp serve.json dist/serve.json",
     "dev": "vite",
     "lint": "eslint .",
     "start": "serve dist -l $VITE_PEERPREP_QUESTION_SPA_PORT"
