@@ -23,37 +23,25 @@ services:
     networks:
       - webnet
 
-  frontend:
+  user:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
       args:
-        - SERVICE_NAME="peerprep"
-        - SERVICE_DIRECTORY=apps/peerprep
-    container_name: frontend
+        - SERVICE_NAME=@peerprep/user-service
+        - SERVICE_DIRECTORY=services/user-service
+    container_name: user
     restart: always
     environment:
-      - PORT=${VITE_PEERPREP_FRONTEND_PORT}
+      - PORT=${VITE_USER_SERVICE_PORT}
     ports:
-      - ${VITE_PEERPREP_FRONTEND_PORT}:${VITE_PEERPREP_FRONTEND_PORT}
-    depends_on:
-      - mongo
-    networks:
-      - webnet
-
-  admin-portal:
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile
-      args:
-        - SERVICE_NAME="@peerprep/admin-portal"
-        - SERVICE_DIRECTORY=apps/admin-portal
-    container_name: admin-portal
-    restart: always
-    environment:
-      - PORT=${VITE_PEERPREP_QUESTION_SPA_PORT}
-    ports:
-      - ${VITE_PEERPREP_QUESTION_SPA_PORT}:${VITE_PEERPREP_QUESTION_SPA_PORT}
+      - ${VITE_USER_SERVICE_PORT}:${VITE_USER_SERVICE_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${VITE_USER_SERVICE_PORT}/status"]
+      interval: 5s
+      timeout: 15s
+      start_period: 15s
+      retries: 10
     depends_on:
       - mongo
     networks:
@@ -64,7 +52,7 @@ services:
       context: .
       dockerfile: dockerfiles/Dockerfile
       args:
-        - SERVICE_NAME="@peerprep/questions-service"
+        - SERVICE_NAME=@peerprep/questions-service
         - SERVICE_DIRECTORY=services/questions-service
     container_name: questions
     restart: always
@@ -72,26 +60,54 @@ services:
       - PORT=${VITE_QUESTION_SERVICE_PORT}
     ports:
       - ${VITE_QUESTION_SERVICE_PORT}:${VITE_QUESTION_SERVICE_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${VITE_QUESTION_SERVICE_PORT}/status"]
+      interval: 5s
+      timeout: 15s
+      start_period: 15s
+      retries: 10
     depends_on:
       - mongo
     networks:
       - webnet
 
-  user:
+  frontend:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
       args:
-        - SERVICE_NAME="@peerprep/user-service"
-        - SERVICE_DIRECTORY=services/user-service
-    container_name: user
+        - SERVICE_NAME=peerprep
+        - SERVICE_DIRECTORY=apps/peerprep
+    container_name: frontend
     restart: always
     environment:
-      - PORT=${VITE_USER_SERVICE_PORT}
+      - PORT=${VITE_PEERPREP_FRONTEND_PORT}
     ports:
-      - ${VITE_USER_SERVICE_PORT}:${VITE_USER_SERVICE_PORT}
+      - ${VITE_PEERPREP_FRONTEND_PORT}:${VITE_PEERPREP_FRONTEND_PORT}
     depends_on:
       - mongo
+      - user
+      - questions
+    networks:
+      - webnet
+
+  admin-portal:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+      args:
+        - SERVICE_NAME=@peerprep/admin-portal
+        - SERVICE_DIRECTORY=apps/admin-portal
+    container_name: admin-portal
+    restart: always
+    environment:
+      - PORT=${VITE_PEERPREP_QUESTION_SPA_PORT}
+    ports:
+      - ${VITE_PEERPREP_QUESTION_SPA_PORT}:${VITE_PEERPREP_QUESTION_SPA_PORT}
+    depends_on:
+      - mongo
+      - user
+      - questions
     networks:
       - webnet
 
