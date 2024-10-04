@@ -1,4 +1,3 @@
-import { env } from "@peerprep/env";
 import { Avatar } from "@peerprep/ui/avatar";
 import {
   DropdownMenu,
@@ -10,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@peerprep/ui/dropdown-menu";
 import { Link } from "@peerprep/ui/link";
+import { getOrigin } from "@peerprep/utils/client";
 import { ArrowUpRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { Navigate, Outlet } from "react-router-dom";
@@ -40,7 +40,7 @@ function NavAvatar() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href={`http://localhost:${env.VITE_PEERPREP_QUESTION_SPA_PORT}`}>
+                <Link href={getOrigin("admin-portal")}>
                   Admin portal
                   <ArrowUpRight />
                 </Link>

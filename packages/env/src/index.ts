@@ -10,6 +10,10 @@ export const env = createEnv({
   },
   clientPrefix: "VITE_",
   client: {
+    VITE_SELF_HOST: z
+      .string()
+      .optional()
+      .transform(v => v === "true"),
     VITE_PEERPREP_FRONTEND_PORT: z.coerce.number(),
     VITE_PEERPREP_QUESTION_SPA_PORT: z.coerce.number(),
     VITE_USER_SERVICE_PORT: z.coerce.number(),
