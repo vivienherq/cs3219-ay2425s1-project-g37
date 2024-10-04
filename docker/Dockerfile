@@ -1,25 +1,14 @@
 # syntax=docker/dockerfile:1.7-labs
 # Above for the --parents flag in COPY, https://stackoverflow.com/a/78393564
 
-FROM node:20 AS raw
+FROM peerprep-base as base
 
 ARG SERVICE_NAME
 ENV SERVICE_NAME=$SERVICE_NAME
 ARG SERVICE_DIRECTORY
 ENV SERVICE_DIRECTORY=$SERVICE_DIRECTORY
 
-FROM raw AS base
-RUN npm install -g bun
-ENV PATH="$PATH:/root/.bun/bin"
-
-FROM base AS installer
-RUN mkdir -p /temp/dev
-COPY package.json bun.lockb turbo.json /temp/dev/
-COPY --parents apps/*/package.json /temp/dev/
-COPY --parents packages/*/package.json /temp/dev/
-COPY --parents services/*/package.json /temp/dev/
-COPY packages/db/prisma/schema.prisma /temp/dev/packages/db/prisma/
-RUN cd /temp/dev && bun install --frozen-lockfile && bun db:generate
+FROM peerprep-installer AS installer
 
 FROM base AS development
 WORKDIR /app
