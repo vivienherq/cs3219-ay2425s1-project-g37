@@ -29,6 +29,7 @@ services:
       dockerfile: dockerfiles/Dockerfile
       args:
         - SERVICE_NAME="peerprep"
+        - SERVICE_DIRECTORY=apps/peerprep
     container_name: frontend
     restart: always
     environment:
@@ -46,6 +47,7 @@ services:
       dockerfile: dockerfiles/Dockerfile
       args:
         - SERVICE_NAME="@peerprep/admin-portal"
+        - SERVICE_DIRECTORY=apps/admin-portal
     container_name: admin-portal
     restart: always
     environment:
@@ -63,6 +65,7 @@ services:
       dockerfile: dockerfiles/Dockerfile
       args:
         - SERVICE_NAME="@peerprep/questions-service"
+        - SERVICE_DIRECTORY=services/questions-service
     container_name: questions
     restart: always
     environment:
@@ -80,6 +83,7 @@ services:
       dockerfile: dockerfiles/Dockerfile
       args:
         - SERVICE_NAME="@peerprep/user-service"
+        - SERVICE_DIRECTORY=services/user-service
     container_name: user
     restart: always
     environment:
