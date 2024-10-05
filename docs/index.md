@@ -8,65 +8,13 @@ Please read through the entire document at least once, since its organisation is
 
 ### Install necessary softwares
 
-- [Node.js](https://nodejs.org) v20+
-- [Bun](https://bun.sh) v1.1+
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-### Set up database
-
-We use MongoDB as the database of choice.
-
-#### Use a local database (recommended)
-
-Simply run `docker-compose up -d`. It will install the MongoDB Community Server and set up a MongoDB database running on port 27017. Use `-d` so that the container runs in the background and doesn't take up your terminal.
-
-When you finish the development session, run `docker-compose down` to end the service. The database data is persisted between sessions.
-
-<details>
-<summary>What to do if you forgot the <code>-d</code> in <code>docker-compose up -d</code></summary>
-
-Please don't use Ctrl+C to force-terminate the process. It probably still works but may cause the MongoDB process to not exit cleanly and lead to weird errors/warnings in the next run (I faced it).
-
-To terminate, open a new terminal and run `docker-compose down` there, or open Docker Desktop and press **Stop** in the container entry.
-
-</details>
-
-If you choose this option, the connection string is
-
-`mongodb://root:root@localhost:27017/peerprep?authSource=admin&replicaSet=rs0&retryWrites=true&w=majority&directConnection=true`
-
-**Inspection:** If you want to view the content of the database visually, you can install any MongoDB inspection softwares, such as [MongoDB Compass](https://www.mongodb.com/products/tools/compass), the [official MongoDB VSCode extension](https://marketplace.visualstudio.com/items?itemName=mongodb.mongodb-vscode), etc.
-
-#### Use MongoDB Atlas
-
-You can also choose to use MongoDB Atlas. In that case, simply open an account there, create a database and follow the instructions to get the database connection string.
-
-> [!IMPORTANT]
-> NUS wi-fi [blocks connections](https://www.reddit.com/r/nus/comments/us5chw/mongodb_connection_issue_for_work_from_nus/) to MongoDB Atlas servers. You may need to use a VPN or mobile data to connect to it.
-
-### Install dependencies
-
-Simply run `bun i` in the project directory.
 
 ### Set up environment variables
 
-Create a file named `.env` at the root of the project directory. Copy the content of `.env.example` to `.env`. Add the missing environment variables (`DATABASE_URL`, `JWT_SECRET`, etc.).
+Create a file named `.env` at the root of the project directory. Copy the content of `.env.example` to `.env`. Add the missing environment variables (`JWT_SECRET`, `ADMIN_SIGNUP_TOKEN`) according to the instructions in the guide.
 
-See the environment variable descriptions below for details.
-
-| Name                              | Type     | Required | Description                                                                                                                                       |
-| --------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_PEERPREP_FRONTEND_PORT`     | `number` | ⚠️ Yes   | The port at which the PeerPrep frontend is run. Suggested value is `3000`, though you can select any free port.                                   |
-| `VITE_PEERPREP_QUESTION_SPA_PORT` | `number` | ⚠️ Yes   | The port at which the question SPA frontend is run. Suggested value is `3001`, though you can select any free port.                               |
-| `VITE_USER_SERVICE_PORT`          | `number` | ⚠️ Yes   | The port at which the user service is run. Suggested value is `3002`, though you can select any free port.                                        |
-| `VITE_QUESTION_SERVICE_PORT`      | `number` | ⚠️ Yes   | The port at which the question service is run. Suggested value is `3003`, though you can select any free port.                                    |
-| `DATABASE_URL`                    | `string` | ⚠️ Yes   | The database connection string. You might need to add quotation marks, e.g. `DATABASE_URL="mongodb://..."`                                        |
-| `JWT_SECRET`                      | `string` | ⚠️ Yes   | A random string used as the secret to sign and verify JSON Web Tokens. You can go to https://generate-secret.vercel.app/32 to grab one.           |
-| `ADMIN_SIGNUP_TOKEN`              | `string` | ⚠️ Yes   | A random string that must be provided when signing up for a new admin account (we don't want any random person to be able to sign up as an admin) |
-
-### Sync database schema
-
-Run `bun db:push` from the root directory of the project.
+Yes, that's it. This is all what is required to run the app in production mode. For development mode, a few more steps are required, see below.
 
 ## Repository structure overview
 
@@ -83,39 +31,84 @@ The repository is set up as follows:
 - `db`: This one hosts the database [Prisma](https://prisma.io) schema at `prisma/schema.prisma`. You need to learn Prisma, though it is pretty straightforward.
 - `env`: This one allows us to access environment variables with full type-safety and runtime validation.
 - `schemas`: This one contains the typing and validation schema for various data types we use in the application (the user object, the question object, etc.).
+- `ui`: This one contains the shared UI components used in both frontends.
 - `utils`: This one contains various utility functions and plugins in use in more than one microservice.
 
 More documentation on each of these packages is provided below.
 
 ## How to run the project
 
-<details>
-<summary>If the commands below fail with the error "<code>@prisma/client</code> did not initialize yet. Please run <code>prisma generate</code> and try to import it again.":</summary>
+Ensure you have stable Internet connection via Wi-Fi. Using mobile data is not recommended since it is possible you will be downloading gigabytes of data (for Docker).
 
-Simply need to run `bun db:generate` from the root directory and try again.
+### Build the base OS image
 
-</details>
+```
+docker build -t peerprep-base -f docker/base.Dockerfile .
+```
 
-### In development mode
+This step you only need to do once.
 
-> [!NOTE]
-> This step might probably change after we containerise the app.
+### Build the image with dependencies installed
 
-`bun dev` or `bun run dev` from the root of the repository will run all apps and microservices in dev mode. For the Vite apps, in dev mode, changes in the code will be instantly reflected in the browser in real time.
+```
+docker build -t peerprep-installer -f docker/installer.Dockerfile .
+```
 
-### Building for production
-
-> [!NOTE]
-> This step might probably change after we containerise the app.
-
-The dev mode above is not optimised. To build the app for use in production mode (for demo purpose, for deployment, etc.), run `bun run build` from the root of the repository.
+This should be rerun whenever `package.json` is updated, so that new dependencies are properly installed.
 
 ### In production mode
 
-> [!NOTE]
-> This step might probably change after we containerise the app.
+1. Build the Docker images:
 
-We can serve all apps and microservices in production mode using `bun start`, also from the root of the repository. You need to run build before running this.
+   ```
+   docker-compose build
+   ```
+
+1. Bring the services up:
+
+   ```
+   docker-compose up
+   ```
+
+1. Wait a few seconds for the images to be fully up, then you can access the frontends at http://localhost:3000 (main frontend) and http://localhost:3001 (admin portal).
+
+1. To shut down, simply Ctrl+C then `docker-compose down`.
+
+### In development mode
+
+1. We also need [Node.js](https://nodejs.org) (v20+) and [Bun](https://bun.sh) (v1.1+), so install them.[^1]
+
+[^1]: Node.js and Bun are actually not strict requirements and you can have development mode running without them installed. You can run development mode without running `bun i` and without getting a `node_modules` folder too, i.e. you can skip to step 3 without doing 1 and 2! That said, for developer experience things (such as editor autocompletion, TypeScript typing, automatic code formatting), you need the `node_modules`, so please still install Node.js, Bun and run `bun i` despite them not being strictly required by the development commands.
+
+1. Install dependencies:
+
+   ```
+   bun i
+   ```
+
+1. Build the Docker images:
+
+   ```
+   docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
+   ```
+
+   This step takes a bit of time so go grab your coffee.
+
+1. Spin up the Docker images:
+
+   ```
+   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+   ```
+
+   File system binding is already configured inside `docker-compose.dev.yml`.
+
+1. Wait a few seconds for the images to boot up, then you can access the frontends at http://localhost:3000 (main frontend) and http://localhost:3001 (admin portal).
+
+1. Now you can update the code locally and see the changes being reflected in real time.
+
+1. If you make changes to `package.json` files, you need to rebuild the images again (step 1). If you make changes to other files outside the `apps` and the `services` folders _and_ you don't see the changes being reflected in real time, you also have to rebuild the images again.
+
+1. To shut down the dev server, simply Ctrl+C then `docker-compose down`.
 
 ### Ports
 
@@ -189,9 +182,9 @@ When you log in via `/auth/login`, the response will set a JWT token as a cookie
 
 The token is shared across all `localhost` ports, so even though the user service is at localhost:x, requests to localhost:y still carry the token automatically. Note that if we are going to host the app on the internet, this step will need some additional handling.
 
-The token expires after 1 month. There are currently no token rotation mechanism (i.e. you have to log in again after one month, regardless of how active or inactive you are) and no CSRF mitigation measures (which are not necessary[^1]).
+The token expires after 1 month. There are currently no token rotation mechanism (i.e. you have to log in again after one month, regardless of how active or inactive you are) and no CSRF mitigation measures (which are not necessary[^2]).
 
-[^1]: We handle actions via JSON-based requests, not `<form>` `POST` actions, so CSRF attacks are not applicable.
+[^2]: We handle actions via JSON-based requests, not `<form>` `POST` actions, so CSRF attacks are not applicable.
 
 In Elysia, we can check for the auth token using the auth plugin from `@peerprep/utils`.
 
@@ -226,6 +219,8 @@ const users = await db.user.findMany();
 ```
 
 ### Update database schema
+
+Ensure the database is online first by using either the development/production `docker-compose` commands specified above.
 
 If the update is not a breaking change and doesn't affect existing data (e.g., the addition of a new database collection): Simply edit the schema file, then run `bun db:push` to send the update to the database.
 
