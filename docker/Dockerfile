@@ -8,7 +8,14 @@ ENV SERVICE_NAME=$SERVICE_NAME
 ARG SERVICE_DIRECTORY
 ENV SERVICE_DIRECTORY=$SERVICE_DIRECTORY
 
-FROM peerprep-installer AS installer
+FROM base AS installer
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb turbo.json /temp/dev/
+COPY --parents apps/*/package.json /temp/dev/
+COPY --parents packages/*/package.json /temp/dev/
+COPY --parents services/*/package.json /temp/dev/
+COPY packages/db/prisma/schema.prisma /temp/dev/packages/db/prisma/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
 FROM base AS development
 WORKDIR /app
