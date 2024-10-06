@@ -26,14 +26,12 @@ export function useAddQuestions() {
 }
 
 export function useEditQuestion(id: string) {
-  return useSWRMutation(
-    ["questions:/", `questions:/${id}`],
-    (_, { arg }: { arg: UpdateQuestion }) => questionsClient.patch(`/${id}`, { json: arg }),
-  );
+  return useSWRMutation("questions:/", async (_, { arg }: { arg: UpdateQuestion }) => {
+    await questionsClient.patch(`/${id}`, { json: arg });
+    mutateQuestion(id);
+  });
 }
 
 export function useDeleteQuestion(id: string) {
-  return useSWRMutation(["questions:/", `questions:/${id}`], () =>
-    questionsClient.delete(`/${id}`),
-  );
+  return useSWRMutation("questions:/", () => questionsClient.delete(`/${id}`));
 }
