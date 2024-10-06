@@ -27,10 +27,17 @@ export default function QuestionsPage() {
   }
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    if (isMutating) return clearInput();
+    if (isMutating) {
+      console.log("Is mutating, not accepting new submissions");
+      return clearInput();
+    }
 
     const file = event.target.files?.[0];
-    if (!file) return clearInput();
+    console.log(event.target.files);
+    if (!file) {
+      console.log("No file uploaded");
+      return clearInput();
+    }
 
     const json = JSON.parse(await file.text());
     const { data, success } = validate(createSchema, json);
