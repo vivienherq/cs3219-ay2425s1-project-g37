@@ -9,9 +9,10 @@ export async function getJwt(
   return {
     value: await sign({ sub: id }),
     httpOnly: true,
-    secure: env.VITE_SELF_HOST,
-    sameSite: "none",
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 1 month
+    // Following properties are only applicable to self-hosting
+    secure: env.VITE_SELF_HOST ? true : undefined,
+    sameSite: env.VITE_SELF_HOST ? "none" : undefined,
     domain: env.VITE_SELF_HOST ? ".joulev.dev" : undefined,
   };
 }
