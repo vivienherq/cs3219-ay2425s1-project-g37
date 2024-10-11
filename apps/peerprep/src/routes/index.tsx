@@ -1,26 +1,17 @@
 import { env } from "@peerprep/env";
-import { useState } from "react";
-import useSWRSubscription, { type SWRSubscriptionOptions } from "swr/subscription";
+import type { Difficulty } from "@peerprep/schemas";
+import { useWsSubscription } from "@peerprep/utils/client";
 
 export default function IndexPage() {
-  const [ws, setWs] = useState<WebSocket | null>(null);
-  const { data } = useSWRSubscription("data", (_, { next }: SWRSubscriptionOptions<string>) => {
-    const ws = new WebSocket(`ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
-    setWs(ws);
-    ws.addEventListener("message", event => next(null, event.data));
-    ws.addEventListener("error", () => next("Connection error", undefined));
-    return () => {
-      if (ws.readyState === 1) ws.close();
-      else ws.addEventListener("open", () => ws.close());
-    };
-  });
-  if (!ws) return null;
+  const ws = useWsSubscription<
+    { difficulty: Difficulty; tags: string[] },
+    { type: "success" } | { type: "acknowledgement" } | { type: "timeout" }
+  >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
+  if (!ws.isReady) return null;
   return (
     <div>
-      <button onClick={() => ws.send(JSON.stringify({ difficulty: "HARD", tags: [] }))}>
-        Click me
-      </button>
-      <div>{data ?? "nothingness"}</div>
+      <button onClick={() => ws.send({ difficulty: "HARD", tags: [] })}>Click me</button>
+      <div>{ws.data?.type ?? "No responses so far"}</div>
     </div>
   );
 }

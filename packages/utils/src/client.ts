@@ -1,6 +1,8 @@
 import { env } from "@peerprep/env";
 import ky, { HTTPError, type Options } from "ky";
+import { useState } from "react";
 import { parse, stringify } from "superjson";
+import useSWRSubscription, { type SWRSubscriptionOptions } from "swr/subscription";
 
 import type { ServiceResponseBodyError, ServiceResponseBodySuccess } from "./server";
 
@@ -91,3 +93,31 @@ export const questionsClient = createClient(getOrigin("questions"));
 
 // Probably not needed since we use this service as a ws server
 export const matchingClient = createClient(getOrigin("matching"));
+
+export function useWsSubscription<SendPayload = unknown, ReceivePayload = unknown>(
+  key: string,
+  url: string = key,
+) {
+  const [ws, setWs] = useState<WebSocket | null>(null);
+  const isReady = !!ws;
+  const { data } = useSWRSubscription(
+    key,
+    (_, { next }: SWRSubscriptionOptions<ReceivePayload>) => {
+      const ws = new WebSocket(url);
+      setWs(ws);
+      ws.addEventListener("message", event =>
+        next(null, typeof event.data === "string" ? JSON.parse(event.data) : undefined),
+      );
+      ws.addEventListener("error", () => next("Connection error", undefined));
+      return () => {
+        if (ws.readyState === WebSocket.OPEN) ws.close();
+        else ws.addEventListener("open", () => ws.close());
+      };
+    },
+  );
+  function send(data: SendPayload) {
+    if (!isReady) return;
+    ws.send(JSON.stringify(data));
+  }
+  return { isReady, data, send };
+}
