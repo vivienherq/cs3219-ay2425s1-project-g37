@@ -9,13 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@peerprep/ui/dropdown-menu";
 import { Link } from "@peerprep/ui/link";
-import { getOrigin } from "@peerprep/utils/client";
+import { getOrigin, useAuth, useLogout } from "@peerprep/utils/client";
 import { ArrowUpRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { Navigate, Outlet } from "react-router-dom";
 
 import { NavLogo } from "~/components/nav-logo";
-import { useAuth, useLogout } from "~/lib/auth";
 
 function NavAvatar() {
   const { data: user } = useAuth();

@@ -1,7 +1,6 @@
 import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
+import { useQuestion } from "@peerprep/utils/client";
 import { useParams } from "react-router-dom";
-
-import { useQuestion } from "~/lib/questions";
 
 export default function QuestionPage() {
   const { id } = useParams<{ id: string }>();
