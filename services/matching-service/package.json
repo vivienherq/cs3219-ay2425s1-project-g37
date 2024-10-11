@@ -2,7 +2,7 @@
   "name": "@peerprep/matching-service",
   "private": true,
   "scripts": {
-    "build": "bun build src/index.ts --target bun --outdir ./dist",
+    "build": "NODE_ENV=production bun build src/index.ts src/worker.ts --target bun --outdir ./dist",
     "dev": "bun --watch src/index.ts",
     "lint": "eslint .",
     "start": "NODE_ENV=production bun run dist/index.js"

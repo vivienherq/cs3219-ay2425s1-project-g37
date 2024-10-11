@@ -20,7 +20,9 @@ async function getQuestionsFromFilter(difficulty: Difficulty, tags: string[]) {
   return questions;
 }
 
-const worker = new Worker("src/worker.ts");
+const worker = new Worker(
+  process.env.NODE_ENV === "production" ? "dist/worker.js" : "src/worker.ts",
+);
 worker.addEventListener("message", ({ data }: { data: WorkerResponse }) => {
   switch (data.type) {
     case "success": {
