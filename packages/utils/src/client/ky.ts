@@ -1,8 +1,7 @@
 import ky, { HTTPError, type Options } from "ky";
 import { parse, stringify } from "superjson";
 
-import type { ServiceResponseBodyError, ServiceResponseBodySuccess } from "~/server";
-
+import type { ServiceResponseBodyError, ServiceResponseBodySuccess } from "../server";
 import { getOrigin } from "./service-origins";
 
 export function getHTTPErrorMessage(e: unknown) {

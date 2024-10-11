@@ -1,6 +1,3 @@
 {
-  "extends": "@peerprep/tsconfig/base.json",
-  "compilerOptions": {
-    "paths": { "~/*": ["./src/*"] }
-  }
+  "extends": "@peerprep/tsconfig/base.json"
 }
