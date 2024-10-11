@@ -4,7 +4,9 @@ import { parse, stringify } from "superjson";
 
 import type { ServiceResponseBodyError, ServiceResponseBodySuccess } from "./server";
 
-export function getOrigin(service: "frontend" | "admin-portal" | "user" | "questions") {
+export function getOrigin(
+  service: "frontend" | "admin-portal" | "user" | "questions" | "matching",
+) {
   switch (service) {
     case "frontend":
       return env.VITE_SELF_HOST
@@ -22,6 +24,10 @@ export function getOrigin(service: "frontend" | "admin-portal" | "user" | "quest
       return env.VITE_SELF_HOST
         ? "https://questions-peerprep.joulev.dev"
         : `http://localhost:${env.VITE_QUESTION_SERVICE_PORT}`;
+    case "matching":
+      return env.VITE_SELF_HOST
+        ? "https://matching-peerprep.joulev.dev"
+        : `http://localhost:${env.VITE_MATCHING_SERVICE_PORT}`;
   }
 }
 
@@ -82,3 +88,6 @@ function createClient(baseUrl: string) {
 export const userClient = createClient(getOrigin("user"));
 
 export const questionsClient = createClient(getOrigin("questions"));
+
+// Probably not needed since we use this service as a ws server
+export const matchingClient = createClient(getOrigin("matching"));

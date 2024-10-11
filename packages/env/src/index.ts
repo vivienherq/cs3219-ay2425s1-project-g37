@@ -18,6 +18,7 @@ export const env = createEnv({
     VITE_PEERPREP_QUESTION_SPA_PORT: z.coerce.number(),
     VITE_USER_SERVICE_PORT: z.coerce.number(),
     VITE_QUESTION_SERVICE_PORT: z.coerce.number(),
+    VITE_MATCHING_SERVICE_PORT: z.coerce.number(),
   },
   runtimeEnv: import.meta.env, // Both Vite and Bun use `import.meta.env`
   emptyStringAsUndefined: true,
