@@ -6,7 +6,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
-  const { trigger, isMutating } = useLogin();
+  const { trigger, isMutating } = useLogin(true);
 
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
