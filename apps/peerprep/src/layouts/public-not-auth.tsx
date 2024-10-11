@@ -1,7 +1,7 @@
+import { useAuth } from "@peerprep/utils/client";
 import { Navigate, Outlet } from "react-router-dom";
 
 import { NavLogo } from "~/components/nav-logo";
-import { useAuth } from "~/lib/auth";
 
 // Redirect away from this layout if the user is authenticated
 export default function PublicNotAuthLayout() {

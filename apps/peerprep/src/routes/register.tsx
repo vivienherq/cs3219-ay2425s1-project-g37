@@ -1,10 +1,9 @@
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { Input } from "@peerprep/ui/text-input";
+import { useRegister } from "@peerprep/utils/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
-
-import { useRegister } from "~/lib/auth";
 
 export default function RegisterPage() {
   const { trigger, isMutating } = useRegister();

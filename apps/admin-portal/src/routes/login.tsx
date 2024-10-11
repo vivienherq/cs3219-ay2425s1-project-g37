@@ -1,13 +1,12 @@
 import { Button } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { Input } from "@peerprep/ui/text-input";
+import { useLogin } from "@peerprep/utils/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import { useLogin } from "~/lib/auth";
-
 export default function LoginPage() {
-  const { trigger, isMutating } = useLogin();
+  const { trigger, isMutating } = useLogin(true);
 
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");

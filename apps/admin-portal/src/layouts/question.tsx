@@ -1,11 +1,10 @@
 import { Button, LinkButton } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
+import { useDeleteQuestion, useQuestion } from "@peerprep/utils/client";
 import { ChevronLeft, Pen, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-
-import { useDeleteQuestion, useQuestion } from "~/lib/questions";
 
 function DeleteButton({ id }: { id: string }) {
   const { isMutating, trigger } = useDeleteQuestion(id);

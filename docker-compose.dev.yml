@@ -13,6 +13,13 @@ services:
     volumes:
       - ./services/questions-service:/app/services/questions-service
 
+  matching:
+    build:
+      target: development
+    command: bun dev --filter=@peerprep/matching-service
+    volumes:
+      - ./services/matching-service:/app/services/matching-service
+
   frontend:
     build:
       target: development
