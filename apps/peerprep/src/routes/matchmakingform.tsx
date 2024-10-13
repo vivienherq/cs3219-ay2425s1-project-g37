@@ -1,3 +1,5 @@
+import { Button } from "@peerprep/ui/button";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@peerprep/ui/select";
 import { useEffect, useState } from "react";  
 import { useQuestions } from "@peerprep/utils/client";   
 import type { Difficulty } from "@peerprep/schemas";  
@@ -22,10 +24,6 @@ const MatchmakingForm: React.FC<MatchmakingFormProps> = ({ onMatchmaking }) => {
     }  
   }, [questions]);  
 
-  const handleDifficultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {  
-    setDifficulty(e.target.value as Difficulty); // Ensure casting to Difficulty  
-  };  
-
   const toggleTag = (tag: string) => {  
     setSelectedTags((prevTags) =>  
       prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag]  
@@ -38,15 +36,22 @@ const MatchmakingForm: React.FC<MatchmakingFormProps> = ({ onMatchmaking }) => {
 
   return (  
     <div>  
-      <label>Difficulty</label>  
-      <select value={difficulty} onChange={handleDifficultyChange}>  
-        <option value="EASY">Easy</option>  
-        <option value="MEDIUM">Medium</option>  
-        <option value="HARD">Hard</option>  
-      </select>  
+      <label>Select Difficulty:</label>  
+      <Select value={difficulty} onValueChange={(value) => setDifficulty(value as Difficulty)}>  
+        <SelectTrigger>  
+          <SelectValue placeholder="Select Difficulty" />  
+        </SelectTrigger>  
+        <SelectContent>  
+          {["EASY", "MEDIUM", "HARD"].map((level) => (  
+            <SelectItem key={level} value={level as Difficulty}>  
+              {level}  
+            </SelectItem>  
+          ))}  
+        </SelectContent>  
+      </Select>   
 
       <div>  
-        <label>Topics/Tags</label>  
+        <label>Select Topics:</label>  
         <div>  
           {availableTags.map((tag) => (  
             <div key={tag}>  
@@ -63,7 +68,7 @@ const MatchmakingForm: React.FC<MatchmakingFormProps> = ({ onMatchmaking }) => {
         </div>  
       </div>  
 
-      <button onClick={handleSubmit}>Start Matchmaking</button>  
+      <Button onClick={handleSubmit} variants={{variant: "primary" }}>Start Matching</Button>  
     </div>  
   );  
 }  
