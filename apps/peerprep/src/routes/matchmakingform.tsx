@@ -1,18 +1,17 @@
-// src/components/MatchmakingForm.tsx  
 import { useEffect, useState } from "react";  
 import { useQuestions } from "@peerprep/utils/client";   
+import type { Difficulty } from "@peerprep/schemas";  
 
 interface MatchmakingFormProps {  
-  onMatchmaking: (difficulty: string, tags: string[]) => void; // Callback to handle matchmaking  
+  onMatchmaking: (difficulty: Difficulty, tags: string[]) => void;  
 }  
 
-function MatchmakingForm({ onMatchmaking }: MatchmakingFormProps) {  
-  const { data: questions } = useQuestions();  // Fetch questions  
-  const [difficulty, setDifficulty] = useState("EASY"); // Default difficulty  
-  const [selectedTags, setSelectedTags] = useState<string[]>([]); // Selected tags  
-  const [availableTags, setAvailableTags] = useState<string[]>([]); // Tags sourced from questions  
+const MatchmakingForm: React.FC<MatchmakingFormProps> = ({ onMatchmaking }) => {  
+  const { data: questions } = useQuestions();   
+  const [difficulty, setDifficulty] = useState<Difficulty>("EASY");  
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);  
+  const [availableTags, setAvailableTags] = useState<string[]>([]);  
 
-  // Extracting tags and unique difficulty levels based on questions  
   useEffect(() => {  
     if (questions) {  
       const tagsSet = new Set<string>();  
@@ -24,7 +23,7 @@ function MatchmakingForm({ onMatchmaking }: MatchmakingFormProps) {
   }, [questions]);  
 
   const handleDifficultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {  
-    setDifficulty(e.target.value);  
+    setDifficulty(e.target.value as Difficulty); // Ensure casting to Difficulty  
   };  
 
   const toggleTag = (tag: string) => {  
@@ -34,7 +33,7 @@ function MatchmakingForm({ onMatchmaking }: MatchmakingFormProps) {
   };  
 
   const handleSubmit = () => {  
-    onMatchmaking(difficulty, selectedTags); // Pass user preferences to parent  
+    onMatchmaking(difficulty, selectedTags);   
   };  
 
   return (  
@@ -49,7 +48,7 @@ function MatchmakingForm({ onMatchmaking }: MatchmakingFormProps) {
       <div>  
         <label>Topics/Tags</label>  
         <div>  
-          {availableTags.map((tag) => (  // Use available tags from fetched questions  
+          {availableTags.map((tag) => (  
             <div key={tag}>  
               <input  
                 type="checkbox"  
