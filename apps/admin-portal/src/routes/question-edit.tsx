@@ -5,11 +5,10 @@ import { cn } from "@peerprep/ui/cn";
 import { FormControl } from "@peerprep/ui/form-control";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@peerprep/ui/select";
 import { Input, Textarea } from "@peerprep/ui/text-input";
+import { useEditQuestion, useQuestion } from "@peerprep/utils/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
-
-import { useEditQuestion, useQuestion } from "~/lib/questions";
 
 function UpdateForm({ question }: { question: Question }) {
   const { isMutating, trigger } = useEditQuestion(question.id);

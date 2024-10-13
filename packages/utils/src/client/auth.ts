@@ -13,7 +13,7 @@ export function mutateAuth() {
   return mutate(AUTH_KEY);
 }
 
-export function useLogin() {
+export function useLogin(forceAdmin = false) {
   return useSWRMutation(
     AUTH_KEY,
     async (
@@ -24,7 +24,9 @@ export function useLogin() {
     ) => {
       const email = emailOrUsername.includes("@") ? emailOrUsername : undefined;
       const username = email ? undefined : emailOrUsername;
-      await userClient.post("/auth/login", { json: { email, username, password } });
+      await userClient.post("/auth/login", {
+        json: { email, username, password, forceAdmin },
+      });
     },
   );
 }

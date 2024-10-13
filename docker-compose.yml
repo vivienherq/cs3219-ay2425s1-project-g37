@@ -9,8 +9,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
-    ports:
-      - 27017:27017
     command: --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all --port 27017 --quiet --logpath /dev/null
     healthcheck:
       test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'127.0.0.1:27017'}]}) }" | mongosh --port 27017 -u root -p root --authenticationDatabase admin
@@ -43,8 +41,6 @@ services:
       timeout: 15s
       start_period: 15s
       retries: 10
-    depends_on:
-      - mongo
     networks:
       - webnet
 
@@ -68,8 +64,29 @@ services:
       timeout: 15s
       start_period: 15s
       retries: 10
-    depends_on:
-      - mongo
+    networks:
+      - webnet
+
+  matching:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - SERVICE_NAME=@peerprep/matching-service
+        - SERVICE_DIRECTORY=services/matching-service
+    container_name: matching
+    restart: always
+    environment:
+      - PORT=${VITE_MATCHING_SERVICE_PORT}
+      - DATABASE_URL=mongodb://root:root@mongo:27017/peerprep?authSource=admin&replicaSet=rs0&retryWrites=true&w=majority&directConnection=true
+    ports:
+      - ${VITE_MATCHING_SERVICE_PORT}:${VITE_MATCHING_SERVICE_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${VITE_MATCHING_SERVICE_PORT}/status"]
+      interval: 5s
+      timeout: 15s
+      start_period: 15s
+      retries: 10
     networks:
       - webnet
 
@@ -86,10 +103,6 @@ services:
       - PORT=${VITE_PEERPREP_FRONTEND_PORT}
     ports:
       - ${VITE_PEERPREP_FRONTEND_PORT}:${VITE_PEERPREP_FRONTEND_PORT}
-    depends_on:
-      - mongo
-      - user
-      - questions
     networks:
       - webnet
 
@@ -106,10 +119,6 @@ services:
       - PORT=${VITE_PEERPREP_QUESTION_SPA_PORT}
     ports:
       - ${VITE_PEERPREP_QUESTION_SPA_PORT}:${VITE_PEERPREP_QUESTION_SPA_PORT}
-    depends_on:
-      - mongo
-      - user
-      - questions
     networks:
       - webnet
 

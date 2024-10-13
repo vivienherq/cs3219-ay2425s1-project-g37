@@ -3,11 +3,10 @@ import { buttonVariants } from "@peerprep/ui/button-variants";
 import { cn } from "@peerprep/ui/cn";
 import { Link } from "@peerprep/ui/link";
 import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
+import { useAddQuestions, useQuestions } from "@peerprep/utils/client";
 import { Plus, Tags } from "lucide-react";
 import { useRef } from "react";
 import toast from "react-hot-toast";
-
-import { useAddQuestions, useQuestions } from "~/lib/questions";
 
 const createSchema = t.Union([t.Array(questions.createSchema), questions.createSchema]);
 

@@ -40,7 +40,8 @@ export const elysiaCorsPlugin = new Elysia({ name: "cors" }).use(
     origin: [
       `http://localhost:${env.VITE_PEERPREP_FRONTEND_PORT}`,
       `http://localhost:${env.VITE_PEERPREP_QUESTION_SPA_PORT}`,
-      /^https?:\/\/(\w+\.)?peerprep\.joulev\.dev.*$/,
+      `http://localhost:${env.VITE_MATCHING_SERVICE_PORT}`,
+      /^https?:\/\/(\w+-)?peerprep\.joulev\.dev.*$/,
     ],
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "HEAD"],
   }),
