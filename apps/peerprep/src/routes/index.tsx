@@ -1,7 +1,7 @@
 import { env } from "@peerprep/env";
 import type { Difficulty } from "@peerprep/schemas";
 import { useWsSubscription } from "@peerprep/utils/client";
-import MatchmakingForm from "./matchmakingform";
+import MatchmakingForm from "~/components/matchmakingform";
 
 export default function IndexPage() {
   const ws = useWsSubscription<
