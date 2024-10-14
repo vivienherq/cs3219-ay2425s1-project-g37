@@ -3,7 +3,6 @@ import type { Difficulty } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { cn } from "@peerprep/ui/cn";
 import { FormControl } from "@peerprep/ui/form-control";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@peerprep/ui/select";
 import { useAuth, useQuestions, useWsSubscription } from "@peerprep/utils/client";
 import { useState } from "react";
 
@@ -15,12 +14,12 @@ function useTags() {
   return Array.from(tagsSet).sort();
 }
 
-function useMatchedQuestions(difficulty: Difficulty, tags: string[]) {
+function useMatchedQuestions(difficulties: Difficulty[], tags: string[]) {
   const { data: questions } = useQuestions();
   if (!questions) return [];
   return questions.filter(
     question =>
-      question.difficulty === difficulty &&
+      (difficulties.length === 0 || difficulties.includes(question.difficulty)) &&
       (tags.length === 0 || tags.some(tag => question.tags.includes(tag))),
   );
 }
@@ -28,19 +27,25 @@ function useMatchedQuestions(difficulty: Difficulty, tags: string[]) {
 function MatchmakingForm({
   onMatchmaking,
 }: {
-  onMatchmaking: (difficulty: Difficulty, tags: string[]) => void;
+  onMatchmaking: (difficulties: Difficulty[], tags: string[]) => void;
 }) {
   const { data: user } = useAuth();
   const allTags = useTags();
-  const [difficulty, setDifficulty] = useState<Difficulty>("EASY");
+  const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const matchedQuestions = useMatchedQuestions(difficulty, selectedTags);
+  const matchedQuestions = useMatchedQuestions(difficulties, selectedTags);
 
-  const toggleTag = (tag: string) => {
+  function toggleDifficulty(difficulty: Difficulty) {
+    setDifficulties(prev =>
+      prev.includes(difficulty) ? prev.filter(t => t !== difficulty) : [...prev, difficulty],
+    );
+  }
+
+  function toggleTag(tag: string) {
     setSelectedTags(prevTags =>
       prevTags.includes(tag) ? prevTags.filter(t => t !== tag) : [...prevTags, tag],
     );
-  };
+  }
 
   if (!user || !allTags.length) return null;
 
@@ -50,7 +55,7 @@ function MatchmakingForm({
         className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12"
         onSubmit={async e => {
           e.preventDefault();
-          onMatchmaking(difficulty, selectedTags);
+          onMatchmaking(difficulties, selectedTags);
         }}
       >
         <h1 className="text-main-50 text-2xl">Welcome, @{user.username}!</h1>
@@ -58,18 +63,24 @@ function MatchmakingForm({
           Select the filtering criteria below and we will match you with a fellow user to
           collaborate on a problem.
         </p>
-        <FormControl label="Difficulty">
-          <Select value={difficulty} onValueChange={value => setDifficulty(value as Difficulty)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="EASY">Easy</SelectItem>
-              <SelectItem value="MEDIUM">Medium</SelectItem>
-              <SelectItem value="HARD">Hard</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormControl>
+        <div className="flex flex-col gap-1.5">
+          <FormControl label="Difficulty" />
+          <div className="flex flex-row flex-wrap gap-1.5">
+            {(["EASY", "MEDIUM", "HARD"] satisfies Difficulty[]).map(difficulty => (
+              <button
+                type="button"
+                className={cn(
+                  "block px-3 py-1 text-sm",
+                  difficulties.includes(difficulty) ? "bg-main-600 text-main-50" : "bg-main-800",
+                )}
+                key={difficulty}
+                onClick={() => toggleDifficulty(difficulty)}
+              >
+                {difficulty === "EASY" ? "Easy" : difficulty === "MEDIUM" ? "Medium" : "Hard"}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex flex-col gap-1.5">
           <FormControl
             label={
@@ -122,15 +133,15 @@ function MatchmakingForm({
 
 export default function IndexPage() {
   const ws = useWsSubscription<
-    { difficulty: Difficulty; tags: string[] },
+    { difficulties: Difficulty[]; tags: string[] },
     { type: "success" } | { type: "acknowledgement" } | { type: "timeout" }
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
 
   if (!ws.isReady) return null;
 
-  const handleMatchmaking = (difficulty: Difficulty, tags: string[]) => {
-    ws.send({ difficulty, tags });
-  };
+  function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
+    ws.send({ difficulties, tags });
+  }
 
   return (
     <div>
