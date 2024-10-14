@@ -7,7 +7,7 @@ export function FormControl({
   id?: string;
   label: React.ReactNode;
   helpText?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   return (
     <label htmlFor={id} className="flex flex-col gap-1.5">
