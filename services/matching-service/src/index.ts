@@ -13,9 +13,12 @@ import { StatusCodes } from "http-status-codes";
 
 import type { WorkerResponse } from "./worker";
 
-async function getQuestionsFromFilter(difficulty: Difficulty, tags: string[]) {
+async function getQuestionsFromFilter(difficulties: Difficulty[], tags: string[]) {
   const questions = await db.question.findMany({
-    where: { difficulty, tags: tags.length > 0 ? { hasSome: tags } : undefined },
+    where: {
+      difficulty: difficulties.length > 0 ? { in: difficulties } : undefined,
+      tags: tags.length > 0 ? { hasSome: tags } : undefined,
+    },
   });
   return questions;
 }
@@ -44,16 +47,17 @@ const app = new Elysia()
   .get("/status", () => new Response("Online"))
   .ws("/", {
     body: t.Object({
-      difficulty: questions.difficultySchema,
+      difficulties: t.Array(questions.difficultySchema),
       tags: t.Array(t.String({ minLength: 1 })),
     }),
     open(ws) {
       if (!ws.data.user) throw new ExpectedError("You must be logged in", StatusCodes.UNAUTHORIZED);
       ws.subscribe(ws.data.user.id);
     },
-    async message(ws, { difficulty, tags }) {
+    async message(ws, { difficulties, tags }) {
       if (!ws.data.user) throw new ExpectedError("You must be logged in", StatusCodes.UNAUTHORIZED);
-      const questions = await getQuestionsFromFilter(difficulty, tags);
+      const questions = await getQuestionsFromFilter(difficulties, tags);
+      // TODO: if questions.length === 0, return an error via sendMessage
       worker.postMessage({
         type: "add",
         userId: ws.data.user.id,
