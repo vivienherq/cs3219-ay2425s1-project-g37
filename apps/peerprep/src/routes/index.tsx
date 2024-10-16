@@ -5,7 +5,8 @@ import { cn } from "@peerprep/ui/cn";
 import { FormControl } from "@peerprep/ui/form-control";
 import { useAuth, useQuestions, useWsSubscription } from "@peerprep/utils/client";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { Navigate } from "react-router-dom";
 
 function useTags() {
   const { data: questions } = useQuestions();
@@ -156,7 +157,6 @@ function LoadingScreen() {
 }
 
 export default function IndexPage() {
-  const navigate = useNavigate();
   const ws = useWsSubscription<
     { difficulties: Difficulty[]; tags: string[] },
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
@@ -164,47 +164,29 @@ export default function IndexPage() {
     | { type: "timeout" }
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
 
-  const [matchDetails, setMatchDetails] = useState<{
-    matched: [string, string];
-    questionId: string;
-    roomId: string;
-  } | null>(null);
-
-  const [isMatching, setIsMatching] = useState(false);
-
-  useEffect(() => console.log(ws), [ws]);
-
   useEffect(() => {
-    if (ws.data?.type === "success") {
-      setMatchDetails({
-        matched: ws.data.matched,
-        questionId: ws.data.questionId,
-        roomId: ws.data.roomId,
-      });
-    }
+    if (ws.data?.type === "timeout") toast.error("Timed out");
   }, [ws.data]);
-
-  useEffect(() => {
-    if (matchDetails?.roomId) {
-      navigate(`/room/${matchDetails.roomId}`, {
-        state: {
-          matched: matchDetails.matched,
-          questionId: matchDetails.questionId,
-        },
-      });
-    }
-  }, [matchDetails, navigate]);
 
   if (!ws.isReady) return null;
 
   function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
     ws.send({ difficulties, tags });
-    setIsMatching(true);
   }
 
-  return (
-    <div>
-      {!isMatching ? <MatchmakingForm onMatchmaking={handleMatchmaking} /> : <LoadingScreen />}
-    </div>
-  );
+  if (!ws.data || ws.data.type === "timeout")
+    return <MatchmakingForm onMatchmaking={handleMatchmaking} />;
+
+  if (ws.data.type === "acknowledgement") return <LoadingScreen />;
+
+  if (ws.data.type === "success")
+    return (
+      <Navigate
+        to={`/room/${ws.data.roomId}`}
+        state={{
+          matched: ws.data.matched,
+          questionId: ws.data.questionId,
+        }}
+      />
+    );
 }
