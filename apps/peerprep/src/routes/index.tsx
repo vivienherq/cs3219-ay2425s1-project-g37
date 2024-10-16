@@ -140,24 +140,25 @@ export default function IndexPage() {
     | { type: "timeout" }
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
 
-  // const [matchDetails, setMatchDetails] = useState<{
-  //   matched: [string, string];
-  //   questionId: string;
-  //   roomId: string;
-  // } | null>(null);
-  // useEffect(() => console.log(ws), [ws]);
+  const [matchDetails, setMatchDetails] = useState<{
+    matched: [string, string];
+    questionId: string;
+    roomId: string;
+  } | null>(null);
 
   useEffect(() => console.log(ws), [ws]);
 
-  if (!ws.isReady) return null;
+  useEffect(() => {
+    if (ws.data?.type === "success") {
+      setMatchDetails({
+        matched: ws.data.matched,
+        questionId: ws.data.questionId,
+        roomId: ws.data.roomId,
+      });
+    }
+  }, [ws.data]);
 
-  // if (ws.data?.type === "success") {
-  //   setMatchDetails({
-  //     matched: ws.data.matched,
-  //     questionId: ws.data.questionId,
-  //     roomId: ws.data.roomId,
-  //   });
-  // }
+  if (!ws.isReady) return null;
 
   function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
     ws.send({ difficulties, tags });
@@ -166,14 +167,14 @@ export default function IndexPage() {
   return (
     <div>
       <div>{ws.data?.type ?? "No responses so far"}</div>
-      {/* {matchDetails && (
+      {matchDetails && (
         <div>
           <h3>Match Details:</h3>
           <p>Matched Users: {matchDetails.matched.join(", ")}</p>
           <p>Question ID: {matchDetails.questionId}</p>
           <p>Room ID: {matchDetails.roomId}</p>
         </div>
-      )} */}
+      )}
       <MatchmakingForm onMatchmaking={handleMatchmaking} />
     </div>
   );
