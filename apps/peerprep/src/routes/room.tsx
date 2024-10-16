@@ -10,7 +10,7 @@ export default function RoomPage() {
   return (
     <div>
       <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
-        {id}
+        <p>Room ID: {id}</p>
         {matched && <p>Matched Users: {matched.join(", ")}</p>}
         {questionId && <p>Question ID: {questionId}</p>}
       </div>
