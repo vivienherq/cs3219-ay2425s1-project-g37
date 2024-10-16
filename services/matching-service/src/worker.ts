@@ -1,7 +1,4 @@
-import type { NewRoom } from "@peerprep/schemas";
 import { z } from "zod";
-
-import { createRoom } from "~/controllers/rooms";
 
 declare const self: Worker;
 
@@ -91,32 +88,12 @@ async function processTasks() {
       case "add": {
         const result = matchmakingQueue.enqueue(task.userId, task.questionIds);
         if (result) {
-          const roomData: NewRoom = {
-            userIds: [task.userId, result.matchedUserId],
+          publish({
+            type: "success",
+            matched: [task.userId, result.matchedUserId],
             questionId: result.matchedQuestionId,
-            code: "code () {}",
-            language: "python",
-          };
-
-          try {
-            // Create the room
-            const roomId = await createRoom(roomData);
-            console.log(roomId);
-            publish({
-              type: "success",
-              matched: [task.userId, result.matchedUserId],
-              questionId: result.matchedQuestionId,
-              roomId: roomId,
-            });
-          } catch (error) {
-            console.error("Failed to create room:", error);
-          }
-          // publish({
-          //   type: "success",
-          //   matched: [task.userId, result.matchedUserId],
-          //   questionId: result.matchedQuestionId,
-          //   roomId: "",
-          // });
+            roomId: "",
+          });
         }
         break;
       }
