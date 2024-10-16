@@ -5,6 +5,7 @@ import { cn } from "@peerprep/ui/cn";
 import { FormControl } from "@peerprep/ui/form-control";
 import { useAuth, useQuestions, useWsSubscription } from "@peerprep/utils/client";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function useTags() {
   const { data: questions } = useQuestions();
@@ -131,11 +132,34 @@ function MatchmakingForm({
   );
 }
 
+function LoadingScreen() {
+  return (
+    <div className="flex w-full flex-row justify-center px-6 py-12">
+      <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
+        <div className="flex items-center justify-center">
+          <div className="h-16 w-16 animate-spin rounded-full border-4 border-white border-b-transparent border-t-transparent"></div>
+          <div className="absolute h-16 w-16 animate-spin rounded-full border-4 border-white border-b-transparent border-t-transparent"></div>
+        </div>
+        <h1 className="text-main-50 text-center text-2xl">Matching in progress...</h1>
+        <p className="text-center">
+          You will be redirected to the room when you are matched with a collaborator. Closing the
+          tab will abort matching.
+        </p>
+        <div className="flex justify-center">
+          <Button variants={{ variant: "secondary" }} type="submit">
+            Abort
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function IndexPage() {
+  const navigate = useNavigate();
   const ws = useWsSubscription<
     { difficulties: Difficulty[]; tags: string[] },
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
-    // | { type: "success" }
     | { type: "acknowledgement" }
     | { type: "timeout" }
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
@@ -145,6 +169,8 @@ export default function IndexPage() {
     questionId: string;
     roomId: string;
   } | null>(null);
+
+  const [isMatching, setIsMatching] = useState(false);
 
   useEffect(() => console.log(ws), [ws]);
 
@@ -158,24 +184,22 @@ export default function IndexPage() {
     }
   }, [ws.data]);
 
+  useEffect(() => {
+    if (matchDetails?.roomId) {
+      navigate(`/room/${matchDetails.roomId}`);
+    }
+  }, [matchDetails, navigate]);
+
   if (!ws.isReady) return null;
 
   function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
     ws.send({ difficulties, tags });
+    setIsMatching(true);
   }
 
   return (
     <div>
-      <div>{ws.data?.type ?? "No responses so far"}</div>
-      {matchDetails && (
-        <div>
-          <h3>Match Details:</h3>
-          <p>Matched Users: {matchDetails.matched.join(", ")}</p>
-          <p>Question ID: {matchDetails.questionId}</p>
-          <p>Room ID: {matchDetails.roomId}</p>
-        </div>
-      )}
-      <MatchmakingForm onMatchmaking={handleMatchmaking} />
+      {!isMatching ? <MatchmakingForm onMatchmaking={handleMatchmaking} /> : <LoadingScreen />}
     </div>
   );
 }
