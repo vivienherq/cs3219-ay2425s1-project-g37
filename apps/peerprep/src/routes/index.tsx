@@ -186,7 +186,12 @@ export default function IndexPage() {
 
   useEffect(() => {
     if (matchDetails?.roomId) {
-      navigate(`/room/${matchDetails.roomId}`);
+      navigate(`/room/${matchDetails.roomId}`, {
+        state: {
+          matched: matchDetails.matched,
+          questionId: matchDetails.questionId,
+        },
+      });
     }
   }, [matchDetails, navigate]);
 
