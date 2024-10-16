@@ -1,4 +1,7 @@
+import type { NewRoom } from "@peerprep/schemas";
 import { z } from "zod";
+
+import { createRoom } from "~/controllers/rooms";
 
 declare const self: Worker;
 
@@ -11,7 +14,7 @@ type Task = z.infer<typeof taskSchema>;
 
 export type WorkerResponse =
   | { type: "timeout"; userId: string }
-  | { type: "success"; matched: [string, string]; questionId: string };
+  | { type: "success"; matched: [string, string]; questionId: string; roomId: string };
 
 function publish(response: WorkerResponse) {
   self.postMessage(response);
@@ -87,12 +90,33 @@ async function processTasks() {
     switch (task.type) {
       case "add": {
         const result = matchmakingQueue.enqueue(task.userId, task.questionIds);
-        if (result)
-          publish({
-            type: "success",
-            matched: [task.userId, result.matchedUserId],
+        if (result) {
+          const roomData: NewRoom = {
+            userIds: [task.userId, result.matchedUserId], // Array of user IDs
             questionId: result.matchedQuestionId,
-          });
+            code: "", // Replace with actual code logic
+            language: "", // Replace with actual language logic
+          };
+
+          try {
+            // Create the room
+            const roomId = await createRoom(roomData); // Await the creation of the room
+            publish({
+              type: "success",
+              matched: [task.userId, result.matchedUserId],
+              questionId: result.matchedQuestionId,
+              roomId: roomId, // Include roomId in the published message
+            });
+          } catch (error) {
+            console.error("Failed to create room:", error);
+            // Handle the error appropriately (e.g., publish an error message, etc.)
+          }
+          // publish({
+          //   type: "success",
+          //   matched: [task.userId, result.matchedUserId],
+          //   questionId: result.matchedQuestionId,
+          // });
+        }
         break;
       }
       case "remove": {

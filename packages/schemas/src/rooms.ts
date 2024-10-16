@@ -18,11 +18,16 @@ export const createRoomSchema = t.Object({
   questionId: id,
   code: t.String({ minLength: 1 }),
   language: t.String({ minLength: 1 }),
-  chatMessages: t.Array(chatMessageSchema),
 });
 export type NewRoom = Static<typeof createRoomSchema>;
 
-export const updateRoomSchema = t.Partial(createRoomSchema);
+export const updateRoomSchema = t.Partial(
+  t.Object({
+    code: t.String({ minLength: 1 }),
+    language: t.String({ minLength: 1 }),
+    chatMessages: t.Array(chatMessageSchema),
+  }),
+);
 export type UpdateRoom = Static<typeof updateRoomSchema>;
 
 export const roomSchema = t.Intersect([
