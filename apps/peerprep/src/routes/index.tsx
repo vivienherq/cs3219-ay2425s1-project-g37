@@ -7,6 +7,7 @@ import { useAuth, useQuestions, useWsSubscription } from "@peerprep/utils/client
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Navigate } from "react-router-dom";
+import { useStopwatch } from "react-timer-hook";
 
 function useTags() {
   const { data: questions } = useQuestions();
@@ -134,6 +135,7 @@ function MatchmakingForm({
 }
 
 function LoadingScreen() {
+  const { seconds, minutes, hours } = useStopwatch({ autoStart: true });
   return (
     <div className="flex w-full flex-row justify-center px-6 py-12">
       <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
@@ -146,6 +148,11 @@ function LoadingScreen() {
           You will be redirected to the room when you are matched with a collaborator. Closing the
           tab will abort matching.
         </p>
+        <div className="text-center">
+          <span>{hours < 10 ? `0${hours}` : hours}</span>:
+          <span>{minutes < 10 ? `0${minutes}` : minutes}</span>:
+          <span>{seconds < 10 ? `0${seconds}` : seconds}</span>
+        </div>
         <div className="flex justify-center">
           <Button variants={{ variant: "secondary" }} type="submit">
             Abort
