@@ -8,7 +8,7 @@ export default function RoomPage() {
   const { matched, questionId } = location.state || {};
 
   return (
-    <div>
+    <div className="flex w-full flex-row justify-center px-6 py-12">
       <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
         <p>Room ID: {id}</p>
         {matched && <p>Matched Users: {matched.join(", ")}</p>}
