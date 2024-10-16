@@ -29,8 +29,18 @@ const worker = new Worker(
 worker.addEventListener("message", ({ data }: { data: WorkerResponse }) => {
   switch (data.type) {
     case "success": {
-      sendMessage(data.matched[0], { type: "success" });
-      sendMessage(data.matched[1], { type: "success" });
+      sendMessage(data.matched[0], {
+        type: "success",
+        matched: [data.matched[0], data.matched[1]],
+        questionId: data.questionId,
+        roomId: data.roomId,
+      });
+      sendMessage(data.matched[1], {
+        type: "success",
+        matched: [data.matched[0], data.matched[1]],
+        questionId: data.questionId,
+        roomId: data.roomId,
+      });
       break;
     }
     case "timeout": {
@@ -75,7 +85,10 @@ const app = new Elysia()
 
 function sendMessage(
   userId: string,
-  message: { type: "success" } | { type: "acknowledgement" } | { type: "timeout" },
+  message:
+    | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
+    | { type: "acknowledgement" }
+    | { type: "timeout" },
 ) {
   app.server?.publish(userId, JSON.stringify(message));
 }

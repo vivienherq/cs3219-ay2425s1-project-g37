@@ -4,7 +4,7 @@ import { Button } from "@peerprep/ui/button";
 import { cn } from "@peerprep/ui/cn";
 import { FormControl } from "@peerprep/ui/form-control";
 import { useAuth, useQuestions, useWsSubscription } from "@peerprep/utils/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function useTags() {
   const { data: questions } = useQuestions();
@@ -134,10 +134,30 @@ function MatchmakingForm({
 export default function IndexPage() {
   const ws = useWsSubscription<
     { difficulties: Difficulty[]; tags: string[] },
-    { type: "success" } | { type: "acknowledgement" } | { type: "timeout" }
+    | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
+    // | { type: "success" }
+    | { type: "acknowledgement" }
+    | { type: "timeout" }
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
 
+  // const [matchDetails, setMatchDetails] = useState<{
+  //   matched: [string, string];
+  //   questionId: string;
+  //   roomId: string;
+  // } | null>(null);
+  // useEffect(() => console.log(ws), [ws]);
+
+  useEffect(() => console.log(ws), [ws]);
+
   if (!ws.isReady) return null;
+
+  // if (ws.data?.type === "success") {
+  //   setMatchDetails({
+  //     matched: ws.data.matched,
+  //     questionId: ws.data.questionId,
+  //     roomId: ws.data.roomId,
+  //   });
+  // }
 
   function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
     ws.send({ difficulties, tags });
@@ -146,6 +166,14 @@ export default function IndexPage() {
   return (
     <div>
       <div>{ws.data?.type ?? "No responses so far"}</div>
+      {/* {matchDetails && (
+        <div>
+          <h3>Match Details:</h3>
+          <p>Matched Users: {matchDetails.matched.join(", ")}</p>
+          <p>Question ID: {matchDetails.questionId}</p>
+          <p>Room ID: {matchDetails.roomId}</p>
+        </div>
+      )} */}
       <MatchmakingForm onMatchmaking={handleMatchmaking} />
     </div>
   );

@@ -92,29 +92,30 @@ async function processTasks() {
         const result = matchmakingQueue.enqueue(task.userId, task.questionIds);
         if (result) {
           const roomData: NewRoom = {
-            userIds: [task.userId, result.matchedUserId], // Array of user IDs
+            userIds: [task.userId, result.matchedUserId],
             questionId: result.matchedQuestionId,
-            code: "", // Replace with actual code logic
-            language: "", // Replace with actual language logic
+            code: "code () {}",
+            language: "python",
           };
 
           try {
             // Create the room
-            const roomId = await createRoom(roomData); // Await the creation of the room
+            const roomId = await createRoom(roomData);
+            console.log(roomId);
             publish({
               type: "success",
               matched: [task.userId, result.matchedUserId],
               questionId: result.matchedQuestionId,
-              roomId: roomId, // Include roomId in the published message
+              roomId: roomId,
             });
           } catch (error) {
             console.error("Failed to create room:", error);
-            // Handle the error appropriately (e.g., publish an error message, etc.)
           }
           // publish({
           //   type: "success",
           //   matched: [task.userId, result.matchedUserId],
           //   questionId: result.matchedQuestionId,
+          //   roomId: "",
           // });
         }
         break;

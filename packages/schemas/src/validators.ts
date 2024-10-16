@@ -5,7 +5,6 @@ export { t } from "elysia";
 export { id } from "./validate-id";
 export * as questions from "./questions";
 export * as users from "./users";
-export * as rooms from "./rooms";
 
 export function validate<T extends TSchema>(
   schema: T,
