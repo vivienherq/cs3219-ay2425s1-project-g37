@@ -1,6 +1,6 @@
 import { db } from "@peerprep/db";
 import { env } from "@peerprep/env";
-import type { Difficulty } from "@peerprep/schemas";
+import type { Difficulty, NewRoom } from "@peerprep/schemas";
 import { questions } from "@peerprep/schemas/validators";
 import {
   ExpectedError,
@@ -11,6 +11,7 @@ import {
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
 
+import { createRoom } from "./controllers/rooms";
 import type { WorkerResponse } from "./worker";
 
 async function getQuestionsFromFilter(difficulties: Difficulty[], tags: string[]) {
@@ -26,11 +27,33 @@ async function getQuestionsFromFilter(difficulties: Difficulty[], tags: string[]
 const worker = new Worker(
   process.env.NODE_ENV === "production" ? "dist/worker.js" : "src/worker.ts",
 );
-worker.addEventListener("message", ({ data }: { data: WorkerResponse }) => {
+worker.addEventListener("message", async ({ data }: { data: WorkerResponse }) => {
   switch (data.type) {
     case "success": {
-      sendMessage(data.matched[0], { type: "success" });
-      sendMessage(data.matched[1], { type: "success" });
+      const roomData: NewRoom = {
+        userIds: data.matched,
+        questionId: data.questionId,
+        code: "code () {}",
+        language: "python",
+      };
+
+      try {
+        const roomId = await createRoom(roomData);
+        sendMessage(data.matched[0], {
+          type: "success",
+          matched: [data.matched[0], data.matched[1]],
+          questionId: data.questionId,
+          roomId: roomId,
+        });
+        sendMessage(data.matched[1], {
+          type: "success",
+          matched: [data.matched[0], data.matched[1]],
+          questionId: data.questionId,
+          roomId: roomId,
+        });
+      } catch (error) {
+        console.error("Failed to create room:", error);
+      }
       break;
     }
     case "timeout": {
@@ -75,7 +98,10 @@ const app = new Elysia()
 
 function sendMessage(
   userId: string,
-  message: { type: "success" } | { type: "acknowledgement" } | { type: "timeout" },
+  message:
+    | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
+    | { type: "acknowledgement" }
+    | { type: "timeout" },
 ) {
   app.server?.publish(userId, JSON.stringify(message));
 }
