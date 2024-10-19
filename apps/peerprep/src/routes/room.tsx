@@ -1,6 +1,6 @@
 // import { HocuspocusProvider } from "@hocuspocus/provider";
 import Editor from "@monaco-editor/react";
-import { Button } from "@peerprep/ui/button";
+import { Button, LinkButton } from "@peerprep/ui/button";
 import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@peerprep/ui/select";
 import { useQuestion } from "@peerprep/utils/client";
@@ -49,6 +49,26 @@ export default function RoomPage() {
       </div>
 
       <div className="bg-main-900 flex w-1/2 flex-grow flex-col px-4 py-4">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="w-48">
+            <Select value={language} onValueChange={value => setLanguage(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="JavaScript">JavaScript</SelectItem>
+                <SelectItem value="Python">Python</SelectItem>
+                <SelectItem value="Java">Java</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-48">
+            <LinkButton href={question.leetCodeLink} variants={{ variant: "primary" }}>
+              Submit on Leetcode
+            </LinkButton>
+          </div>
+        </div>
+
         <div className="flex-grow overflow-auto">
           <Editor
             height="100%"
@@ -63,25 +83,6 @@ export default function RoomPage() {
             //   new MonacoBinding(ytext, editorModel, new Set([editor]), provider.awareness);
             // }}
           />
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="flex items-center">
-            <Select value={language} onValueChange={value => setLanguage(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="JavaScript">JavaScript</SelectItem>
-                <SelectItem value="Python">Python</SelectItem>
-                <SelectItem value="Java">Java</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center justify-end">
-            <Button variants={{ variant: "primary" }} className="flex-none">
-              Run sample tests
-            </Button>
-          </div>
         </div>
       </div>
     </div>
