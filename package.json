@@ -21,6 +21,7 @@
     "@hocuspocus/provider": "^2.13.7",
     "@monaco-editor/react": "^4.6.0",
     "@peerprep/tsconfig": "workspace:*",
+    "@radix-ui/react-tabs": "^1.1.1",
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
     "@types/bun": "1.1.9",
     "@types/turndown": "5.0.5",
