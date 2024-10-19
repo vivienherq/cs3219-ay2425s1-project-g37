@@ -1,4 +1,4 @@
-import { HocuspocusProvider } from "@hocuspocus/provider";
+// import { HocuspocusProvider } from "@hocuspocus/provider";
 import Editor from "@monaco-editor/react";
 import { Button } from "@peerprep/ui/button";
 import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
@@ -6,16 +6,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuestion } from "@peerprep/utils/client";
 import { useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { MonacoBinding } from "y-monaco";
-import * as Y from "yjs";
 
-const ydoc = new Y.Doc();
-const provider = new HocuspocusProvider({
-  url: "ws://localhost:4000",
-  name: "test",
-  document: ydoc,
-});
-const ytext = ydoc.getText("monaco");
+// import { MonacoBinding } from "y-monaco";
+// import * as Y from "yjs";
+
+// const ydoc = new Y.Doc();
+// const provider = new HocuspocusProvider({
+//   url: "ws://localhost:4000",
+//   name: "test",
+//   document: ydoc,
+// });
+// const ytext = ydoc.getText("monaco");
 
 export default function RoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -55,12 +56,12 @@ export default function RoomPage() {
             // defaultLanguage="javascript"
             language={language}
             defaultValue="// some comment"
-            onMount={editor => {
-              const editorModel = editor.getModel();
-              if (!editorModel)
-                throw new Error("invariant: monaco editor model is null, this shouldn't happen");
-              new MonacoBinding(ytext, editorModel, new Set([editor]), provider.awareness);
-            }}
+            // onMount={editor => {
+            //   const editorModel = editor.getModel();
+            //   if (!editorModel)
+            //     throw new Error("invariant: monaco editor model is null, this shouldn't happen");
+            //   new MonacoBinding(ytext, editorModel, new Set([editor]), provider.awareness);
+            // }}
           />
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4">
