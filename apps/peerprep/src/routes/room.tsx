@@ -3,7 +3,7 @@ import { Button } from "@peerprep/ui/button";
 import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@peerprep/ui/select";
 import { useQuestion } from "@peerprep/utils/client";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
 export default function RoomPage() {
@@ -13,10 +13,10 @@ export default function RoomPage() {
   const location = useLocation();
   const { matched, questionId } = location.state || {};
 
-  const editorRef = useRef(null);
-  function handleEditorDidMount(editor, monaco) {
-    editorRef.current = editor;
-  }
+  // const editorRef = useRef(null);
+  // function handleEditorDidMount(editor, monaco) {
+  //   editorRef.current = editor;
+  // }
 
   const [language, setLanguage] = useState("JavaScript");
 
@@ -25,13 +25,6 @@ export default function RoomPage() {
   if (!question) return <div>Question not found.</div>;
 
   return (
-    // <div className="flex w-full flex-row justify-center px-6 py-12">
-    //   <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
-    //     <p>Room ID: {id}</p>
-    //     {matched && <p>Matched Users: {matched.join(", ")}</p>}
-    //     {questionId && <p>Question ID: {questionId}</p>}
-    //   </div>
-    // </div>
     <div className="flex h-full w-full gap-6">
       <div className="bg-main-900 flex w-full flex-grow flex-col gap-6 overflow-auto p-12">
         <p>Room ID: {id}</p>
@@ -45,14 +38,13 @@ export default function RoomPage() {
 
       <div className="bg-main-900 flex w-full flex-grow flex-col px-4 py-4">
         <div className="flex-grow overflow-auto">
-          {/* Flex-grow wrapper for the editor */}
           <Editor
-            height="100%" // Full height of the wrapper
+            height="100%"
             theme="vs-dark"
             // defaultLanguage="javascript"
             language={language}
             defaultValue="// some comment"
-            onMount={handleEditorDidMount}
+            // onMount={handleEditorDidMount}
           />
         </div>
         <div className="mt-4 grid grid-cols-2 gap-48">
