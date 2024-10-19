@@ -11,8 +11,8 @@ import {
 import { Elysia, t } from "elysia";
 import { StatusCodes } from "http-status-codes";
 
-import { createRoom } from "./controllers/rooms";
-import type { WorkerResponse } from "./worker";
+import { createRoom } from "~/controllers/rooms";
+import type { WorkerResponse } from "~/worker";
 
 async function getQuestionsFromFilter(difficulties: Difficulty[], tags: string[]) {
   const questions = await db.question.findMany({
