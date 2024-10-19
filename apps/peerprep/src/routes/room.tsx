@@ -63,18 +63,24 @@ export default function RoomPage() {
             }}
           />
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-48">
-          <Select value={language} onValueChange={value => setLanguage(value)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="JavaScript">JavaScript</SelectItem>
-              <SelectItem value="Python">Python</SelectItem>
-              <SelectItem value="Java">Java</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variants={{ variant: "primary" }}>Run sample tests</Button>
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="flex items-center">
+            <Select value={language} onValueChange={value => setLanguage(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="JavaScript">JavaScript</SelectItem>
+                <SelectItem value="Python">Python</SelectItem>
+                <SelectItem value="Java">Java</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-end">
+            <Button variants={{ variant: "primary" }} className="flex-none">
+              Run sample tests
+            </Button>
+          </div>
         </div>
       </div>
     </div>
