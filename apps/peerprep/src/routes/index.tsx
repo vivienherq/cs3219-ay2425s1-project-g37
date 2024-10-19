@@ -134,7 +134,7 @@ function MatchmakingForm({
   );
 }
 
-function LoadingScreen() {
+function LoadingScreen({ onAbort }: { onAbort: () => void }) {
   const { seconds, minutes } = useStopwatch({ autoStart: true });
   return (
     <div className="flex w-full flex-row justify-center px-6 py-12">
@@ -151,7 +151,7 @@ function LoadingScreen() {
           Time taken: {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
         </div>
         <div className="flex justify-center">
-          <Button variants={{ variant: "secondary" }} type="submit">
+          <Button variants={{ variant: "secondary" }} onClick={onAbort}>
             Abort
           </Button>
         </div>
@@ -162,26 +162,27 @@ function LoadingScreen() {
 
 export default function IndexPage() {
   const ws = useWsSubscription<
-    { difficulties: Difficulty[]; tags: string[] },
+    { type: "match"; difficulties: Difficulty[]; tags: string[] } | { type: "abort" },
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
     | { type: "acknowledgement" }
-    | { type: "timeout" }
+    | { type: "error"; message: string }
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
 
   useEffect(() => {
-    if (ws.data?.type === "timeout") toast.error("Matching timed out. Please try again.");
+    if (ws.data?.type === "error") toast.error(ws.data.message);
   }, [ws.data]);
 
   if (!ws.isReady) return null;
 
-  function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
-    ws.send({ difficulties, tags });
-  }
+  if (!ws.data || ws.data.type === "error")
+    return (
+      <MatchmakingForm
+        onMatchmaking={(difficulties, tags) => ws.send({ type: "match", difficulties, tags })}
+      />
+    );
 
-  if (!ws.data || ws.data.type === "timeout")
-    return <MatchmakingForm onMatchmaking={handleMatchmaking} />;
-
-  if (ws.data.type === "acknowledgement") return <LoadingScreen />;
+  if (ws.data.type === "acknowledgement")
+    return <LoadingScreen onAbort={() => ws.send({ type: "abort" })} />;
 
   if (ws.data.type === "success")
     return (
