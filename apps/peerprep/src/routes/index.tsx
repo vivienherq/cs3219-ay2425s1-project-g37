@@ -135,13 +135,12 @@ function MatchmakingForm({
 }
 
 function LoadingScreen() {
-  const { seconds, minutes, hours } = useStopwatch({ autoStart: true });
+  const { seconds, minutes } = useStopwatch({ autoStart: true });
   return (
     <div className="flex w-full flex-row justify-center px-6 py-12">
       <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
         <div className="flex items-center justify-center">
-          <div className="h-16 w-16 animate-spin rounded-full border-4 border-white border-b-transparent border-t-transparent"></div>
-          <div className="absolute h-16 w-16 animate-spin rounded-full border-4 border-white border-b-transparent border-t-transparent"></div>
+          <div className="border-main-50 h-16 w-16 animate-spin rounded-full border-2 border-b-transparent border-t-transparent"></div>
         </div>
         <h1 className="text-main-50 text-center text-2xl">Matching in progress...</h1>
         <p className="text-center">
@@ -149,9 +148,7 @@ function LoadingScreen() {
           tab will abort matching.
         </p>
         <div className="text-center">
-          <span>{hours < 10 ? `0${hours}` : hours}</span>:
-          <span>{minutes < 10 ? `0${minutes}` : minutes}</span>:
-          <span>{seconds < 10 ? `0${seconds}` : seconds}</span>
+          Time taken: {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
         </div>
         <div className="flex justify-center">
           <Button variants={{ variant: "secondary" }} type="submit">
@@ -172,7 +169,7 @@ export default function IndexPage() {
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
 
   useEffect(() => {
-    if (ws.data?.type === "timeout") toast.error("Timed out");
+    if (ws.data?.type === "timeout") toast.error("Matching timed out. Please try again.");
   }, [ws.data]);
 
   if (!ws.isReady) return null;

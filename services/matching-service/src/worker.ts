@@ -11,7 +11,7 @@ type Task = z.infer<typeof taskSchema>;
 
 export type WorkerResponse =
   | { type: "timeout"; userId: string }
-  | { type: "success"; matched: [string, string]; questionId: string; roomId: string };
+  | { type: "success"; matched: [string, string]; questionId: string };
 
 function publish(response: WorkerResponse) {
   self.postMessage(response);
@@ -92,7 +92,6 @@ async function processTasks() {
             type: "success",
             matched: [task.userId, result.matchedUserId],
             questionId: result.matchedQuestionId,
-            roomId: "",
           });
         }
         break;

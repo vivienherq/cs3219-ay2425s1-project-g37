@@ -1,6 +1,6 @@
 import { db } from "@peerprep/db";
 import { env } from "@peerprep/env";
-import type { Difficulty, NewRoom } from "@peerprep/schemas";
+import type { Difficulty } from "@peerprep/schemas";
 import { questions } from "@peerprep/schemas/validators";
 import {
   ExpectedError,
@@ -30,15 +30,13 @@ const worker = new Worker(
 worker.addEventListener("message", async ({ data }: { data: WorkerResponse }) => {
   switch (data.type) {
     case "success": {
-      const roomData: NewRoom = {
-        userIds: data.matched,
-        questionId: data.questionId,
-        code: "code () {}",
-        language: "python",
-      };
-
       try {
-        const roomId = await createRoom(roomData);
+        const roomId = await createRoom({
+          userIds: data.matched,
+          questionId: data.questionId,
+          code: "",
+          language: "python",
+        });
         sendMessage(data.matched[0], {
           type: "success",
           matched: [data.matched[0], data.matched[1]],
