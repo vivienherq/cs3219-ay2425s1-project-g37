@@ -1,6 +1,6 @@
 // import { HocuspocusProvider } from "@hocuspocus/provider";
 import Editor from "@monaco-editor/react";
-import { Button, LinkButton } from "@peerprep/ui/button";
+import { LinkButton } from "@peerprep/ui/button";
 import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@peerprep/ui/select";
 import { useQuestion } from "@peerprep/utils/client";
