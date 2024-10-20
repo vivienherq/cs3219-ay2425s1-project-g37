@@ -14,6 +14,11 @@ export type WorkerResponse =
   | { type: "success"; matched: [string, string]; questionId: string };
 
 function publish(response: WorkerResponse) {
+  if (response.type === "success")
+    console.log(`[worker] Matched user ${response.matched[0]} with user ${response.matched[1]}`);
+  if (response.type === "timeout")
+    console.log(`[worker] Timed out ${response.userId} (after ${TIMEOUT_IN_SECONDS}s)`);
+
   self.postMessage(response);
 }
 
@@ -107,6 +112,14 @@ async function processTasks() {
 self.addEventListener("message", ({ data }) => {
   const parseResult = taskSchema.safeParse(data);
   if (!parseResult.success) return console.error("Invalid message sent to matching queue worker");
+
+  if (parseResult.data.type === "add")
+    console.log(
+      `[worker] Adding user ${parseResult.data.userId} to queue (${parseResult.data.questionIds.length} questions)`,
+    );
+  if (parseResult.data.type === "remove")
+    console.log(`[worker] Removing user ${parseResult.data.userId} from queue`);
+
   taskQueue.push(parseResult.data);
 });
 processTasks();
