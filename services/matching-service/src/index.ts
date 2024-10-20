@@ -27,8 +27,18 @@ async function getQuestionsFromFilter(difficulties: Difficulty[], tags: string[]
 const worker = new Worker(
   process.env.NODE_ENV === "production" ? "dist/worker.js" : "src/worker.ts",
 );
+
+async function processTimeout(userId: string) {
+  sendMessage(userId, { type: "requeue-or-exit" });
+}
+
 worker.addEventListener("message", async ({ data }: { data: WorkerResponse }) => {
   switch (data.type) {
+    case "requeue-or-exit": {
+      await processTimeout(data.userId);
+      break;
+    }
+
     case "success": {
       const roomData: NewRoom = {
         userIds: data.matched,
@@ -101,6 +111,7 @@ function sendMessage(
   message:
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
     | { type: "acknowledgement" }
+    | { type: "requeue-or-exit" }
     | { type: "timeout" },
 ) {
   app.server?.publish(userId, JSON.stringify(message));

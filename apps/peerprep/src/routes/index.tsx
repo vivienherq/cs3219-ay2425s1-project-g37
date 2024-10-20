@@ -5,7 +5,6 @@ import { cn } from "@peerprep/ui/cn";
 import { FormControl } from "@peerprep/ui/form-control";
 import { useAuth, useQuestions, useWsSubscription } from "@peerprep/utils/client";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { Navigate } from "react-router-dom";
 import { useStopwatch } from "react-timer-hook";
 
@@ -169,20 +168,72 @@ export default function IndexPage() {
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
     | { type: "acknowledgement" }
     | { type: "timeout" }
+    | { type: "requeue-or-exit" }
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
 
+  const [requeueOptionVisible, setRequeueOptionVisible] = useState(false);
+  const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+
   useEffect(() => {
-    if (ws.data?.type === "timeout") toast.error("Timed out");
+    if (ws.data?.type === "timeout") setRequeueOptionVisible(true);
   }, [ws.data]);
 
   if (!ws.isReady) return null;
 
+  const handleRequeue = () => {
+    ws.send({ difficulties, tags });
+    setRequeueOptionVisible(false);
+  };
+
+  const handleExitQueue = () => {
+    setRequeueOptionVisible(false);
+    // Redirect to home
+    window.location.href = "/";
+  };
+
+
+
   function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
+    //setRequeueOptionVisible(true);
+    setDifficulties(difficulties);
+    setTags(tags);
     ws.send({ difficulties, tags });
   }
 
-  if (!ws.data || ws.data.type === "timeout")
-    return <MatchmakingForm onMatchmaking={handleMatchmaking} />;
+  if (!ws.data || ws.data.type === "timeout") {
+    if (requeueOptionVisible) {
+      return (
+        <div className="flex w-full flex-row justify-center px-6 py-12">
+          <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
+            <h1 className="text-main-50 text-center text-2xl">Matching timed out</h1>
+            <p className="text-center">
+              Would you like to try again?
+            </p>
+            <div className="flex justify-center gap-4 mt-4">
+              <Button
+                variants={{ variant: "primary" }}
+                className="px-6 py-3 text-lg w-36"
+                onClick={handleRequeue}
+              >
+                Retry
+              </Button>
+              <Button
+                variants={{ variant: "secondary" }}
+                className="px-6 py-3 text-lg w-36"
+                onClick={handleExitQueue}
+              >
+                Exit
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      return <MatchmakingForm onMatchmaking={handleMatchmaking} />;
+    }
+  }
+  //return <MatchmakingForm onMatchmaking={handleMatchmaking} />;
 
   if (ws.data.type === "acknowledgement") return <LoadingScreen />;
 
