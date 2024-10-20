@@ -19,6 +19,8 @@ function publish(response: WorkerResponse) {
   if (response.type === "timeout")
     console.log(`[worker] Timed out ${response.userId} (after ${TIMEOUT_IN_SECONDS}s)`);
 
+  console.log(matchmakingQueue.toString());
+
   self.postMessage(response);
 }
 
@@ -75,6 +77,17 @@ class MatchmakingQueue {
       }
     }
   }
+
+  toString() {
+    return JSON.stringify(
+      {
+        userMap: Object.fromEntries(this.userMap),
+        questionMap: Object.fromEntries(this.questionMap),
+      },
+      null,
+      2,
+    );
+  }
 }
 
 const taskQueue: Task[] = [];
@@ -106,6 +119,8 @@ async function processTasks() {
         break;
       }
     }
+
+    console.log(matchmakingQueue.toString());
   }
 }
 
