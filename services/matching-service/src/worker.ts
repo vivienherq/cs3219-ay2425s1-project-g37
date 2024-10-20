@@ -1,4 +1,68 @@
+import winston from "winston";
 import { z } from "zod";
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+  transports: [
+    new winston.transports.Console(), // Logs to the terminal
+    new winston.transports.File({ filename: "queue_status.log" }), // Logs to a file
+  ],
+});
+
+// Helper function to serialize matchmakingQueue
+function serializeMatchmakingQueue(matchmakingQueue) {
+  const questionMap = {};
+  matchmakingQueue.questionMap.forEach((userIds, questionId) => {
+    questionMap[questionId] = Array.from(userIds);
+  });
+
+  const userMap = {};
+  matchmakingQueue.userMap.forEach(({ addedTime, questions }, userId) => {
+    userMap[userId] = { addedTime, questions };
+  });
+
+  return { questionMap, userMap };
+}
+
+// Logging function for queue status
+function logQueueStatus(action, matchmakingQueue, taskQueue) {
+  logger.info(`Queue status after ${action}:`, {
+    matchmakingQueue: serializeMatchmakingQueue(matchmakingQueue),
+    taskQueue: taskQueue.map(task => task),
+  });
+}
+
+// Function to log a match found
+function logMatchFound(userId, matchedUserId, matchedQuestionId) {
+  logger.info("Match found:", {
+    userId,
+    matchedUserId,
+    matchedQuestionId,
+  });
+}
+
+// Function to log when an entry is added to the queue
+function logEntryAdded(userId, questionIds) {
+  logger.info("New entry added to the queue:", {
+    userId,
+    questionIds,
+  });
+}
+
+// Function to log when an entry is removed from the queue
+function logEntryRemoved(userId) {
+  logger.info("Entry removed from the queue:", {
+    userId,
+  });
+}
+
+// Function to log when a timeout occurs
+function logTimeout(userId) {
+  logger.info("Timeout occurred for user:", {
+    userId,
+  });
+}
 
 declare const self: Worker;
 
@@ -59,6 +123,7 @@ class MatchmakingQueue {
       userIds.add(userId);
       this.questionMap.set(questionId, userIds);
     }
+    logEntryAdded(userId, questionIds);
     return null;
   }
 
@@ -68,6 +133,7 @@ class MatchmakingQueue {
       if (now.getTime() - addedTime.getTime() > TIMEOUT_IN_SECONDS * 1000) {
         this.remove(userId);
         publish({ type: "timeout", userId });
+        logTimeout(userId);
       }
     }
   }
@@ -88,6 +154,7 @@ async function processTasks() {
     switch (task.type) {
       case "add": {
         const result = matchmakingQueue.enqueue(task.userId, task.questionIds);
+        logQueueStatus("add", matchmakingQueue, taskQueue);
         if (result) {
           publish({
             type: "success",
@@ -95,11 +162,14 @@ async function processTasks() {
             questionId: result.matchedQuestionId,
             roomId: "",
           });
+          logMatchFound(task.userId, result.matchedUserId, result.matchedQuestionId);
         }
         break;
       }
       case "remove": {
         matchmakingQueue.remove(task.userId);
+        logQueueStatus("remove", matchmakingQueue, taskQueue);
+        logEntryRemoved(task.userId);
         break;
       }
     }
