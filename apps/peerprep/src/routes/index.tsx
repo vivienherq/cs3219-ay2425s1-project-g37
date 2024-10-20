@@ -192,8 +192,6 @@ export default function IndexPage() {
     window.location.href = "/";
   };
 
-
-
   function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
     //setRequeueOptionVisible(true);
     setDifficulties(difficulties);
@@ -207,20 +205,18 @@ export default function IndexPage() {
         <div className="flex w-full flex-row justify-center px-6 py-12">
           <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
             <h1 className="text-main-50 text-center text-2xl">Matching timed out</h1>
-            <p className="text-center">
-              Would you like to try again?
-            </p>
-            <div className="flex justify-center gap-4 mt-4">
+            <p className="text-center">Would you like to try again?</p>
+            <div className="mt-4 flex justify-center gap-4">
               <Button
                 variants={{ variant: "primary" }}
-                className="px-6 py-3 text-lg w-36"
+                className="w-36 px-6 py-3 text-lg"
                 onClick={handleRequeue}
               >
                 Retry
               </Button>
               <Button
                 variants={{ variant: "secondary" }}
-                className="px-6 py-3 text-lg w-36"
+                className="w-36 px-6 py-3 text-lg"
                 onClick={handleExitQueue}
               >
                 Exit
