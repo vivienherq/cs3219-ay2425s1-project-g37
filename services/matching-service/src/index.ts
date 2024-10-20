@@ -15,8 +15,7 @@ import type { WorkerResponse } from "~/worker";
 type ResponseMessage =
   | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
   | { type: "acknowledgement" }
-  | { type: "requeue-or-exit" }
-  | { type: "error"; message: string };
+  | { type: "error"; title: string; message: string };
 
 function getMessage(message: ResponseMessage) {
   return JSON.stringify(message);
@@ -36,17 +35,8 @@ const worker = new Worker(
   process.env.NODE_ENV === "production" ? "dist/worker.js" : "src/worker.ts",
 );
 
-async function processTimeout(userId: string) {
-  sendMessage(userId, { type: "requeue-or-exit" });
-}
-
 worker.addEventListener("message", async ({ data }: { data: WorkerResponse }) => {
   switch (data.type) {
-    case "requeue-or-exit": {
-      await processTimeout(data.userId);
-      break;
-    }
-
     case "success": {
       try {
         const roomId = await createRoom({
@@ -73,7 +63,11 @@ worker.addEventListener("message", async ({ data }: { data: WorkerResponse }) =>
       break;
     }
     case "timeout": {
-      sendMessage(data.userId, { type: "error", message: "Matching timed out. Please try again." });
+      sendMessage(data.userId, {
+        type: "error",
+        title: "Timed out",
+        message: "Matching timed out. Please try again.",
+      });
       break;
     }
   }
@@ -97,7 +91,9 @@ const app = new Elysia()
     ]),
     open(ws) {
       if (!ws.data.user) {
-        ws.send(getMessage({ type: "error", message: "You must be logged in" }));
+        ws.send(
+          getMessage({ type: "error", title: "Unauthorised", message: "You must be logged in." }),
+        );
         return;
       }
       ws.subscribe(ws.data.user.id);
@@ -106,14 +102,19 @@ const app = new Elysia()
       if (!ws.data.user) return;
       if (data.type === "abort") {
         worker.postMessage({ type: "remove", userId: ws.data.user.id });
-        sendMessage(ws.data.user.id, { type: "error", message: "Aborted. Please try again." });
+        sendMessage(ws.data.user.id, {
+          type: "error",
+          title: "Matching aborted",
+          message: "Aborted successfully. Please try again.",
+        });
         return;
       }
       const questions = await getQuestionsFromFilter(data.difficulties, data.tags);
       if (questions.length === 0) {
         sendMessage(ws.data.user.id, {
           type: "error",
-          message: "No questions matched the criteria.",
+          title: "No questions matched",
+          message: "No questions matched the criteria you provided.",
         });
         return;
       }

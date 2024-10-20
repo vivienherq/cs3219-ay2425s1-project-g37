@@ -11,8 +11,7 @@ type Task = z.infer<typeof taskSchema>;
 
 export type WorkerResponse =
   | { type: "timeout"; userId: string }
-  | { type: "success"; matched: [string, string]; questionId: string }
-  | { type: "requeue-or-exit"; userId: string };
+  | { type: "success"; matched: [string, string]; questionId: string };
 
 function publish(response: WorkerResponse) {
   self.postMessage(response);
