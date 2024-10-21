@@ -5,3 +5,4 @@ export * from "./client/ky";
 export * from "./client/ws";
 export * from "./client/auth";
 export * from "./client/questions";
+export * from "./client/rooms";

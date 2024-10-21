@@ -20,6 +20,13 @@ services:
     volumes:
       - ./services/matching-service:/app/services/matching-service
 
+  collaboration:
+    build:
+      target: development
+    command: bun dev --filter=@peerprep/collaboration-service
+    volumes:
+      - ./services/collaboration-service:/app/services/collaboration-service
+
   frontend:
     build:
       target: development

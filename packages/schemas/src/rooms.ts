@@ -4,14 +4,11 @@
 export interface NewRoom {
   userIds: [string, string];
   questionId: string;
-  code: string;
-  language: string;
 }
 
 export interface Room extends NewRoom {
   id: string;
-  // TODO: add ChatMessages etc here
+  ydoc: Uint8Array | null;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt?: Date;
 }
