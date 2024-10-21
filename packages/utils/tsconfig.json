@@ -1,3 +1,3 @@
 {
-  "extends": "@peerprep/tsconfig/base.json"
+  "extends": "@peerprep/tsconfig/browser.json"
 }
