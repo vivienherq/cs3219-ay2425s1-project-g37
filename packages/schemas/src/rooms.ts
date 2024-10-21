@@ -8,7 +8,9 @@ export interface NewRoom {
 
 export interface Room extends NewRoom {
   id: string;
-  ydoc: Uint8Array | null;
+  // This one is not serialisable, hence not included in responses. The ydoc is exclusively for use
+  // by the Hocuspocus server only.
+  // ydoc: Uint8Array | null;
   createdAt: Date;
   updatedAt: Date;
 }

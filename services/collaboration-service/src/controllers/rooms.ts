@@ -7,9 +7,10 @@ export async function getRoom(roomId: string): Promise<Room> {
   if (roomId.length !== 24) throw new ExpectedError("Invalid room ID", StatusCodes.BAD_REQUEST);
   const room = await db.room.findUnique({ where: { id: roomId } });
   if (!room) throw new ExpectedError("Room not found", StatusCodes.NOT_FOUND);
-  const userIds = room.userIds;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { userIds, ydoc, ...rest } = room;
   if (userIds.length !== 2) throw new Error("invariant: Room must have exactly 2 users");
-  return { ...room, userIds: [userIds[0], userIds[1]] };
+  return { ...rest, userIds: [userIds[0], userIds[1]] };
 }
 
 export async function getYDocFromRoom(roomId: string): Promise<Uint8Array | null> {
