@@ -47,14 +47,12 @@ export default function RoomPage() {
             url: `ws://localhost:${env.VITE_COLLABORATION_SERVICE_PORT}`,
             name: id,
             document: ydoc,
-            token:
-              "dummy token, i dont need this but i must send because hocuspocus requires it for some reasons",
+            token: "dummy, required because hocuspocus needs it but we don't do anything with it",
           });
           provider.setAwarenessField("user", { username: user.username } satisfies UserAwareness);
           provider.on(
             "awarenessUpdate",
             ({ states }: { states: { clientId: number; user: UserAwareness }[] }) => {
-              console.log(states);
               const newStylesheets = states.map(({ clientId, user: awarenessUser }) => {
                 const colour = user.username === awarenessUser.username ? "#a855f7" : "#f59e0b";
                 const stylesheet = `
