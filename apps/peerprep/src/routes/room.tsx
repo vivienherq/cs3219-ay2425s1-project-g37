@@ -3,7 +3,7 @@ import Editor from "@monaco-editor/react";
 import { env } from "@peerprep/env";
 import { useAuth, useRoom } from "@peerprep/utils/client";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { MonacoBinding } from "y-monaco";
 import * as Y from "yjs";
 
@@ -16,10 +16,11 @@ export default function RoomPage() {
   if (!id) throw new Error("invariant: id is undefined");
 
   const { data: user } = useAuth();
-  const { data: room } = useRoom(id);
+  const { data: room, error } = useRoom(id);
 
   const [stylesheets, setStylesheets] = useState<string[]>([]);
 
+  if (error) return <Navigate to="/" />;
   if (!user || !room) return null;
 
   const { userIds, questionId } = room;
@@ -46,6 +47,8 @@ export default function RoomPage() {
             url: `ws://localhost:${env.VITE_COLLABORATION_SERVICE_PORT}`,
             name: id,
             document: ydoc,
+            token:
+              "dummy token, i dont need this but i must send because hocuspocus requires it for some reasons",
           });
           provider.setAwarenessField("user", { username: user.username } satisfies UserAwareness);
           provider.on(
