@@ -39,12 +39,7 @@ worker.addEventListener("message", async ({ data }: { data: WorkerResponse }) =>
   switch (data.type) {
     case "success": {
       try {
-        const roomId = await createRoom({
-          userIds: data.matched,
-          questionId: data.questionId,
-          code: "",
-          language: "python",
-        });
+        const roomId = await createRoom({ userIds: data.matched, questionId: data.questionId });
         sendMessage(data.matched[0], {
           type: "success",
           matched: [data.matched[0], data.matched[1]],

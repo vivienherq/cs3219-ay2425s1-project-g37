@@ -235,14 +235,5 @@ export default function IndexPage() {
   if (ws.data.type === "acknowledgement")
     return <LoadingScreen onAbort={() => ws.send({ type: "abort" })} />;
 
-  if (ws.data.type === "success")
-    return (
-      <Navigate
-        to={`/room/${ws.data.roomId}`}
-        state={{
-          matched: ws.data.matched,
-          questionId: ws.data.questionId,
-        }}
-      />
-    );
+  if (ws.data.type === "success") return <Navigate to={`/room/${ws.data.roomId}`} />;
 }

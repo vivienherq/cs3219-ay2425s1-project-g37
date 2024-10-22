@@ -4,14 +4,13 @@
 export interface NewRoom {
   userIds: [string, string];
   questionId: string;
-  code: string;
-  language: string;
 }
 
 export interface Room extends NewRoom {
   id: string;
-  // TODO: add ChatMessages etc here
+  // This one is not serialisable, hence not included in responses. The ydoc is exclusively for use
+  // by the Hocuspocus server only.
+  // ydoc: Uint8Array | null;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt?: Date;
 }
