@@ -4,7 +4,8 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import ErrorPage from "~/error";
-import AuthProtectedLayout from "~/layouts/auth-protected";
+import AuthProtectedCenteredLayout from "~/layouts/auth-protected-centered";
+import AuthProtectedEmptyLayout from "~/layouts/auth-protected-empty";
 import PublicNotAuthLayout from "~/layouts/public-not-auth";
 import RootLayout from "~/layouts/root";
 import IndexPage from "~/routes/index";
@@ -29,13 +30,13 @@ const router = createBrowserRouter([
         ],
       },
       {
-        element: <AuthProtectedLayout />,
+        element: <AuthProtectedEmptyLayout />,
         children: [
-          { index: true, element: <IndexPage /> },
           {
-            path: "/room/:id",
-            element: <RoomPage />,
+            element: <AuthProtectedCenteredLayout />,
+            children: [{ index: true, element: <IndexPage /> }],
           },
+          { path: "/room/:id", element: <RoomPage /> },
         ],
       },
     ],

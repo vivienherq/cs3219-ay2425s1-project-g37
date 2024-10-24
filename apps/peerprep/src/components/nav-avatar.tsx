@@ -13,11 +13,8 @@ import { getOrigin } from "@peerprep/utils/client";
 import { useAuth, useLogout } from "@peerprep/utils/client";
 import { ArrowUpRight } from "lucide-react";
 import toast from "react-hot-toast";
-import { Navigate, Outlet } from "react-router-dom";
 
-import { NavLogo } from "~/components/nav-logo";
-
-function NavAvatar() {
+export function NavAvatar() {
   const { data: user } = useAuth();
   const { trigger } = useLogout();
   if (!user) return null;
@@ -63,23 +60,5 @@ function NavAvatar() {
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-// Redirect away from this layout if the user is not authenticated
-export default function AuthProtectedLayout() {
-  const { data: user } = useAuth();
-  if (user === undefined) return null; // loading state
-  if (user === null) return <Navigate to="/login" />;
-  return (
-    <div>
-      <nav className="container flex flex-row justify-between py-6">
-        <NavLogo />
-        <NavAvatar />
-      </nav>
-      <main className="container py-6">
-        <Outlet />
-      </main>
-    </div>
   );
 }
