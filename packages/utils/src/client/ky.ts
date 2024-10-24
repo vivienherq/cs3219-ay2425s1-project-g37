@@ -64,3 +64,5 @@ export const questionsClient = createClient(getOrigin("questions"));
 
 // Probably not needed since we use this service as a ws server
 export const matchingClient = createClient(getOrigin("matching"));
+
+export const collaborationClient = createClient(getOrigin("collaboration"));

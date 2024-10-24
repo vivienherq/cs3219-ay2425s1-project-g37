@@ -10,8 +10,7 @@ import RootLayout from "~/layouts/root";
 import IndexPage from "~/routes/index";
 import LoginPage from "~/routes/login";
 import RegisterPage from "~/routes/register";
-
-import RoomPage from "./routes/room";
+import RoomPage from "~/routes/room";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");

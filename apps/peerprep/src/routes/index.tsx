@@ -4,8 +4,7 @@ import { Button } from "@peerprep/ui/button";
 import { cn } from "@peerprep/ui/cn";
 import { FormControl } from "@peerprep/ui/form-control";
 import { useAuth, useQuestions, useWsSubscription } from "@peerprep/utils/client";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useStopwatch } from "react-timer-hook";
 
@@ -28,14 +27,20 @@ function useMatchedQuestions(difficulties: Difficulty[], tags: string[]) {
 }
 
 function MatchmakingForm({
-  onMatchmaking,
+  difficulties,
+  setDifficulties,
+  selectedTags,
+  setSelectedTags,
+  onSubmit,
 }: {
-  onMatchmaking: (difficulties: Difficulty[], tags: string[]) => void;
+  difficulties: Difficulty[];
+  setDifficulties: React.Dispatch<React.SetStateAction<Difficulty[]>>;
+  selectedTags: string[];
+  setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>;
+  onSubmit: () => void;
 }) {
   const { data: user } = useAuth();
   const allTags = useTags();
-  const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const matchedQuestions = useMatchedQuestions(difficulties, selectedTags);
 
   function toggleDifficulty(difficulty: Difficulty) {
@@ -58,7 +63,7 @@ function MatchmakingForm({
         className="bg-main-900 flex w-full max-w-lg flex-col gap-6 overflow-auto p-12"
         onSubmit={async e => {
           e.preventDefault();
-          onMatchmaking(difficulties, selectedTags);
+          onSubmit();
         }}
       >
         <h1 className="text-main-50 text-2xl">Welcome, @{user.username}!</h1>
@@ -134,14 +139,13 @@ function MatchmakingForm({
   );
 }
 
-function LoadingScreen() {
-  const { seconds, minutes, hours } = useStopwatch({ autoStart: true });
+function LoadingScreen({ onAbort }: { onAbort: () => void }) {
+  const { seconds, minutes } = useStopwatch({ autoStart: true });
   return (
     <div className="flex w-full flex-row justify-center px-6 py-12">
       <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
         <div className="flex items-center justify-center">
-          <div className="h-16 w-16 animate-spin rounded-full border-4 border-white border-b-transparent border-t-transparent"></div>
-          <div className="absolute h-16 w-16 animate-spin rounded-full border-4 border-white border-b-transparent border-t-transparent"></div>
+          <div className="border-main-50 h-16 w-16 animate-spin rounded-full border-2 border-b-transparent border-t-transparent"></div>
         </div>
         <h1 className="text-main-50 text-center text-2xl">Matching in progress...</h1>
         <p className="text-center">
@@ -149,13 +153,40 @@ function LoadingScreen() {
           tab will abort matching.
         </p>
         <div className="text-center">
-          <span>{hours < 10 ? `0${hours}` : hours}</span>:
-          <span>{minutes < 10 ? `0${minutes}` : minutes}</span>:
-          <span>{seconds < 10 ? `0${seconds}` : seconds}</span>
+          Time taken: {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
         </div>
         <div className="flex justify-center">
-          <Button variants={{ variant: "secondary" }} type="submit">
+          <Button variants={{ variant: "secondary" }} onClick={onAbort}>
             Abort
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorScreen({
+  title,
+  message,
+  onRetry,
+  onExit,
+}: {
+  title: string;
+  message: string;
+  onRetry: () => void;
+  onExit: () => void;
+}) {
+  return (
+    <div className="flex w-full flex-row justify-center px-6 py-12">
+      <div className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-12">
+        <h1 className="text-main-50 text-center text-2xl">{title}</h1>
+        <p className="text-center">{message}</p>
+        <div className="grid grid-cols-2 gap-6">
+          <Button onClick={onRetry} variants={{ variant: "primary" }}>
+            Retry
+          </Button>
+          <Button onClick={onExit} variants={{ variant: "secondary" }}>
+            Change filters
           </Button>
         </div>
       </div>
@@ -165,35 +196,44 @@ function LoadingScreen() {
 
 export default function IndexPage() {
   const ws = useWsSubscription<
-    { difficulties: Difficulty[]; tags: string[] },
+    { type: "match"; difficulties: Difficulty[]; tags: string[] } | { type: "abort" },
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
     | { type: "acknowledgement" }
-    | { type: "timeout" }
+    | { type: "error"; title: string; message: string }
   >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
 
-  useEffect(() => {
-    if (ws.data?.type === "timeout") toast.error("Timed out");
-  }, [ws.data]);
+  const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showFormIfError, setShowFormIfError] = useState(true);
 
   if (!ws.isReady) return null;
 
-  function handleMatchmaking(difficulties: Difficulty[], tags: string[]) {
-    ws.send({ difficulties, tags });
-  }
-
-  if (!ws.data || ws.data.type === "timeout")
-    return <MatchmakingForm onMatchmaking={handleMatchmaking} />;
-
-  if (ws.data.type === "acknowledgement") return <LoadingScreen />;
-
-  if (ws.data.type === "success")
+  if (ws.data?.type === "error" && !showFormIfError)
     return (
-      <Navigate
-        to={`/room/${ws.data.roomId}`}
-        state={{
-          matched: ws.data.matched,
-          questionId: ws.data.questionId,
+      <ErrorScreen
+        title={ws.data.title}
+        message={ws.data.message}
+        onRetry={() => ws.send({ type: "match", difficulties, tags: selectedTags })}
+        onExit={() => setShowFormIfError(true)}
+      />
+    );
+
+  if (!ws.data || ws.data.type === "error")
+    return (
+      <MatchmakingForm
+        difficulties={difficulties}
+        setDifficulties={setDifficulties}
+        selectedTags={selectedTags}
+        setSelectedTags={setSelectedTags}
+        onSubmit={() => {
+          ws.send({ type: "match", difficulties, tags: selectedTags });
+          setShowFormIfError(false);
         }}
       />
     );
+
+  if (ws.data.type === "acknowledgement")
+    return <LoadingScreen onAbort={() => ws.send({ type: "abort" })} />;
+
+  if (ws.data.type === "success") return <Navigate to={`/room/${ws.data.roomId}`} />;
 }
