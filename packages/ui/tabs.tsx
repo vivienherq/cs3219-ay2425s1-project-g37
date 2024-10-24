@@ -3,17 +3,19 @@ import { forwardRef } from "react";
 
 import { cn } from "./cn";
 
-const Tabs = TabsPrimitive.Root;
+const Tabs = forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Root ref={ref} className={cn("flex flex-col gap-6", className)} {...props} />
+));
+Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const TabsList = forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn("border-main-800 flex border-b", className)}
-    {...props}
-  />
+  <TabsPrimitive.List ref={ref} className={cn("flex flex-row gap-6", className)} {...props} />
 ));
 TabsList.displayName = TabsPrimitive.List.displayName;
 
@@ -24,8 +26,8 @@ const TabsTrigger = forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "text-main-400 border-transparent px-4 py-2 transition-colors hover:border-white hover:text-white focus:text-white",
-      "data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:text-white",
+      "text-main-400 hover:text-main-300 border-transparent py-2 text-sm font-light uppercase tracking-wider transition-colors focus:text-white",
+      "data-[state=active]:border-b data-[state=active]:border-white data-[state=active]:text-white",
       className,
     )}
     {...props}
@@ -33,18 +35,6 @@ const TabsTrigger = forwardRef<
 ));
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
-const TabsContent = forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn("bg-main-900 text-main-400 mt-4 p-4", className)}
-    {...props}
-  >
-    {children}
-  </TabsPrimitive.Content>
-));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
+const TabsContent = TabsPrimitive.Content;
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };
