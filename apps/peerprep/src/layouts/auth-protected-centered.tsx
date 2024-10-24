@@ -10,7 +10,7 @@ export default function AuthProtectedCenteredLayout() {
         <NavLogo />
         <NavAvatar />
       </nav>
-      <main className="container flex w-full flex-grow overflow-hidden py-6">
+      <main>
         <Outlet />
       </main>
     </div>
