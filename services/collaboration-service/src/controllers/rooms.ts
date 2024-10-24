@@ -1,5 +1,5 @@
 import { db } from "@peerprep/db";
-import type { Room } from "@peerprep/schemas";
+import type { Room, User } from "@peerprep/schemas";
 import { ExpectedError, decorateUser } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
@@ -12,6 +12,10 @@ import { StatusCodes } from "http-status-codes";
 //     imageUrl: `https://www.gravatar.com/avatar/${new Bun.CryptoHasher("sha256").update(user.email.toLowerCase()).digest("hex")}?d=identicon&size=256`,
 //   };
 // }
+
+function stripUser({ id, imageUrl, isAdmin, username }: User) {
+  return { id, imageUrl, isAdmin, username };
+}
 
 export async function getRoom(roomId: string): Promise<Room> {
   if (roomId.length !== 24) throw new ExpectedError("Invalid room ID", StatusCodes.BAD_REQUEST);
@@ -27,7 +31,7 @@ export async function getRoom(roomId: string): Promise<Room> {
   return {
     ...rest,
     userIds: [userIds[0], userIds[1]],
-    users: [decorateUser(users[0]), decorateUser(users[1])],
+    users: [stripUser(decorateUser(users[0])), stripUser(decorateUser(users[1]))],
   };
 }
 
