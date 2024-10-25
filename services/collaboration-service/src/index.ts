@@ -20,6 +20,7 @@ const server = Server.configure({
       throw new ExpectedError("Unauthorized", StatusCodes.UNAUTHORIZED);
     return { user: result.user };
   },
+  onStateless: async ({ document, payload }) => document.broadcastStateless(payload),
   extensions: [
     new Database({
       fetch: ({ documentName }) => getYDocFromRoom(documentName),
