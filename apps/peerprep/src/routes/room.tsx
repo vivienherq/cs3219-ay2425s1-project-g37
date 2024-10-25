@@ -230,25 +230,30 @@ function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
 function ChatMessageBox() {
   const [message, setMessage] = useState("");
   const { user } = usePageData();
+  function submit() {
+    const content = message.trim();
+    if (!content) return;
+    const chatMessage: ChatMessageType = {
+      id: nanoid(),
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+      content,
+    };
+    ydoc.transact(() => {
+      const yChatMessage = new Y.Map<string>();
+      yChatMessage.set("id", chatMessage.id);
+      yChatMessage.set("userId", chatMessage.userId);
+      yChatMessage.set("timestamp", chatMessage.timestamp);
+      yChatMessage.set("content", chatMessage.content);
+      yChatMessages.push([yChatMessage]);
+    });
+    setMessage("");
+  }
   return (
     <form
       onSubmit={e => {
         e.preventDefault();
-        const chatMessage: ChatMessageType = {
-          id: nanoid(),
-          userId: user.id,
-          timestamp: new Date().toISOString(),
-          content: message.trim(),
-        };
-        ydoc.transact(() => {
-          const yChatMessage = new Y.Map<string>();
-          yChatMessage.set("id", chatMessage.id);
-          yChatMessage.set("userId", chatMessage.userId);
-          yChatMessage.set("timestamp", chatMessage.timestamp);
-          yChatMessage.set("content", chatMessage.content);
-          yChatMessages.push([yChatMessage]);
-        });
-        setMessage("");
+        submit();
       }}
       className="bg-main-800 focus-within:border-main-500 flex flex-col border border-transparent pt-2"
     >
@@ -257,12 +262,20 @@ function ChatMessageBox() {
         placeholder="Say something"
         value={message}
         onValueChange={setMessage}
+        onKeyDown={e => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            submit();
+          }
+        }}
       />
       <div className="flex flex-row items-end justify-between px-4 pb-4">
-        <div className="text-main-500 text-xs">Markdown syntax is supported</div>
+        <div className="text-main-500 text-xs">
+          Markdown syntax is supported. Shift+Enter for new line.
+        </div>
         <Button
           type="submit"
-          disabled={!message}
+          disabled={!message.trim()}
           className="w-auto"
           variants={{ variant: "primary", size: "sm" }}
         >
