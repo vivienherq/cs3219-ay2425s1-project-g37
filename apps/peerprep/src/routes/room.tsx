@@ -21,6 +21,7 @@ import * as Y from "yjs";
 
 import { NavAvatar } from "~/components/nav-avatar";
 import { NavLogo } from "~/components/nav-logo";
+import { useDebounce } from "~/lib/debounce";
 import { generateContext } from "~/lib/generate-context";
 
 interface UserAwareness {
@@ -62,6 +63,8 @@ function useHocuspocus() {
   const { user, room } = usePageData();
 
   const [isReady, setReady] = useState(false);
+  const [rawCollaboratorIsOnline, setCollaboratorIsOnline] = useState(false);
+  const collaboratorIsOnline = useDebounce(false, rawCollaboratorIsOnline);
   const [stylesheets, setStylesheets] = useState<string[]>([]);
   const [chatPending, setChatPending] = useState(false);
   const [provider] = useState(() => {
@@ -77,23 +80,26 @@ function useHocuspocus() {
     provider.on(
       "awarenessUpdate",
       ({ states }: { states: { clientId: number; user: UserAwareness }[] }) => {
+        let collaboratorIsOnline = false;
         const newStylesheets = states.map(({ clientId, user: awarenessUser }) => {
           const colour = user.username === awarenessUser.username ? "#a855f7" : "#f59e0b";
+          if (user.username !== awarenessUser.username) collaboratorIsOnline = true;
           const stylesheet = `
-      .yRemoteSelection-${clientId} {
-        background-color: ${colour}60;
-      }
-      .yRemoteSelectionHead-${clientId} {
-        position: absolute;
-        border-left: ${colour} solid 2px;
-        border-top: ${colour} solid 2px;
-        border-bottom: ${colour} solid 2px;
-        height: 100%;
-        box-sizing: border-box;
-      }
-    `.trim();
+            .yRemoteSelection-${clientId} {
+              background-color: ${colour}60;
+            }
+            .yRemoteSelectionHead-${clientId} {
+              position: absolute;
+              border-left: ${colour} solid 2px;
+              border-top: ${colour} solid 2px;
+              border-bottom: ${colour} solid 2px;
+              height: 100%;
+              box-sizing: border-box;
+            }
+          `.trim();
           return stylesheet;
         });
+        setCollaboratorIsOnline(collaboratorIsOnline);
         setStylesheets(newStylesheets);
       },
     );
@@ -108,6 +114,7 @@ function useHocuspocus() {
   return {
     provider,
     isReady,
+    collaboratorIsOnline,
     stylesheets,
     chatPending,
     clearChatPending: () => setChatPending(false),
@@ -116,6 +123,7 @@ function useHocuspocus() {
 
 function Navbar() {
   const { user, room } = usePageData();
+  const { collaboratorIsOnline } = useHocuspocus();
   const collaborator = room.users[0].id === user.id ? room.users[1] : room.users[0];
   return (
     <nav className="flex flex-row justify-between p-6">
@@ -135,15 +143,22 @@ function Navbar() {
         </div>
       </div>
       <div className="flex flex-row items-center gap-9">
-        <div className="flex flex-row items-center gap-3">
-          <Avatar
-            imageUrl={collaborator.imageUrl}
-            username={collaborator.username}
-            className="size-9 border-4 border-amber-500"
-          />
-          <div className="flex flex-col">
-            <span>@{collaborator.username}</span>
-            <span className="text-main-500 text-xs uppercase">Collaborator</span>
+        <div className="flex flex-col gap-1">
+          <span className="text-main-500 text-xs uppercase">Collaborator</span>
+          <div className="flex flex-row items-center gap-3">
+            <Avatar
+              imageUrl={collaborator.imageUrl}
+              username={collaborator.username}
+              className="size-9 border-4 border-amber-500"
+            />
+            <div className="flex flex-col">
+              <span className="text-sm">@{collaborator.username}</span>
+              {collaboratorIsOnline ? (
+                <span className="text-xs text-emerald-500">Online</span>
+              ) : (
+                <span className="text-main-500 text-xs">Offline</span>
+              )}
+            </div>
           </div>
         </div>
         <LinkButton href="/" variants={{ variant: "secondary" }} className="w-fit">
