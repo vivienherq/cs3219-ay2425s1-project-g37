@@ -27,6 +27,11 @@ interface UserAwareness {
   username: string;
 }
 
+interface StatelessMessage {
+  type: "chat";
+  userId: string;
+}
+
 interface ChatMessageType {
   id: string;
   userId: string;
@@ -58,6 +63,7 @@ function useHocuspocus() {
 
   const [isReady, setReady] = useState(false);
   const [stylesheets, setStylesheets] = useState<string[]>([]);
+  const [chatPending, setChatPending] = useState(false);
   const [provider] = useState(() => {
     const provider = new HocuspocusProvider({
       url: `ws://localhost:${env.VITE_COLLABORATION_SERVICE_PORT}`,
@@ -92,9 +98,20 @@ function useHocuspocus() {
       },
     );
     provider.on("synced", () => setReady(true));
+    provider.on("stateless", ({ payload }: { payload: string }) => {
+      const decoded = JSON.parse(payload) as StatelessMessage;
+      if (decoded.type === "chat" && decoded.userId !== user.id) setChatPending(true);
+    });
     return provider;
   });
-  return { provider, isReady, stylesheets };
+
+  return {
+    provider,
+    isReady,
+    stylesheets,
+    chatPending,
+    clearChatPending: () => setChatPending(false),
+  };
 }
 
 function Navbar() {
@@ -230,6 +247,7 @@ function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
 function ChatMessageBox() {
   const [message, setMessage] = useState("");
   const { user } = usePageData();
+  const { provider } = useHocuspocus();
   function submit() {
     const content = message.trim();
     if (!content) return;
@@ -247,6 +265,9 @@ function ChatMessageBox() {
       yChatMessage.set("content", chatMessage.content);
       yChatMessages.push([yChatMessage]);
     });
+    provider.sendStateless(
+      JSON.stringify({ type: "chat", userId: user.id } satisfies StatelessMessage),
+    );
     setMessage("");
   }
   return (
@@ -343,18 +364,29 @@ function Chat() {
 
 function MainRoomPage() {
   const { room } = usePageData();
-  const { provider, stylesheets } = useHocuspocus();
+  const { provider, stylesheets, chatPending, clearChatPending } = useHocuspocus();
+  const [tab, setTab] = useState("problem");
   return (
     <div className="flex h-screen w-screen flex-col px-6">
       <Navbar />
       <div className="grid min-h-0 flex-grow grid-cols-2 gap-6 p-6 pt-0">
-        <Tabs className="bg-main-900 flex flex-col gap-6 overflow-y-auto" defaultValue="chat">
+        <Tabs
+          className="bg-main-900 flex flex-col gap-6 overflow-y-auto"
+          value={tab}
+          onValueChange={tab => {
+            setTab(tab);
+            clearChatPending();
+          }}
+        >
           <TabsList className="p-6 pb-0 pt-3">
             <TabsTrigger value="problem" className="text-sm">
               Problem statement
             </TabsTrigger>
             <TabsTrigger value="chat" className="text-sm">
               Chat room
+              {chatPending && tab !== "chat" ? (
+                <span className="ml-2 inline-block size-2 rounded-full bg-current" />
+              ) : null}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="problem" className="flex-grow overflow-y-auto p-6 pt-0">
