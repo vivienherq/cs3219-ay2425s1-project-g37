@@ -13,6 +13,7 @@ import { useAuth, useRoom } from "@peerprep/utils/client";
 import { Tags } from "lucide-react";
 import { useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
+import { useY } from "react-yjs";
 import { MonacoBinding } from "y-monaco";
 import * as Y from "yjs";
 
@@ -25,6 +26,8 @@ interface UserAwareness {
 }
 
 const ydoc = new Y.Doc();
+const yCodeContent = ydoc.getText("monaco");
+const yLanguage = ydoc.getText("language");
 const [PageDataProvider, usePageData] = generateContext<{ user: User; room: Room }>("room data");
 
 function getTagString(tags: string[]) {
@@ -115,6 +118,28 @@ function Navbar() {
   );
 }
 
+function LanguageSelector() {
+  const language = useY(yLanguage) as unknown as string;
+  return (
+    <Select
+      value={language || "javascript"}
+      onValueChange={value => {
+        yLanguage.delete(0, yLanguage.length);
+        yLanguage.insert(0, value);
+      }}
+    >
+      <SelectTrigger size="sm" className="w-48">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="javascript">JavaScript</SelectItem>
+        <SelectItem value="python">Python</SelectItem>
+        <SelectItem value="java">Java</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
 function MainRoomPage() {
   const { room } = usePageData();
   const { provider, stylesheets } = useHocuspocus();
@@ -142,16 +167,7 @@ function MainRoomPage() {
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
           <div className="flex flex-row items-center justify-between">
-            <Select value="JavaScript">
-              <SelectTrigger size="sm" className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="JavaScript">JavaScript</SelectItem>
-                <SelectItem value="Python">Python</SelectItem>
-                <SelectItem value="Java">Java</SelectItem>
-              </SelectContent>
-            </Select>
+            <LanguageSelector />
             <LinkButton
               className="w-fit"
               href={room.question.leetCodeLink}
@@ -172,8 +188,7 @@ function MainRoomPage() {
                 const editorModel = editor.getModel();
                 if (!editorModel)
                   throw new Error("invariant: monaco editor model is null, this shouldn't happen");
-                const ytext = ydoc.getText("monaco");
-                new MonacoBinding(ytext, editorModel, new Set([editor]), provider.awareness);
+                new MonacoBinding(yCodeContent, editorModel, new Set([editor]), provider.awareness);
               }}
             />
           </div>
