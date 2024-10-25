@@ -3,14 +3,16 @@ import Editor from "@monaco-editor/react";
 import { env } from "@peerprep/env";
 import type { Room, User } from "@peerprep/schemas";
 import { Avatar } from "@peerprep/ui/avatar";
-import { LinkButton } from "@peerprep/ui/button";
+import { Button, LinkButton } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
 import { MarkdownRenderer } from "@peerprep/ui/markdown-renderer";
 import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@peerprep/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@peerprep/ui/tabs";
+import { Textarea } from "@peerprep/ui/text-input";
 import { useAuth, useRoom } from "@peerprep/utils/client";
 import { Tags } from "lucide-react";
+import { nanoid } from "nanoid";
 import { useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useY } from "react-yjs";
@@ -28,6 +30,8 @@ interface UserAwareness {
 const ydoc = new Y.Doc();
 const yCodeContent = ydoc.getText("monaco");
 const yLanguage = ydoc.getText("language");
+const yChatMessages = ydoc.getArray<Y.Map<string>>("chatMessages");
+
 const [PageDataProvider, usePageData] = generateContext<{ user: User; room: Room }>("room data");
 
 function getTagString(tags: string[]) {
@@ -38,6 +42,7 @@ function getTagString(tags: string[]) {
 function useHocuspocus() {
   const { user, room } = usePageData();
 
+  const [isReady, setReady] = useState(false);
   const [stylesheets, setStylesheets] = useState<string[]>([]);
   const [provider] = useState(() => {
     const provider = new HocuspocusProvider({
@@ -72,9 +77,10 @@ function useHocuspocus() {
         setStylesheets(newStylesheets);
       },
     );
+    provider.on("synced", () => setReady(true));
     return provider;
   });
-  return { provider, stylesheets };
+  return { provider, isReady, stylesheets };
 }
 
 function Navbar() {
@@ -119,16 +125,17 @@ function Navbar() {
 }
 
 function LanguageSelector() {
+  const { isReady } = useHocuspocus();
   const language = useY(yLanguage) as unknown as string;
   return (
     <Select
-      value={language || "javascript"}
+      value={isReady ? language || "javascript" : undefined}
       onValueChange={value => {
         yLanguage.delete(0, yLanguage.length);
         yLanguage.insert(0, value);
       }}
     >
-      <SelectTrigger size="sm" className="w-48">
+      <SelectTrigger size="sm" className="h-[30px] w-48">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -137,6 +144,56 @@ function LanguageSelector() {
         <SelectItem value="java">Java</SelectItem>
       </SelectContent>
     </Select>
+  );
+}
+
+function ChatMessage({ yMessage }: { yMessage: Y.Map<string> }) {
+  const message = useY(yMessage) as { id: string; userId: string; content: string };
+  const user = usePageData().room.users.find(user => user.id === message.userId)!;
+  return (
+    <div className="flex flex-row items-center gap-3">
+      <Avatar imageUrl={user.imageUrl} username={user.username} className="size-9" />
+      <div className="flex flex-col">
+        <span className="font-semibold">{user.username}</span>
+        <span>{message.content}</span>
+      </div>
+    </div>
+  );
+}
+
+function ChatMessageBox() {
+  const [message, setMessage] = useState("");
+  const { user } = usePageData();
+  return (
+    <form
+      onSubmit={e => {
+        e.preventDefault();
+        const yChatMessage = new Y.Map<string>();
+        yChatMessage.set("id", nanoid());
+        yChatMessage.set("userId", user.id);
+        yChatMessage.set("timestamp", new Date().toISOString());
+        yChatMessage.set("content", message.trim());
+        yChatMessages.push([yChatMessage]);
+        setMessage("");
+      }}
+    >
+      <Textarea label="Test" value={message} onValueChange={setMessage} />
+      <Button type="submit">Submit</Button>
+    </form>
+  );
+}
+
+function Chat() {
+  const { isReady } = useHocuspocus();
+  const chatMessages = useY(yChatMessages);
+  if (!isReady) return <div>Loading</div>;
+  return (
+    <div className="flex flex-col gap-3">
+      {chatMessages.map((_, index) => (
+        <ChatMessage key={index} yMessage={yChatMessages.get(index)} />
+      ))}
+      <ChatMessageBox />
+    </div>
   );
 }
 
@@ -162,7 +219,7 @@ function MainRoomPage() {
             </div>
           </TabsContent>
           <TabsContent value="chat" className="flex-grow overflow-y-auto p-6 pt-0">
-            <p>Room ID: {room.id}</p>
+            <Chat />
           </TabsContent>
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
