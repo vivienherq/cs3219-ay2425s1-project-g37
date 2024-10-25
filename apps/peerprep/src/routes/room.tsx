@@ -234,7 +234,7 @@ function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
             {formatTimeLong(new Date(group.firstTimestamp))}
           </span>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           {group.messages.map((message, index) => (
             <ChatMessage key={index} message={message} isFirst={index === 0} />
           ))}
