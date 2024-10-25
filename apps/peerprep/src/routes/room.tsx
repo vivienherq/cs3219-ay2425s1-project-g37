@@ -11,9 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@peerprep/ui/tabs";
 import { Textarea } from "@peerprep/ui/text-input";
 import { useAuth, useRoom } from "@peerprep/utils/client";
-import { Tags } from "lucide-react";
+import { Send, Tags } from "lucide-react";
 import { nanoid } from "nanoid";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useY } from "react-yjs";
 import { MonacoBinding } from "y-monaco";
@@ -25,6 +25,20 @@ import { generateContext } from "~/lib/generate-context";
 
 interface UserAwareness {
   username: string;
+}
+
+interface ChatMessageType {
+  id: string;
+  userId: string;
+  timestamp: string;
+  content: string;
+}
+
+interface ChatMessageGroupType {
+  firstTimestamp: string;
+  lastTimestamp: string;
+  userId: string;
+  messages: ChatMessageType[];
 }
 
 const ydoc = new Y.Doc();
@@ -131,8 +145,10 @@ function LanguageSelector() {
     <Select
       value={isReady ? language || "javascript" : undefined}
       onValueChange={value => {
-        yLanguage.delete(0, yLanguage.length);
-        yLanguage.insert(0, value);
+        ydoc.transact(() => {
+          yLanguage.delete(0, yLanguage.length);
+          yLanguage.insert(0, value);
+        });
       }}
     >
       <SelectTrigger size="sm" className="h-[30px] w-48">
@@ -147,15 +163,65 @@ function LanguageSelector() {
   );
 }
 
-function ChatMessage({ yMessage }: { yMessage: Y.Map<string> }) {
-  const message = useY(yMessage) as { id: string; userId: string; content: string };
-  const user = usePageData().room.users.find(user => user.id === message.userId)!;
+function isToday(date: Date) {
+  const today = new Date();
   return (
-    <div className="flex flex-row items-center gap-3">
-      <Avatar imageUrl={user.imageUrl} username={user.username} className="size-9" />
-      <div className="flex flex-col">
-        <span className="font-semibold">{user.username}</span>
-        <span>{message.content}</span>
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  );
+}
+
+function formatTimeLong(date: Date) {
+  if (isToday(date)) return formatTimeShort(date);
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+  return formatter.format(date);
+}
+
+function formatTimeShort(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-GB", { timeStyle: "short" });
+  return formatter.format(date);
+}
+
+function ChatMessage({ message, isFirst }: { message: ChatMessageType; isFirst?: boolean }) {
+  return (
+    <div className="group relative">
+      {isFirst || (
+        <span className="text-main-500 absolute right-full top-2 hidden -translate-x-4 -translate-y-px text-xs group-hover:block">
+          {formatTimeShort(new Date(message.timestamp))}
+        </span>
+      )}
+      <div className="prose prose-stone prose-invert max-w-full">
+        <MarkdownRenderer markdown={message.content} />
+      </div>
+    </div>
+  );
+}
+
+function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
+  const user = usePageData().room.users.find(user => user.id === group.userId)!;
+  return (
+    <div className="flex flex-row gap-4">
+      <Avatar
+        imageUrl={user.imageUrl}
+        username={user.username}
+        className="mt-2.5 size-9 shrink-0"
+      />
+      <div className="flex flex-grow flex-col">
+        <div className="flex flex-row items-baseline gap-2">
+          <span className="text-lg font-semibold text-white">{user.username}</span>
+          <span className="text-main-500 text-xs">
+            {formatTimeLong(new Date(group.firstTimestamp))}
+          </span>
+        </div>
+        <div className="flex flex-col gap-4">
+          {group.messages.map((message, index) => (
+            <ChatMessage key={index} message={message} isFirst={index === 0} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -168,30 +234,95 @@ function ChatMessageBox() {
     <form
       onSubmit={e => {
         e.preventDefault();
-        const yChatMessage = new Y.Map<string>();
-        yChatMessage.set("id", nanoid());
-        yChatMessage.set("userId", user.id);
-        yChatMessage.set("timestamp", new Date().toISOString());
-        yChatMessage.set("content", message.trim());
-        yChatMessages.push([yChatMessage]);
+        const chatMessage: ChatMessageType = {
+          id: nanoid(),
+          userId: user.id,
+          timestamp: new Date().toISOString(),
+          content: message.trim(),
+        };
+        ydoc.transact(() => {
+          const yChatMessage = new Y.Map<string>();
+          yChatMessage.set("id", chatMessage.id);
+          yChatMessage.set("userId", chatMessage.userId);
+          yChatMessage.set("timestamp", chatMessage.timestamp);
+          yChatMessage.set("content", chatMessage.content);
+          yChatMessages.push([yChatMessage]);
+        });
         setMessage("");
       }}
+      className="bg-main-800 focus-within:border-main-500 flex flex-col border border-transparent pt-2"
     >
-      <Textarea label="Test" value={message} onValueChange={setMessage} />
-      <Button type="submit">Submit</Button>
+      <Textarea
+        className="h-24 resize-none border-none"
+        placeholder="Say something"
+        value={message}
+        onValueChange={setMessage}
+      />
+      <div className="flex flex-row items-end justify-between px-4 pb-4">
+        <div className="text-main-500 text-xs">Markdown syntax is supported</div>
+        <Button
+          type="submit"
+          disabled={!message}
+          className="w-auto"
+          variants={{ variant: "primary", size: "sm" }}
+        >
+          <Send />
+          Send message
+        </Button>
+      </div>
     </form>
   );
+}
+
+function groupChatMessages(chatMessages: ChatMessageType[]): ChatMessageGroupType[] {
+  const groupedMessages: ChatMessageGroupType[] = [];
+  const maxTimeDiff = 5 * 60 * 1000; // 5 minutes
+  let currentGroup: ChatMessageGroupType | null = null;
+  for (const message of chatMessages) {
+    const newGroup: ChatMessageGroupType = {
+      firstTimestamp: message.timestamp,
+      lastTimestamp: message.timestamp,
+      userId: message.userId,
+      messages: [message],
+    };
+    if (!currentGroup) {
+      currentGroup = newGroup;
+      continue;
+    }
+    if (message.userId !== currentGroup.userId) {
+      groupedMessages.push(currentGroup);
+      currentGroup = newGroup;
+      continue;
+    }
+    const timeDiff =
+      new Date(message.timestamp).getTime() - new Date(currentGroup.lastTimestamp).getTime();
+    if (timeDiff < maxTimeDiff) {
+      currentGroup.messages.push(message);
+      currentGroup.lastTimestamp = message.timestamp;
+    } else {
+      groupedMessages.push(currentGroup);
+      currentGroup = newGroup;
+    }
+  }
+  if (currentGroup) groupedMessages.push(currentGroup);
+  return groupedMessages;
 }
 
 function Chat() {
   const { isReady } = useHocuspocus();
   const chatMessages = useY(yChatMessages);
+  const groupedChatMessages = useMemo(
+    () => groupChatMessages(chatMessages as unknown as ChatMessageType[]),
+    [chatMessages],
+  );
   if (!isReady) return <div>Loading</div>;
   return (
-    <div className="flex flex-col gap-3">
-      {chatMessages.map((_, index) => (
-        <ChatMessage key={index} yMessage={yChatMessages.get(index)} />
-      ))}
+    <div className="flex h-full flex-col gap-6">
+      <div className="-mx-6 flex flex-grow flex-col-reverse gap-4 overflow-y-auto px-6">
+        {groupedChatMessages.toReversed().map((group, index) => (
+          <ChatMessageGroup key={index} group={group} />
+        ))}
+      </div>
       <ChatMessageBox />
     </div>
   );
@@ -204,8 +335,8 @@ function MainRoomPage() {
     <div className="flex h-screen w-screen flex-col px-6">
       <Navbar />
       <div className="grid min-h-0 flex-grow grid-cols-2 gap-6 p-6 pt-0">
-        <Tabs className="bg-main-900 flex flex-col gap-6 overflow-y-auto" defaultValue="problem">
-          <TabsList className="p-6 pb-0">
+        <Tabs className="bg-main-900 flex flex-col gap-6 overflow-y-auto" defaultValue="chat">
+          <TabsList className="p-6 pb-0 pt-3">
             <TabsTrigger value="problem" className="text-sm">
               Problem statement
             </TabsTrigger>
@@ -218,7 +349,7 @@ function MainRoomPage() {
               <MarkdownRenderer markdown={room.question.content} />
             </div>
           </TabsContent>
-          <TabsContent value="chat" className="flex-grow overflow-y-auto p-6 pt-0">
+          <TabsContent value="chat" className="h-full flex-grow overflow-y-auto p-6 pt-0">
             <Chat />
           </TabsContent>
         </Tabs>
