@@ -3,6 +3,10 @@ import { Elysia } from "elysia";
 import OpenAI from "openai";
 import { Readable } from "stream";
 
+interface AiRequestBody {
+  prompt: string;
+}
+
 const openai = new OpenAI({
   apiKey: env.OPENAI_API_KEY,
 });
@@ -11,7 +15,7 @@ const app = new Elysia()
   .get("/status", () => new Response("Online"))
   .post(
     "/ai",
-    async ({ body }) => {
+    async ({ body }: { body: AiRequestBody }) => {
       const { prompt } = body;
       if (!prompt) {
         throw new Error("Prompt is required"); // Handle the case when prompt is undefined
