@@ -14,7 +14,7 @@ import { useAuth, useRoom } from "@peerprep/utils/client";
 import { Send, Tags } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useMemo, useState } from "react";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useY } from "react-yjs";
 import { MonacoBinding } from "y-monaco";
