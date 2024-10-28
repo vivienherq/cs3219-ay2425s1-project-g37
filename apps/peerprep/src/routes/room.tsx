@@ -47,6 +47,12 @@ interface ChatMessageGroupType {
   messages: ChatMessageType[];
 }
 
+type AIMessageType = {
+  role: "user" | "ai";
+  content: string;
+  timestamp: string; // ISO timestamp
+};
+
 const ydoc = new Y.Doc();
 const yCodeContent = ydoc.getText("monaco");
 const yLanguage = ydoc.getText("language");
@@ -377,6 +383,91 @@ function Chat() {
   );
 }
 
+function AIChatMessageBox() {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<AIMessageType[]>([]);
+  async function submit() {
+    const content = message.trim();
+    console.log(content);
+    if (!content) return;
+    try {
+      const response = await fetch("http://localhost:3006/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: content }),
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      const aiMessage: AIMessageType = {
+        role: "ai",
+        content: data.reply, // Adjust based on the actual response structure
+        timestamp: new Date().toISOString(),
+      };
+
+      // Update the state with the AI message
+      setMessages(prevMessages => [...prevMessages, aiMessage]);
+      console.log("Chatbot response:", data);
+    } catch (error) {
+      console.error("Failed to send message to the chatbot:", error);
+    }
+    setMessage("");
+  }
+
+  return (
+    <div>
+      <div className="chat-messages">
+        {messages.map((msg, index) => (
+          <div key={index} className={`message ${msg.role}`}>
+            <span className="message-role">{msg.role === "user" ? "You" : "AI"}:</span>
+            <span className="message-content">{msg.content}</span>
+            <span className="message-timestamp">
+              {new Date(msg.timestamp).toLocaleTimeString()}
+            </span>
+          </div>
+        ))}
+      </div>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          submit();
+        }}
+        className="bg-main-800 focus-within:border-main-500 flex flex-col border border-transparent pt-2"
+      >
+        <Textarea
+          className="h-24 resize-none border-none"
+          placeholder="Say something"
+          value={message}
+          onValueChange={setMessage}
+          onKeyDown={e => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+        />
+        <div className="flex flex-row items-end justify-between px-4 pb-4">
+          <div className="text-main-500 text-xs">
+            Markdown syntax is supported. Shift+Enter for new line.
+          </div>
+          <Button
+            type="submit"
+            disabled={!message.trim()}
+            className="w-auto"
+            variants={{ variant: "primary", size: "sm" }}
+          >
+            <Send />
+            Send message
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function MainRoomPage() {
   const { room } = usePageData();
   const { provider, stylesheets, chatPending, clearChatPending } = useHocuspocus();
@@ -416,7 +507,7 @@ function MainRoomPage() {
             <Chat />
           </TabsContent>
           <TabsContent value="ai" className="h-full flex-grow overflow-y-auto p-6 pt-0">
-            AI CHAT BOT TAB
+            <AIChatMessageBox />
           </TabsContent>
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
