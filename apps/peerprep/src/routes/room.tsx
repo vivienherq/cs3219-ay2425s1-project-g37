@@ -224,7 +224,13 @@ function formatTimeShort(date: Date) {
   return formatter.format(date);
 }
 
-function ChatMessage({ message, isFirst }: { message: ChatMessageType; isFirst?: boolean }) {
+function ChatMessage({
+  message,
+  isFirst,
+}: {
+  message: ChatMessageType | AIMessageType;
+  isFirst?: boolean;
+}) {
   return (
     <div className="group relative">
       {isFirst || (
@@ -384,12 +390,19 @@ function Chat() {
 }
 
 function AIChatMessageBox() {
+  const { user } = usePageData();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<AIMessageType[]>([]);
   async function submit() {
     const content = message.trim();
     console.log(content);
     if (!content) return;
+    const userMessage: AIMessageType = {
+      role: "user",
+      content: message,
+      timestamp: new Date().toISOString(),
+    };
+    setMessages(prevMessages => [...prevMessages, userMessage]);
     try {
       const response = await fetch("http://localhost:3006/ai", {
         method: "POST",
@@ -404,11 +417,10 @@ function AIChatMessageBox() {
       const data = await response.json();
       const aiMessage: AIMessageType = {
         role: "ai",
-        content: data.reply, // Adjust based on the actual response structure
+        content: data.reply,
         timestamp: new Date().toISOString(),
       };
 
-      // Update the state with the AI message
       setMessages(prevMessages => [...prevMessages, aiMessage]);
       console.log("Chatbot response:", data);
     } catch (error) {
@@ -419,17 +431,39 @@ function AIChatMessageBox() {
 
   return (
     <div>
-      <div className="chat-messages">
+      <div className="flex flex-grow flex-col">
         {messages.map((msg, index) => (
-          <div key={index} className={`message ${msg.role}`}>
-            <span className="message-role">{msg.role === "user" ? "You" : "AI"}:</span>
-            <span className="message-content">{msg.content}</span>
-            <span className="message-timestamp">
-              {new Date(msg.timestamp).toLocaleTimeString()}
-            </span>
+          <div className="flex flex-row gap-4">
+            {msg.role == "user" ? (
+              <Avatar
+                imageUrl={user.imageUrl}
+                username={user.username}
+                className="mt-2.5 size-9 shrink-0"
+              />
+            ) : (
+              <Avatar
+                imageUrl={user.imageUrl}
+                username={"AI Chatbot"}
+                className="mt-2.5 size-9 shrink-0"
+              />
+            )}
+            <div className="flex flex-grow flex-col">
+              <div className="flex flex-row items-baseline gap-2">
+                <span className="text-lg font-semibold text-white">
+                  {msg.role == "user" ? user.username : "AI Chatbot"}
+                </span>
+                <span className="text-main-500 text-xs">
+                  {formatTimeLong(new Date(msg.timestamp))}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <ChatMessage key={index} message={msg} isFirst={index === 0} />
+              </div>
+            </div>
           </div>
         ))}
       </div>
+
       <form
         onSubmit={e => {
           e.preventDefault();
