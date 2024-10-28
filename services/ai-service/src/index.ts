@@ -6,7 +6,6 @@ import {
 } from "@peerprep/utils/server";
 import { Elysia } from "elysia";
 import OpenAI from "openai";
-import { Readable } from "stream";
 
 interface AiRequestBody {
   prompt: string;
@@ -21,54 +20,35 @@ const app = new Elysia()
   .use(elysiaFormatResponsePlugin)
   .use(elysiaAuthPlugin)
   .get("/status", () => new Response("Online"))
-  .post(
-    "/ai",
-    async ({ body }: { body: AiRequestBody }) => {
-      const { prompt } = body;
-      if (!prompt) {
-        throw new Error("Prompt is required"); // Handle the case when prompt is undefined
-      }
+  .post("/ai", async ({ body }: { body: AiRequestBody }) => {
+    const { prompt } = body;
+    if (!prompt) {
+      throw new Error("Prompt is required");
+    }
 
-      const responseStream = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo", // Use the desired model
-        stream: true, // Enable streaming
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
         messages: [
           { role: "system", content: "You are a helpful assistant." },
           { role: "user", content: prompt },
         ],
       });
 
-      const stream = new Readable({
-        async read() {
-          // Iterate through the stream of chunks from OpenAI
-          for await (const chunk of responseStream) {
-            const content = chunk.choices[0]?.delta?.content || "";
-            if (content) {
-              // Push each chunk's content to the readable stream
-              this.push(content);
-            }
-          }
-          // Push null to signal the end of the stream
-          this.push(null);
-        },
-      });
+      const aiContent =
+        response.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
-      // Return the readable stream as a response
-      return stream;
-    },
-    // new Stream(
-    //   openai.chat.completions.create({
-    //     model: "gpt-3.5-turbo",
-    //     stream: true,
-    //     messages: [
-    //       {
-    //         role: "user",
-    //         content: prompt,
-    //       },
-    //     ],
-    //   }),
-    // ),
-  )
+      return new Response(JSON.stringify({ reply: aiContent }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.error("Error generating AI response:", error);
+      return new Response(
+        JSON.stringify({ reply: "There was an error processing your request." }),
+        { headers: { "Content-Type": "application/json" } },
+      );
+    }
+  })
   .listen(env.VITE_AI_SERVICE_PORT);
 
 console.log(`AI service is running at ${app.server?.hostname}:${app.server?.port}`);
