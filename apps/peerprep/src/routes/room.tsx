@@ -14,6 +14,7 @@ import { useAuth, useRoom } from "@peerprep/utils/client";
 import { Send, Tags } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useMemo, useState } from "react";
+import { useEffect } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useY } from "react-yjs";
 import { MonacoBinding } from "y-monaco";
@@ -389,10 +390,11 @@ function Chat() {
   );
 }
 
-function AIChatMessageBox() {
+function AIChat() {
   const { user } = usePageData();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<AIMessageType[]>([]);
+
   async function submit() {
     const content = message.trim();
     console.log(content);
@@ -403,6 +405,7 @@ function AIChatMessageBox() {
       timestamp: new Date().toISOString(),
     };
     setMessages(prevMessages => [...prevMessages, userMessage]);
+    setMessage("");
     try {
       const response = await fetch("http://localhost:3006/ai", {
         method: "POST",
@@ -426,7 +429,6 @@ function AIChatMessageBox() {
     } catch (error) {
       console.error("Failed to send message to the chatbot:", error);
     }
-    setMessage("");
   }
 
   return (
@@ -541,7 +543,7 @@ function MainRoomPage() {
             <Chat />
           </TabsContent>
           <TabsContent value="ai" className="h-full flex-grow overflow-y-auto p-6 pt-0">
-            <AIChatMessageBox />
+            <AIChat />
           </TabsContent>
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
