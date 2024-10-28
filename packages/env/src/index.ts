@@ -7,6 +7,7 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     JWT_SECRET: z.string().min(1),
     ADMIN_SIGNUP_TOKEN: z.string().min(1),
+    OPENAI_API_KEY: z.string().min(1),
   },
   clientPrefix: "VITE_",
   client: {
@@ -20,6 +21,7 @@ export const env = createEnv({
     VITE_QUESTION_SERVICE_PORT: z.coerce.number(),
     VITE_MATCHING_SERVICE_PORT: z.coerce.number(),
     VITE_COLLABORATION_SERVICE_PORT: z.coerce.number(),
+    VITE_AI_SERVICE_PORT: z.coerce.number(),
   },
   runtimeEnv: import.meta.env, // Both Vite and Bun use `import.meta.env`
   emptyStringAsUndefined: true,
