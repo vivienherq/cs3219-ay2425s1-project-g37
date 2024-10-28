@@ -1,4 +1,9 @@
 import { env } from "@peerprep/env";
+import {
+  elysiaAuthPlugin,
+  elysiaCorsPlugin,
+  elysiaFormatResponsePlugin,
+} from "@peerprep/utils/server";
 import { Elysia } from "elysia";
 import OpenAI from "openai";
 import { Readable } from "stream";
@@ -12,6 +17,9 @@ const openai = new OpenAI({
 });
 
 const app = new Elysia()
+  .use(elysiaCorsPlugin)
+  .use(elysiaFormatResponsePlugin)
+  .use(elysiaAuthPlugin)
   .get("/status", () => new Response("Online"))
   .post(
     "/ai",
