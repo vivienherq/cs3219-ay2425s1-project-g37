@@ -113,6 +113,30 @@ services:
     networks:
       - webnet
 
+  ai:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - SERVICE_NAME=@peerprep/ai-service
+        - SERVICE_DIRECTORY=services/ai-service
+    container_name: ai
+    restart: always
+    environment:
+      - PORT=${VITE_AI_SERVICE_PORT}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=mongodb://root:root@mongo:27017/peerprep?authSource=admin&replicaSet=rs0&retryWrites=true&w=majority&directConnection=true
+    ports:
+      - ${VITE_AI_SERVICE_PORT}:${VITE_AI_SERVICE_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${VITE_AI_SERVICE_PORT}/status"]
+      interval: 5s
+      timeout: 15s
+      start_period: 15s
+      retries: 10
+    networks:
+      - webnet
+
   frontend:
     build:
       context: .
