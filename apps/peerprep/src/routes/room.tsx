@@ -403,6 +403,9 @@ function MainRoomPage() {
                 <span className="ml-2 inline-block size-2 rounded-full bg-current" />
               ) : null}
             </TabsTrigger>
+            <TabsTrigger value="ai" className="text-sm">
+              AI chat
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="problem" className="flex-grow overflow-y-auto p-6 pt-0">
             <div className="prose prose-stone prose-invert max-w-full">
@@ -411,6 +414,9 @@ function MainRoomPage() {
           </TabsContent>
           <TabsContent value="chat" className="h-full flex-grow overflow-y-auto p-6 pt-0">
             <Chat />
+          </TabsContent>
+          <TabsContent value="ai" className="h-full flex-grow overflow-y-auto p-6 pt-0">
+            AI CHAT BOT TAB
           </TabsContent>
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
