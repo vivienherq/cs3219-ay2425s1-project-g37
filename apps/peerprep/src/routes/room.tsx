@@ -49,15 +49,18 @@ interface ChatMessageGroupType {
 }
 
 type AIMessageType = {
-  role: "user" | "ai";
+  id: string;
+  userId: string;
+  timestamp: string;
   content: string;
-  timestamp: string; // ISO timestamp
+  role: "user" | "ai";
 };
 
 const ydoc = new Y.Doc();
 const yCodeContent = ydoc.getText("monaco");
 const yLanguage = ydoc.getText("language");
 const yChatMessages = ydoc.getArray<Y.Map<string>>("chatMessages");
+const yAIChatMessages = ydoc.getArray<Y.Map<string>>("aIChatMessages");
 
 const [PageDataProvider, usePageData] = generateContext<{ user: User; room: Room }>("room data");
 
@@ -390,82 +393,73 @@ function Chat() {
   );
 }
 
-function AIChat() {
+function AIChatMessageBox() {
   const { user } = usePageData();
+  const { provider } = useHocuspocus();
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<AIMessageType[]>([]);
 
   async function submit() {
     const content = message.trim();
     console.log(content);
     if (!content) return;
-    const userMessage: AIMessageType = {
-      role: "user",
-      content: message,
-      timestamp: new Date().toISOString(),
-    };
-    setMessages(prevMessages => [...prevMessages, userMessage]);
-    setMessage("");
-    try {
-      const response = await fetch("http://localhost:3006/ai", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt: content }),
-      });
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-      const data = await response.json();
-      const aiMessage: AIMessageType = {
-        role: "ai",
-        content: data.reply,
-        timestamp: new Date().toISOString(),
-      };
 
-      setMessages(prevMessages => [...prevMessages, aiMessage]);
-      console.log("Chatbot response:", data);
+    const userMessage: AIMessageType = {
+      id: nanoid(),
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+      content,
+      role: "user",
+    };
+
+    addMessageToYDoc(userMessage);
+    setMessage("");
+
+    try {
+      const aiResponse = await fetchAIResponse(content);
+      if (aiResponse) {
+        const aiMessage: AIMessageType = {
+          id: nanoid(),
+          userId: "ai",
+          timestamp: new Date().toISOString(),
+          content: aiResponse,
+          role: "ai",
+        };
+
+        // Add AI message to ydoc
+        addMessageToYDoc(aiMessage);
+      }
     } catch (error) {
       console.error("Failed to send message to the chatbot:", error);
     }
   }
 
+  function addMessageToYDoc(chatMessage: AIMessageType) {
+    ydoc.transact(() => {
+      const yAIChatMessage = new Y.Map<string>();
+      yAIChatMessage.set("id", chatMessage.id);
+      yAIChatMessage.set("userId", chatMessage.userId);
+      yAIChatMessage.set("timestamp", chatMessage.timestamp);
+      yAIChatMessage.set("content", chatMessage.content);
+      yAIChatMessage.set("role", chatMessage.role);
+      yAIChatMessages.push([yAIChatMessage]);
+    });
+
+    provider.sendStateless(JSON.stringify({ type: "aichat", userId: chatMessage.userId }));
+  }
+
+  async function fetchAIResponse(prompt: string) {
+    const response = await fetch("http://localhost:3006/ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+    const data = await response.json();
+    return data.reply;
+  }
+
   return (
     <div>
-      <div className="flex flex-grow flex-col">
-        {messages.map((msg, index) => (
-          <div className="flex flex-row gap-4">
-            {msg.role == "user" ? (
-              <Avatar
-                imageUrl={user.imageUrl}
-                username={user.username}
-                className="mt-2.5 size-9 shrink-0"
-              />
-            ) : (
-              <Avatar
-                imageUrl={user.imageUrl}
-                username={"AI Chatbot"}
-                className="mt-2.5 size-9 shrink-0"
-              />
-            )}
-            <div className="flex flex-grow flex-col">
-              <div className="flex flex-row items-baseline gap-2">
-                <span className="text-lg font-semibold text-white">
-                  {msg.role == "user" ? user.username : "AI Chatbot"}
-                </span>
-                <span className="text-main-500 text-xs">
-                  {formatTimeLong(new Date(msg.timestamp))}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <ChatMessage key={index} message={msg} isFirst={index === 0} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       <form
         onSubmit={e => {
           e.preventDefault();
@@ -543,7 +537,7 @@ function MainRoomPage() {
             <Chat />
           </TabsContent>
           <TabsContent value="ai" className="h-full flex-grow overflow-y-auto p-6 pt-0">
-            <AIChat />
+            {/* <AIChat /> */}
           </TabsContent>
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
