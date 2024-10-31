@@ -498,6 +498,54 @@ function AIChatMessageBox() {
   );
 }
 
+function AIChat() {
+  const { isReady } = useHocuspocus();
+  const { room } = usePageData();
+  const users = room.users;
+  const aIChatMessages = useY(yAIChatMessages);
+  if (!isReady) return <div>Loading</div>;
+  return (
+    <div className="flex h-full flex-col gap-6">
+      <div className="-mx-6 flex flex-grow flex-col-reverse gap-4 overflow-y-auto px-6">
+        {aIChatMessages.toReversed().map((msg, index) => {
+          const user = users.find(user => user.id === msg.userId);
+          return (
+            <div className="flex flex-row gap-4">
+              {msg.role == "user" ? (
+                <Avatar
+                  imageUrl={user?.imageUrl || ""}
+                  username={user?.username || "Unknown User"}
+                  className="mt-2.5 size-9 shrink-0"
+                />
+              ) : (
+                <Avatar
+                  imageUrl={user?.imageUrl || ""}
+                  username={"AI Chatbot"}
+                  className="mt-2.5 size-9 shrink-0"
+                />
+              )}
+              <div className="flex flex-grow flex-col">
+                <div className="flex flex-row items-baseline gap-2">
+                  <span className="text-lg font-semibold text-white">
+                    {msg.role === "user" ? user?.username || "Unknown User" : "AI Chatbot"}
+                  </span>
+                  <span className="text-main-500 text-xs">
+                    {formatTimeLong(new Date(msg.timestamp))}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <ChatMessage key={index} message={msg as AIMessageType} isFirst={index === 0} />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <AIChatMessageBox />
+    </div>
+  );
+}
+
 function MainRoomPage() {
   const { room } = usePageData();
   const { provider, stylesheets, chatPending, clearChatPending } = useHocuspocus();
@@ -537,7 +585,7 @@ function MainRoomPage() {
             <Chat />
           </TabsContent>
           <TabsContent value="ai" className="h-full flex-grow overflow-y-auto p-6 pt-0">
-            {/* <AIChat /> */}
+            <AIChat />
           </TabsContent>
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
