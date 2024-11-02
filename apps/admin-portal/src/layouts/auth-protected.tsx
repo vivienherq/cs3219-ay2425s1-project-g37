@@ -37,19 +37,18 @@ function NavAvatar() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href={getOrigin("frontend")} className="flex items-center justify-between w-full">
+            <Link href={getOrigin("frontend")} className="flex w-full items-center justify-between">
               PeerPrep app
               <ArrowUpRight />
             </Link>
           </DropdownMenuItem>
           {/* TODO */}
           <DropdownMenuItem>
-            <button 
-              onClick={ () => {
+            <button
+              onClick={() => {
                 navigate("/profile");
-                }
-              }
-            className="flex items-center justify-between w-full"
+              }}
+              className="flex w-full items-center justify-between"
             >
               User settings
               <ArrowUpRight className="ml-2" />

@@ -10,10 +10,9 @@ import PublicNotAuthLayout from "~/layouts/public-not-auth";
 import RootLayout from "~/layouts/root";
 import IndexPage from "~/routes/index";
 import LoginPage from "~/routes/login";
+import ProfileSettingPage from "~/routes/profile";
 import RegisterPage from "~/routes/register";
 import RoomPage from "~/routes/room";
-import ProfileSettingPage from "~/routes/profile";
-
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
@@ -38,7 +37,7 @@ const router = createBrowserRouter([
             element: <AuthProtectedCenteredLayout />,
             children: [
               { index: true, element: <IndexPage /> },
-              { path: "/profile", element: <ProfileSettingPage/>},
+              { path: "/profile", element: <ProfileSettingPage /> },
             ],
           },
           { path: "/room/:id", element: <RoomPage /> },
