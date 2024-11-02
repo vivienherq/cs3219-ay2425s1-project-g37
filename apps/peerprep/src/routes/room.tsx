@@ -11,10 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@peerprep/ui/tabs";
 import { Textarea } from "@peerprep/ui/text-input";
 import { useAuth, useRoom } from "@peerprep/utils/client";
-import { Send, Tags } from "lucide-react";
+import { BotMessageSquare, Send, Tags } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useMemo, useState } from "react";
-// import { useEffect } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { useY } from "react-yjs";
 import { MonacoBinding } from "y-monaco";
@@ -34,27 +33,19 @@ interface StatelessMessage {
   userId: string;
 }
 
-interface ChatMessageType {
+interface ChatMessageType<AI extends boolean = boolean> {
   id: string;
-  userId: string;
+  userId: AI extends false ? string : null;
   timestamp: string;
   content: string;
 }
 
-interface ChatMessageGroupType {
+interface ChatMessageGroupType<AI extends boolean = boolean> {
   firstTimestamp: string;
   lastTimestamp: string;
-  userId: string;
-  messages: ChatMessageType[];
+  userId: AI extends false ? string : null;
+  messages: ChatMessageType<AI>[];
 }
-
-type AIMessageType = {
-  id: string;
-  userId: string;
-  timestamp: string;
-  content: string;
-  role: "user" | "ai";
-};
 
 const ydoc = new Y.Doc();
 const yCodeContent = ydoc.getText("monaco");
@@ -228,13 +219,7 @@ function formatTimeShort(date: Date) {
   return formatter.format(date);
 }
 
-function ChatMessage({
-  message,
-  isFirst,
-}: {
-  message: ChatMessageType | AIMessageType;
-  isFirst?: boolean;
-}) {
+function ChatMessage({ message, isFirst }: { message: ChatMessageType; isFirst?: boolean }) {
   return (
     <div className="group relative">
       {isFirst || (
@@ -250,17 +235,24 @@ function ChatMessage({
 }
 
 function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
-  const user = usePageData().room.users.find(user => user.id === group.userId)!;
+  const { room } = usePageData();
+  const user = group.userId === null ? null : room.users.find(user => user.id === group.userId)!;
   return (
     <div className="flex flex-row gap-4">
-      <Avatar
-        imageUrl={user.imageUrl}
-        username={user.username}
-        className="mt-2.5 size-9 shrink-0"
-      />
+      {user ? (
+        <Avatar
+          imageUrl={user.imageUrl}
+          username={user.username}
+          className="mt-2.5 size-9 shrink-0"
+        />
+      ) : (
+        <span className="bg-main-800 text-main-500 grid size-9 shrink-0 place-items-center rounded-full">
+          <BotMessageSquare />
+        </span>
+      )}
       <div className="flex flex-grow flex-col">
         <div className="flex flex-row items-baseline gap-2">
-          <span className="text-lg font-semibold text-white">{user.username}</span>
+          <span className="text-lg font-semibold text-white">{user?.username ?? "AI chatbot"}</span>
           <span className="text-main-500 text-xs">
             {formatTimeLong(new Date(group.firstTimestamp))}
           </span>
@@ -275,14 +267,14 @@ function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
   );
 }
 
-function ChatMessageBox() {
+function ChatMessageBox({ ai = false }: { ai?: boolean }) {
   const [message, setMessage] = useState("");
   const { user } = usePageData();
   const { provider } = useHocuspocus();
   function submit() {
     const content = message.trim();
     if (!content) return;
-    const chatMessage: ChatMessageType = {
+    const chatMessage: ChatMessageType<false> = {
       id: nanoid(),
       userId: user.id,
       timestamp: new Date().toISOString(),
@@ -294,11 +286,14 @@ function ChatMessageBox() {
       yChatMessage.set("userId", chatMessage.userId);
       yChatMessage.set("timestamp", chatMessage.timestamp);
       yChatMessage.set("content", chatMessage.content);
-      yChatMessages.push([yChatMessage]);
+      if (ai) yAIChatMessages.push([yChatMessage]);
+      else yChatMessages.push([yChatMessage]);
     });
-    provider.sendStateless(
-      JSON.stringify({ type: "chat", userId: user.id } satisfies StatelessMessage),
-    );
+    if (!ai) {
+      provider.sendStateless(
+        JSON.stringify({ type: "chat", userId: user.id } satisfies StatelessMessage),
+      );
+    }
     setMessage("");
   }
   return (
@@ -323,7 +318,7 @@ function ChatMessageBox() {
       />
       <div className="flex flex-row items-end justify-between px-4 pb-4">
         <div className="text-main-500 text-xs">
-          Markdown syntax is supported. Shift+Enter for new line.
+          Markdown is supported. Shift+Enter for new line.
         </div>
         <Button
           type="submit"
@@ -373,9 +368,9 @@ function groupChatMessages(chatMessages: ChatMessageType[]): ChatMessageGroupTyp
   return groupedMessages;
 }
 
-function Chat() {
+function Chat({ ai = false }: { ai?: boolean }) {
   const { isReady } = useHocuspocus();
-  const chatMessages = useY(yChatMessages);
+  const chatMessages = useY(ai ? yAIChatMessages : yChatMessages);
   const groupedChatMessages = useMemo(
     () => groupChatMessages(chatMessages as unknown as ChatMessageType[]),
     [chatMessages],
@@ -388,160 +383,7 @@ function Chat() {
           <ChatMessageGroup key={index} group={group} />
         ))}
       </div>
-      <ChatMessageBox />
-    </div>
-  );
-}
-
-function AIChatMessageBox() {
-  const { user } = usePageData();
-  const { provider } = useHocuspocus();
-  const [message, setMessage] = useState("");
-
-  async function submit() {
-    const content = message.trim();
-    console.log(content);
-    if (!content) return;
-
-    const userMessage: AIMessageType = {
-      id: nanoid(),
-      userId: user.id,
-      timestamp: new Date().toISOString(),
-      content,
-      role: "user",
-    };
-
-    addMessageToYDoc(userMessage);
-    setMessage("");
-
-    try {
-      const aiResponse = await fetchAIResponse(content);
-      if (aiResponse) {
-        const aiMessage: AIMessageType = {
-          id: nanoid(),
-          userId: "ai",
-          timestamp: new Date().toISOString(),
-          content: aiResponse,
-          role: "ai",
-        };
-
-        // Add AI message to ydoc
-        addMessageToYDoc(aiMessage);
-      }
-    } catch (error) {
-      console.error("Failed to send message to the chatbot:", error);
-    }
-  }
-
-  function addMessageToYDoc(chatMessage: AIMessageType) {
-    ydoc.transact(() => {
-      const yAIChatMessage = new Y.Map<string>();
-      yAIChatMessage.set("id", chatMessage.id);
-      yAIChatMessage.set("userId", chatMessage.userId);
-      yAIChatMessage.set("timestamp", chatMessage.timestamp);
-      yAIChatMessage.set("content", chatMessage.content);
-      yAIChatMessage.set("role", chatMessage.role);
-      yAIChatMessages.push([yAIChatMessage]);
-    });
-
-    provider.sendStateless(JSON.stringify({ type: "aichat", userId: chatMessage.userId }));
-  }
-
-  async function fetchAIResponse(prompt: string) {
-    const response = await fetch("http://localhost:3006/ai", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
-    if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-    const data = await response.json();
-    return data.reply;
-  }
-
-  return (
-    <div>
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          submit();
-        }}
-        className="bg-main-800 focus-within:border-main-500 flex flex-col border border-transparent pt-2"
-      >
-        <Textarea
-          className="h-24 resize-none border-none"
-          placeholder="Say something"
-          value={message}
-          onValueChange={setMessage}
-          onKeyDown={e => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-        />
-        <div className="flex flex-row items-end justify-between px-4 pb-4">
-          <div className="text-main-500 text-xs">
-            Markdown syntax is supported. Shift+Enter for new line.
-          </div>
-          <Button
-            type="submit"
-            disabled={!message.trim()}
-            className="w-auto"
-            variants={{ variant: "primary", size: "sm" }}
-          >
-            <Send />
-            Send message
-          </Button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function AIChat() {
-  const { isReady } = useHocuspocus();
-  const { room } = usePageData();
-  const users = room.users;
-  const aIChatMessages = useY(yAIChatMessages);
-  if (!isReady) return <div>Loading</div>;
-  return (
-    <div className="flex h-full flex-col gap-6">
-      <div className="-mx-6 flex flex-grow flex-col-reverse gap-4 overflow-y-auto px-6">
-        {aIChatMessages.toReversed().map((msg, index) => {
-          const user = users.find(user => user.id === msg.userId);
-          return (
-            <div className="flex flex-row gap-4">
-              {msg.role == "user" ? (
-                <Avatar
-                  imageUrl={user?.imageUrl || ""}
-                  username={user?.username || "Unknown User"}
-                  className="mt-2.5 size-9 shrink-0"
-                />
-              ) : (
-                <Avatar
-                  imageUrl={user?.imageUrl || ""}
-                  username={"AI Chatbot"}
-                  className="mt-2.5 size-9 shrink-0"
-                />
-              )}
-              <div className="flex flex-grow flex-col">
-                <div className="flex flex-row items-baseline gap-2">
-                  <span className="text-lg font-semibold text-white">
-                    {msg.role === "user" ? user?.username || "Unknown User" : "AI Chatbot"}
-                  </span>
-                  <span className="text-main-500 text-xs">
-                    {formatTimeLong(new Date(msg.timestamp))}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <ChatMessage key={index} message={msg as AIMessageType} isFirst={index === 0} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <AIChatMessageBox />
+      <ChatMessageBox ai={ai} />
     </div>
   );
 }
@@ -585,7 +427,7 @@ function MainRoomPage() {
             <Chat />
           </TabsContent>
           <TabsContent value="ai" className="h-full flex-grow overflow-y-auto p-6 pt-0">
-            <AIChat />
+            <Chat ai />
           </TabsContent>
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
