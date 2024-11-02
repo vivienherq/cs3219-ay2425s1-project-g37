@@ -7,6 +7,7 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     JWT_SECRET: z.string().min(1),
     ADMIN_SIGNUP_TOKEN: z.string().min(1),
+    OPENAI_API_KEY: z.string().min(1),
   },
   clientPrefix: "VITE_",
   client: {

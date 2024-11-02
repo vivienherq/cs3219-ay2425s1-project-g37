@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@peerprep/ui/tabs";
 import { Textarea } from "@peerprep/ui/text-input";
 import { useAuth, useRoom } from "@peerprep/utils/client";
-import { Send, Tags } from "lucide-react";
+import { BotMessageSquare, Send, Tags } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useMemo, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
@@ -28,29 +28,27 @@ interface UserAwareness {
   username: string;
 }
 
-interface StatelessMessage {
-  type: "chat";
-  userId: string;
-}
+type StatelessMessage = { type: "chat"; userId: string } | { type: "ai" };
 
-interface ChatMessageType {
+interface ChatMessageType<AI extends boolean = boolean> {
   id: string;
-  userId: string;
+  userId: AI extends false ? string : null;
   timestamp: string;
   content: string;
 }
 
-interface ChatMessageGroupType {
+interface ChatMessageGroupType<AI extends boolean = boolean> {
   firstTimestamp: string;
   lastTimestamp: string;
-  userId: string;
-  messages: ChatMessageType[];
+  userId: AI extends false ? string : null;
+  messages: ChatMessageType<AI>[];
 }
 
 const ydoc = new Y.Doc();
 const yCodeContent = ydoc.getText("monaco");
 const yLanguage = ydoc.getText("language");
 const yChatMessages = ydoc.getArray<Y.Map<string>>("chatMessages");
+const yAIChatMessages = ydoc.getArray<Y.Map<string>>("aIChatMessages");
 
 const [PageDataProvider, usePageData] = generateContext<{ user: User; room: Room }>("room data");
 
@@ -234,17 +232,25 @@ function ChatMessage({ message, isFirst }: { message: ChatMessageType; isFirst?:
 }
 
 function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
-  const user = usePageData().room.users.find(user => user.id === group.userId)!;
+  const { room } = usePageData();
+  const user =
+    group.userId === null ? undefined : room.users.find(user => user.id === group.userId);
   return (
     <div className="flex flex-row gap-4">
-      <Avatar
-        imageUrl={user.imageUrl}
-        username={user.username}
-        className="mt-2.5 size-9 shrink-0"
-      />
+      {user ? (
+        <Avatar
+          imageUrl={user.imageUrl}
+          username={user.username}
+          className="mt-2.5 size-9 shrink-0"
+        />
+      ) : (
+        <span className="bg-main-800 text-main-500 grid size-9 shrink-0 place-items-center rounded-full">
+          <BotMessageSquare />
+        </span>
+      )}
       <div className="flex flex-grow flex-col">
         <div className="flex flex-row items-baseline gap-2">
-          <span className="text-lg font-semibold text-white">{user.username}</span>
+          <span className="text-lg font-semibold text-white">{user?.username ?? "AI chatbot"}</span>
           <span className="text-main-500 text-xs">
             {formatTimeLong(new Date(group.firstTimestamp))}
           </span>
@@ -259,14 +265,14 @@ function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
   );
 }
 
-function ChatMessageBox() {
+function ChatMessageBox({ ai = false }: { ai?: boolean }) {
   const [message, setMessage] = useState("");
   const { user } = usePageData();
   const { provider } = useHocuspocus();
   function submit() {
     const content = message.trim();
     if (!content) return;
-    const chatMessage: ChatMessageType = {
+    const chatMessage: ChatMessageType<false> = {
       id: nanoid(),
       userId: user.id,
       timestamp: new Date().toISOString(),
@@ -278,10 +284,13 @@ function ChatMessageBox() {
       yChatMessage.set("userId", chatMessage.userId);
       yChatMessage.set("timestamp", chatMessage.timestamp);
       yChatMessage.set("content", chatMessage.content);
-      yChatMessages.push([yChatMessage]);
+      if (ai) yAIChatMessages.push([yChatMessage]);
+      else yChatMessages.push([yChatMessage]);
     });
     provider.sendStateless(
-      JSON.stringify({ type: "chat", userId: user.id } satisfies StatelessMessage),
+      JSON.stringify(
+        (ai ? { type: "ai" } : { type: "chat", userId: user.id }) satisfies StatelessMessage,
+      ),
     );
     setMessage("");
   }
@@ -307,7 +316,7 @@ function ChatMessageBox() {
       />
       <div className="flex flex-row items-end justify-between px-4 pb-4">
         <div className="text-main-500 text-xs">
-          Markdown syntax is supported. Shift+Enter for new line.
+          Markdown is supported. Shift+Enter for new line.
         </div>
         <Button
           type="submit"
@@ -357,9 +366,9 @@ function groupChatMessages(chatMessages: ChatMessageType[]): ChatMessageGroupTyp
   return groupedMessages;
 }
 
-function Chat() {
+function Chat({ ai = false }: { ai?: boolean }) {
   const { isReady } = useHocuspocus();
-  const chatMessages = useY(yChatMessages);
+  const chatMessages = useY(ai ? yAIChatMessages : yChatMessages);
   const groupedChatMessages = useMemo(
     () => groupChatMessages(chatMessages as unknown as ChatMessageType[]),
     [chatMessages],
@@ -372,7 +381,7 @@ function Chat() {
           <ChatMessageGroup key={index} group={group} />
         ))}
       </div>
-      <ChatMessageBox />
+      <ChatMessageBox ai={ai} />
     </div>
   );
 }
@@ -403,6 +412,9 @@ function MainRoomPage() {
                 <span className="ml-2 inline-block size-2 rounded-full bg-current" />
               ) : null}
             </TabsTrigger>
+            <TabsTrigger value="ai" className="text-sm">
+              AI chat
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="problem" className="flex-grow overflow-y-auto p-6 pt-0">
             <div className="prose prose-stone prose-invert max-w-full">
@@ -411,6 +423,9 @@ function MainRoomPage() {
           </TabsContent>
           <TabsContent value="chat" className="h-full flex-grow overflow-y-auto p-6 pt-0">
             <Chat />
+          </TabsContent>
+          <TabsContent value="ai" className="h-full flex-grow overflow-y-auto p-6 pt-0">
+            <Chat ai />
           </TabsContent>
         </Tabs>
         <div className="bg-main-900 flex flex-col gap-6 p-6">
