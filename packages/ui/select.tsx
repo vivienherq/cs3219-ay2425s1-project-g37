@@ -9,12 +9,16 @@ const Select = SelectPrimitive.Root;
 const SelectValue = SelectPrimitive.Value;
 const SelectTrigger = forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & { size?: "sm" | "md" | "lg" }
+>(({ size = "md", className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "border-main-800 bg-main-800 placeholder:text-main-600 focus-within:border-main-500 flex w-full items-center justify-between border px-4 py-2 outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "border-main-800 bg-main-800 placeholder:text-main-600 focus-within:border-main-500 flex w-full items-center justify-between border outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      // If your editor reports any warnings in the next three lines, ignore them. The Tailwind CSS extension is dumb.
+      size === "sm" && "px-3 py-1 text-sm [--button-gap:0.25rem] [&_svg]:size-4",
+      size === "md" && "px-4 py-2 text-base [--button-gap:0.5rem] [&_svg]:size-6",
+      size === "lg" && "px-5 py-2.5 text-lg [--button-gap:0.75rem] [&_svg]:size-7",
       className,
     )}
     {...props}

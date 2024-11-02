@@ -4,12 +4,14 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import ErrorPage from "~/error";
-import AuthProtectedLayout from "~/layouts/auth-protected";
+import AuthProtectedCenteredLayout from "~/layouts/auth-protected-centered";
+import AuthProtectedEmptyLayout from "~/layouts/auth-protected-empty";
 import PublicNotAuthLayout from "~/layouts/public-not-auth";
 import RootLayout from "~/layouts/root";
 import IndexPage from "~/routes/index";
 import LoginPage from "~/routes/login";
 import RegisterPage from "~/routes/register";
+import RoomPage from "~/routes/room";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
@@ -28,8 +30,14 @@ const router = createBrowserRouter([
         ],
       },
       {
-        element: <AuthProtectedLayout />,
-        children: [{ index: true, element: <IndexPage /> }],
+        element: <AuthProtectedEmptyLayout />,
+        children: [
+          {
+            element: <AuthProtectedCenteredLayout />,
+            children: [{ index: true, element: <IndexPage /> }],
+          },
+          { path: "/room/:id", element: <RoomPage /> },
+        ],
       },
     ],
   },

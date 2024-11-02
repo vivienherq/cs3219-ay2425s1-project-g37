@@ -49,7 +49,7 @@ function UpdateForm({ question }: { question: Question }) {
       <FormControl label="Difficulty">
         <Select value={difficulty} onValueChange={value => setDifficulty(value as Difficulty)}>
           <SelectTrigger>
-            <SelectValue placeholder="Theme" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="EASY">Easy</SelectItem>
