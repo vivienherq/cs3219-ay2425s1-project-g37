@@ -27,13 +27,6 @@ services:
     volumes:
       - ./services/collaboration-service:/app/services/collaboration-service
 
-  ai:
-    build:
-      target: development
-    command: bun dev --filter=@peerprep/ai-service
-    volumes:
-      - ./services/ai-service:/app/services/ai-service
-
   frontend:
     build:
       target: development

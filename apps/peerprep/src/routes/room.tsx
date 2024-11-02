@@ -28,10 +28,7 @@ interface UserAwareness {
   username: string;
 }
 
-interface StatelessMessage {
-  type: "chat";
-  userId: string;
-}
+type StatelessMessage = { type: "chat"; userId: string } | { type: "ai" };
 
 interface ChatMessageType<AI extends boolean = boolean> {
   id: string;
@@ -236,7 +233,8 @@ function ChatMessage({ message, isFirst }: { message: ChatMessageType; isFirst?:
 
 function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
   const { room } = usePageData();
-  const user = group.userId === null ? null : room.users.find(user => user.id === group.userId)!;
+  const user =
+    group.userId === null ? undefined : room.users.find(user => user.id === group.userId);
   return (
     <div className="flex flex-row gap-4">
       {user ? (
@@ -289,11 +287,11 @@ function ChatMessageBox({ ai = false }: { ai?: boolean }) {
       if (ai) yAIChatMessages.push([yChatMessage]);
       else yChatMessages.push([yChatMessage]);
     });
-    if (!ai) {
-      provider.sendStateless(
-        JSON.stringify({ type: "chat", userId: user.id } satisfies StatelessMessage),
-      );
-    }
+    provider.sendStateless(
+      JSON.stringify(
+        (ai ? { type: "ai" } : { type: "chat", userId: user.id }) satisfies StatelessMessage,
+      ),
+    );
     setMessage("");
   }
   return (

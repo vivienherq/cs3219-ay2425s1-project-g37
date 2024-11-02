@@ -1,7 +1,7 @@
 import { env } from "@peerprep/env";
 
 export function getOrigin(
-  service: "frontend" | "admin-portal" | "user" | "questions" | "matching" | "collaboration" | "ai",
+  service: "frontend" | "admin-portal" | "user" | "questions" | "matching" | "collaboration",
 ) {
   switch (service) {
     case "frontend":
@@ -28,9 +28,5 @@ export function getOrigin(
       return env.VITE_SELF_HOST
         ? "https://collaboration-peerprep.joulev.dev"
         : `http://localhost:${env.VITE_COLLABORATION_SERVICE_PORT}`;
-    case "ai":
-      return env.VITE_SELF_HOST
-        ? "https://ai-peerprep.joulev.dev"
-        : `http://localhost:${env.VITE_AI_SERVICE_PORT}`;
   }
 }
