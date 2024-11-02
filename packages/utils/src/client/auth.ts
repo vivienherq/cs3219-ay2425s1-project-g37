@@ -44,6 +44,6 @@ export function useRegister() {
 export function useUpdateUser(id: string) {
   return useSWRMutation(`users:/${id}`, async (_, { arg }: { arg: UpdateUser }) => {
     await userClient.patch(`/users/${id}`, { json: arg });
-    mutate(`users:/${id}`);
+    mutateAuth();
 });
 }

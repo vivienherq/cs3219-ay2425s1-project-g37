@@ -1,32 +1,36 @@
-import type { UpdateUser } from "@peerprep/schemas";
 import { Button, LinkButton } from "@peerprep/ui/button";
+import { Input } from "@peerprep/ui/text-input";
 import { useAuth, useUpdateUser } from "@peerprep/utils/client";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 export default function ProfileSettingPage() {
   const { data: user } = useAuth();
+  const navigate = useNavigate();
   
   if (!user || !user.id) throw new Error("invariant: user or user.id is undefined");
 
   const [username, setUsername] = useState(user.username);
   const [email, setEmail] = useState(user.email);
   const [password, setPassword] = useState("");
-  const { isMutating, trigger: updateUser } = useUpdateUser(user.id);
-
-  const updatedData: UpdateUser= { username, email};
-  if (password) updatedData.password = password;
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const { isMutating, trigger } = useUpdateUser(user.id);
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">Profile Information</h2>
+      <h1 className="text-xl font-bold mb-4">Profile Information</h1>
 
       <form
         className="flex flex-col gap-4"
         onSubmit={async e => {
           e.preventDefault();
-          await updateUser(updatedData);
+          if (password) {
+            await trigger({ username, email, password })
+          }
+          await trigger({ username, email });
           toast.success("Profile updated successfully!");
+          navigate("..");
         }}
       >
         <div className="profile-image mb-4">
@@ -37,45 +41,63 @@ export default function ProfileSettingPage() {
           />
         </div>
 
-        <label className="text-lg font-semibold">
-          Username
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="border p-2 rounded w-full mt-2"
-            required
-          />
-        </label>
+        
+        <Input
+          label="Username"
+          type="text"
+          required
+          pattern="^[a-zA-Z0-9_]{4,32}$"
+          value={username}
+          onValueChange={setUsername}
+          helpText="Only letters, numbers, and underscores are allowed. Must be between 4 and 32 characters."
+        />
 
-        <label className="text-lg font-semibold">
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border p-2 rounded w-full mt-2"
-            required
-          />
-        </label>
+        
+        <Input
+          label="Email"
+          type="email"
+          required
+          value={email}
+          onValueChange={setEmail}
+        />
 
-        <label className="text-lg font-semibold">
-          Password
-          <input
+        
+
+        <div className="grid grid-cols-2 gap-6">
+          <Input
+            label="Password"
             type="password"
+            minLength={8}
+            maxLength={128}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border p-2 rounded w-full mt-2"
+            onValueChange={setPassword}
             placeholder="Leave blank to keep current password"
+            helpText={
+              <>
+              Password must be between 8 and 128 characters long.
+              </>
+            }
           />
-        </label>
+          <Input
+            label="Confirm Password"
+            type="password"
+            pattern={password}
+            value={confirmPassword}
+            onValueChange={setConfirmPassword}
+          />
+        </div>
 
         <div className="flex gap-4">
-          <Button type="submit" variants={{ variant: "primary" }} disabled={isMutating}>
+          <Button 
+            className="w-auto"
+            type="submit" 
+            variants={{ variant: "primary" }} 
+            disabled={isMutating}
+          >
             {isMutating ? "Updating..." : "Update Profile"}
           </Button>
           <LinkButton href=".." className="w-auto">
-            Back
+            Cancel
           </LinkButton>
         </div>
       </form>

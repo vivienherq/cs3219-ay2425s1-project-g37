@@ -37,7 +37,7 @@ function NavAvatar() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href={getOrigin("frontend")}>
+            <Link href={getOrigin("frontend")} className="flex items-center justify-between w-full">
               PeerPrep app
               <ArrowUpRight />
             </Link>
@@ -51,8 +51,8 @@ function NavAvatar() {
             }
             className="flex items-center justify-between w-full"
             >
-              <span>User settings</span>
-              <ArrowUpRight className="m1-2" />
+              User settings
+              <ArrowUpRight className="ml-2" />
             </button>
           </DropdownMenuItem>
         </DropdownMenuGroup>
