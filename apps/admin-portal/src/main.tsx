@@ -14,7 +14,7 @@ import QuestionPage from "~/routes/question-content";
 import QuestionEditPage from "~/routes/question-edit";
 import QuestionsPage from "~/routes/questions";
 import RegisterPage from "~/routes/register";
-import ProfileSettingPage from "~/routes/profilesetting";
+import ProfileSettingPage from "~/routes/profile";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");

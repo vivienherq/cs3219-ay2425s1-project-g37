@@ -20,12 +20,15 @@ export default function ProfileSettingPage() {
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">Profile Information</h1>
-
       <form
         className="flex flex-col gap-4"
         onSubmit={async e => {
           e.preventDefault();
-          if (password) {
+          
+          if (password && password !== confirmPassword) {
+            toast.error("Passwords do not match!");
+            return;
+          } else if (password) {
             await trigger({ username, email, password })
           }
           await trigger({ username, email });
@@ -41,7 +44,6 @@ export default function ProfileSettingPage() {
           />
         </div>
 
-        
         <Input
           label="Username"
           type="text"
@@ -51,8 +53,6 @@ export default function ProfileSettingPage() {
           onValueChange={setUsername}
           helpText="Only letters, numbers, and underscores are allowed. Must be between 4 and 32 characters."
         />
-
-        
         <Input
           label="Email"
           type="email"
@@ -60,9 +60,6 @@ export default function ProfileSettingPage() {
           value={email}
           onValueChange={setEmail}
         />
-
-        
-
         <div className="grid grid-cols-2 gap-6">
           <Input
             label="Password"
@@ -86,7 +83,6 @@ export default function ProfileSettingPage() {
             onValueChange={setConfirmPassword}
           />
         </div>
-
         <div className="flex gap-4">
           <Button 
             className="w-auto"

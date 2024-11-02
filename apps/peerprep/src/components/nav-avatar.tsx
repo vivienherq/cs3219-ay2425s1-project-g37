@@ -11,12 +11,15 @@ import {
 import { Link } from "@peerprep/ui/link";
 import { getOrigin } from "@peerprep/utils/client";
 import { useAuth, useLogout } from "@peerprep/utils/client";
+import { useNavigate } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import toast from "react-hot-toast";
 
 export function NavAvatar() {
   const { data: user } = useAuth();
   const { trigger } = useLogout();
+  const navigate = useNavigate();
+  
   if (!user) return null;
   return (
     <DropdownMenu>
@@ -30,14 +33,25 @@ export function NavAvatar() {
             <div className="max-w-full truncate text-base text-white">@{user.username}</div>
           </DropdownMenuLabel>
           <DropdownMenuItem>View profile</DropdownMenuItem>
-          <DropdownMenuItem>User settings</DropdownMenuItem>
+          <DropdownMenuItem>
+            <button 
+              onClick={ () => {
+                navigate("/profile");
+                }
+              }
+              className="flex items-center justify-between w-full"
+            >
+              User settings
+              <ArrowUpRight className="ml-2" />
+            </button>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         {user.isAdmin ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href={getOrigin("admin-portal")}>
+                <Link href={getOrigin("admin-portal")} className="flex items-center justify-between w-full">
                   Admin portal
                   <ArrowUpRight />
                 </Link>

@@ -47,8 +47,8 @@ function NavAvatar() {
             <button 
               onClick={ () => {
                 navigate("/profile");
+                }
               }
-            }
             className="flex items-center justify-between w-full"
             >
               User settings
