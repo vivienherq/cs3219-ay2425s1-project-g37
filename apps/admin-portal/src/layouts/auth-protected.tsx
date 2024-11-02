@@ -42,7 +42,9 @@ function NavAvatar() {
           </DropdownMenuItem>
           {/* TODO */}
           <DropdownMenuItem>
+            <Link href={"/profile"}>
             User settings
+            </Link>
             <ArrowUpRight />
           </DropdownMenuItem>
         </DropdownMenuGroup>

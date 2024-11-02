@@ -14,6 +14,7 @@ import QuestionPage from "~/routes/question-content";
 import QuestionEditPage from "~/routes/question-edit";
 import QuestionsPage from "~/routes/questions";
 import RegisterPage from "~/routes/register";
+import ProfileSettingPage from "~/routes/profilesetting";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <IndexPage /> },
           { path: "/questions", element: <QuestionsPage /> },
+          { path: "/profile", element: <ProfileSettingPage/>},
           {
             path: "/questions/:id",
             element: <QuestionLayout />,
