@@ -31,7 +31,7 @@ export function NavAvatar() {
             <div className="max-w-full truncate text-base text-white">@{user.username}</div>
           </DropdownMenuLabel>
           <DropdownMenuItem asChild>
-            <Link href="/profile">User settings</Link>
+            <Link href="/profile/settings">User settings</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         {user.isAdmin ? (

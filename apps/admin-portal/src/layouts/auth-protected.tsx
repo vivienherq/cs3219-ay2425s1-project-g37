@@ -43,7 +43,7 @@ function NavAvatar() {
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link
-              href={`${getOrigin("frontend")}/profile`}
+              href={`${getOrigin("frontend")}/profile/settings`}
               className="flex w-full items-center justify-between"
             >
               User settings

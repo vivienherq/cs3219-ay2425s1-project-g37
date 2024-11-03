@@ -10,7 +10,7 @@ import PublicNotAuthLayout from "~/layouts/public-not-auth";
 import RootLayout from "~/layouts/root";
 import IndexPage from "~/routes/index";
 import LoginPage from "~/routes/login";
-import ProfileSettingPage from "~/routes/profile";
+import ProfileSettingsPage from "~/routes/profile-settings";
 import RegisterPage from "~/routes/register";
 import RoomPage from "~/routes/room";
 
@@ -37,7 +37,7 @@ const router = createBrowserRouter([
             element: <AuthProtectedCenteredLayout />,
             children: [
               { index: true, element: <IndexPage /> },
-              { path: "/profile", element: <ProfileSettingPage /> },
+              { path: "/profile/settings", element: <ProfileSettingsPage /> },
             ],
           },
           { path: "/room/:id", element: <RoomPage /> },
