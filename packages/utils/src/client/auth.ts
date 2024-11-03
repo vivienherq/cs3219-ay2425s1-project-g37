@@ -1,4 +1,4 @@
-import type { NewUser, User } from "@peerprep/schemas";
+import type { NewUser, UpdateUser, User } from "@peerprep/schemas";
 import { userClient } from "@peerprep/utils/client";
 import useSWR, { mutate } from "swr";
 import useSWRMutation from "swr/mutation";
@@ -39,4 +39,11 @@ export function useRegister() {
   return useSWRMutation(AUTH_KEY, (_, { arg }: { arg: NewUser }) =>
     userClient.post("/users", { json: arg }),
   );
+}
+
+export function useUpdateUser(id: string) {
+  return useSWRMutation(`users:/${id}`, async (_, { arg }: { arg: UpdateUser }) => {
+    await userClient.patch(`/users/${id}`, { json: arg });
+    mutateAuth();
+  });
 }
