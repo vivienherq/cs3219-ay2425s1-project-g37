@@ -170,7 +170,7 @@ function Navbar() {
 
 function LanguageSelector() {
   const { isReady } = useHocuspocus();
-  const language = useY(yLanguage) as unknown as string;
+  const language = useY(yLanguage);
   return (
     <Select
       value={isReady ? language || "javascript" : undefined}
