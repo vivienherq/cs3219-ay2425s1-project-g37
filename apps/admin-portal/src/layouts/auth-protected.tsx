@@ -12,14 +12,13 @@ import { Link } from "@peerprep/ui/link";
 import { getOrigin, useAuth, useLogout } from "@peerprep/utils/client";
 import { ArrowUpRight } from "lucide-react";
 import toast from "react-hot-toast";
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 import { NavLogo } from "~/components/nav-logo";
 
 function NavAvatar() {
   const { data: user } = useAuth();
   const { trigger } = useLogout();
-  const navigate = useNavigate();
 
   if (!user) return null;
   return (
@@ -42,17 +41,14 @@ function NavAvatar() {
               <ArrowUpRight />
             </Link>
           </DropdownMenuItem>
-          {/* TODO */}
-          <DropdownMenuItem>
-            <button
-              onClick={() => {
-                navigate("/profile");
-              }}
+          <DropdownMenuItem asChild>
+            <Link
+              href={`${getOrigin("frontend")}/profile`}
               className="flex w-full items-center justify-between"
             >
               User settings
-              <ArrowUpRight className="ml-2" />
-            </button>
+              <ArrowUpRight />
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

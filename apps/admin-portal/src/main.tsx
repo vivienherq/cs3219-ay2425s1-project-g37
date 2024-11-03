@@ -10,7 +10,6 @@ import QuestionLayout from "~/layouts/question";
 import RootLayout from "~/layouts/root";
 import IndexPage from "~/routes/index";
 import LoginPage from "~/routes/login";
-import ProfileSettingPage from "~/routes/profile";
 import QuestionPage from "~/routes/question-content";
 import QuestionEditPage from "~/routes/question-edit";
 import QuestionsPage from "~/routes/questions";
@@ -37,7 +36,6 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <IndexPage /> },
           { path: "/questions", element: <QuestionsPage /> },
-          { path: "/profile", element: <ProfileSettingPage /> },
           {
             path: "/questions/:id",
             element: <QuestionLayout />,
