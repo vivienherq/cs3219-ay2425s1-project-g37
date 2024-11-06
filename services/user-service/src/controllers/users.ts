@@ -50,3 +50,31 @@ export async function deleteUser(id: string) {
   const user = await db.user.delete({ where: { id } });
   if (!user) throw new ExpectedError(`User ${id} not found`, StatusCodes.NOT_FOUND);
 }
+
+export async function getMatchingHistory(userId: string) {
+  try {
+    const rooms = await db.room.findMany({
+      where: {
+        userIds: { has: userId },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        users: true,
+        question: true,
+      },
+    });
+    const data = await rooms;
+    console.log(data);
+    return rooms.map(room => ({
+      roomId: room.id,
+      questionTitle: room.question.title,
+      questionDifficulty: room.question.difficulty,
+      participants: room.users.map(user => user.username),
+      createdAt: room.createdAt,
+    }));
+  } catch (error) {
+    throw new Error("Failed to fetch matching history");
+  }
+}

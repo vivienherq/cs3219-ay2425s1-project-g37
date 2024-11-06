@@ -10,6 +10,7 @@ import {
   getUser,
   updateUser,
   updateUserPrivilege,
+  getMatchingHistory
 } from "~/controllers/users";
 import { getJwt } from "~/lib/get-jwt";
 
@@ -42,7 +43,12 @@ const protectedRoutes = new Elysia({ prefix: "/:id" })
     },
     { body: users.updateSchema },
   )
-  .delete("/", ({ params }) => deleteUser(params.id));
+  .delete("/", ({ params }) => deleteUser(params.id))
+  .get("/history", async ({ params }) => {
+    const history = await getMatchingHistory(params.id);
+    console.log(history);
+    return history;
+  });
 
 const publicRoutes = new Elysia().use(elysiaAuthPlugin).post(
   "/",

@@ -50,6 +50,15 @@ function NavAvatar() {
               <ArrowUpRight />
             </Link>
           </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href={`${getOrigin("frontend")}/history`}
+              className="flex w-full items-center justify-between"
+            >
+              History
+              <ArrowUpRight />
+            </Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
