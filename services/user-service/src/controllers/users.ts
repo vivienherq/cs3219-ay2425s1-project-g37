@@ -1,7 +1,7 @@
 import { Prisma, db } from "@peerprep/db";
 import { env } from "@peerprep/env";
 import type { NewUser, Room, UpdateUser, User } from "@peerprep/schemas";
-import { ExpectedError, decorateUser, stripUser } from "@peerprep/utils/server";
+import { ExpectedError, decorateUser, roomIsStale, stripUser } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
 export async function createUser({ adminSignUpToken, ...user }: NewUser) {
@@ -62,5 +62,6 @@ export async function getMatchingHistory(userId: string): Promise<Room[]> {
     ...rest,
     userIds: [userIds[0], userIds[1]],
     users: [stripUser(decorateUser(users[0])), stripUser(decorateUser(users[1]))],
+    alreadyStale: roomIsStale(rest),
   }));
 }

@@ -1,16 +1,7 @@
 import { db } from "@peerprep/db";
 import type { Room } from "@peerprep/schemas";
-import { ExpectedError, decorateUser, stripUser } from "@peerprep/utils/server";
+import { ExpectedError, decorateUser, roomIsStale, stripUser } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
-
-const EARLIEST_NOT_STALE_CREATED_AT = new Date("2024-11-07T20:00:00+08:00");
-
-function roomIsStale(room: { staledAt: Date | null; createdAt: Date }) {
-  return (
-    (room.staledAt !== null && room.staledAt < new Date()) ||
-    room.createdAt < EARLIEST_NOT_STALE_CREATED_AT
-  );
-}
 
 export async function getRoom(roomId: string): Promise<Room> {
   if (roomId.length !== 24) throw new ExpectedError("Invalid room ID", StatusCodes.BAD_REQUEST);

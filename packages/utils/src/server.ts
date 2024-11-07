@@ -95,6 +95,14 @@ export function stripUser({ id, imageUrl, isAdmin, username }: User) {
   return { id, imageUrl, isAdmin, username };
 }
 
+const EARLIEST_NOT_STALE_CREATED_AT = new Date("2024-11-07T20:00:00+08:00");
+export function roomIsStale(room: { staledAt: Date | null; createdAt: Date }) {
+  return (
+    (room.staledAt !== null && room.staledAt < new Date()) ||
+    room.createdAt < EARLIEST_NOT_STALE_CREATED_AT
+  );
+}
+
 export const elysiaAuthPlugin = new Elysia({ name: "check-auth" })
   .use(jwt({ name: "jwt", secret: env.JWT_SECRET }))
   .derive({ as: "scoped" }, async ({ jwt, cookie: { auth_token } }) => {
