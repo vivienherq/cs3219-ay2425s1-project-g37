@@ -24,8 +24,10 @@ const server = Server.configure({
     if (data.type === "chat") return document.broadcastStateless(payload);
     if (data.type === "ai") {
       const room = await getRoom(documentName);
+      const activeLanguage = document.getText("language").toString();
+      const code = document.getText("monaco").toString().trim();
       const yAIChatMessages = document.getArray<Y.Map<string>>("aIChatMessages");
-      const aiResponse = await getCompletion(room, yAIChatMessages);
+      const aiResponse = await getCompletion(room, activeLanguage, code, yAIChatMessages);
       document.transact(() => {
         const yChatMessage = new Y.Map<string>();
         yChatMessage.set("id", nanoid());
