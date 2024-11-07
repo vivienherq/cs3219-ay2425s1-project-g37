@@ -44,12 +44,6 @@ interface ChatMessageGroupType<AI extends boolean = boolean> {
   messages: ChatMessageType<AI>[];
 }
 
-const ydoc = new Y.Doc();
-const yCodeContent = ydoc.getText("monaco");
-const yLanguage = ydoc.getText("language");
-const yChatMessages = ydoc.getArray<Y.Map<string>>("chatMessages");
-const yAIChatMessages = ydoc.getArray<Y.Map<string>>("aIChatMessages");
-
 const [PageDataProvider, usePageData] = generateContext<{ user: User; room: Room }>("room data");
 
 function getTagString(tags: string[]) {
@@ -57,7 +51,7 @@ function getTagString(tags: string[]) {
   return tags.join(", ");
 }
 
-function useHocuspocus() {
+function useInitialiseHocuspocus() {
   const { user, room } = usePageData();
 
   const [isReady, setReady] = useState(false);
@@ -65,12 +59,17 @@ function useHocuspocus() {
   const collaboratorIsOnline = useDebounce(false, rawCollaboratorIsOnline);
   const [stylesheets, setStylesheets] = useState<string[]>([]);
   const [chatPending, setChatPending] = useState(false);
-  const [provider] = useState(() => {
+  const [{ provider, ...documents }] = useState(() => {
+    const ydoc = new Y.Doc();
+    const yCodeContent = ydoc.getText("monaco");
+    const yLanguage = ydoc.getText("language");
+    const yChatMessages = ydoc.getArray<Y.Map<string>>("chatMessages");
+    const yAIChatMessages = ydoc.getArray<Y.Map<string>>("aIChatMessages");
+
     const provider = new HocuspocusProvider({
-      url: `ws://localhost:${env.VITE_COLLABORATION_SERVICE_PORT}`,
+      url: `ws://localhost:${env.VITE_COLLABORATION_SERVICE_PORT}/collab/${room.id}`,
       name: room.id,
       document: ydoc,
-      token: "dummy, required because hocuspocus needs it but we don't do anything with it",
     });
     provider.setAwarenessField("user", {
       username: user.username,
@@ -106,11 +105,12 @@ function useHocuspocus() {
       const decoded = JSON.parse(payload) as StatelessMessage;
       if (decoded.type === "chat" && decoded.userId !== user.id) setChatPending(true);
     });
-    return provider;
+    return { provider, ydoc, yCodeContent, yLanguage, yChatMessages, yAIChatMessages };
   });
 
   return {
     provider,
+    ...documents,
     isReady,
     collaboratorIsOnline,
     stylesheets,
@@ -118,6 +118,9 @@ function useHocuspocus() {
     clearChatPending: () => setChatPending(false),
   };
 }
+
+const [HocuspocusInstanceProvider, useHocuspocus] =
+  generateContext<ReturnType<typeof useInitialiseHocuspocus>>("hocuspocus");
 
 function Navbar() {
   const { user, room } = usePageData();
@@ -166,7 +169,7 @@ function Navbar() {
 }
 
 function LanguageSelector() {
-  const { isReady } = useHocuspocus();
+  const { isReady, ydoc, yLanguage } = useHocuspocus();
   const language = useY(yLanguage) as unknown as string;
   return (
     <Select
@@ -265,7 +268,7 @@ function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
 function ChatMessageBox({ ai = false }: { ai?: boolean }) {
   const [message, setMessage] = useState("");
   const { user } = usePageData();
-  const { provider } = useHocuspocus();
+  const { provider, ydoc, yAIChatMessages, yChatMessages } = useHocuspocus();
   function submit() {
     const content = message.trim();
     if (!content) return;
@@ -364,7 +367,7 @@ function groupChatMessages(chatMessages: ChatMessageType[]): ChatMessageGroupTyp
 }
 
 function Chat({ ai = false }: { ai?: boolean }) {
-  const { isReady } = useHocuspocus();
+  const { isReady, yAIChatMessages, yChatMessages } = useHocuspocus();
   const chatMessages = useY(ai ? yAIChatMessages : yChatMessages);
   const groupedChatMessages = useMemo(
     () => groupChatMessages(chatMessages as unknown as ChatMessageType[]),
@@ -385,7 +388,7 @@ function Chat({ ai = false }: { ai?: boolean }) {
 
 function MainRoomPage() {
   const { room } = usePageData();
-  const { provider, stylesheets, chatPending, clearChatPending } = useHocuspocus();
+  const { provider, stylesheets, chatPending, clearChatPending, yCodeContent } = useHocuspocus();
   const [tab, setTab] = useState("problem");
   return (
     <div className="flex h-screen w-screen flex-col px-6">
@@ -458,6 +461,11 @@ function MainRoomPage() {
   );
 }
 
+function HocuspocusInstanceProviderWrapper({ children }: { children: React.ReactNode }) {
+  const hocuspocus = useInitialiseHocuspocus();
+  return <HocuspocusInstanceProvider value={hocuspocus}>{children}</HocuspocusInstanceProvider>;
+}
+
 export default function RoomPage() {
   const { id } = useParams<{ id: string }>();
   if (!id) throw new Error("invariant: id is undefined");
@@ -469,7 +477,9 @@ export default function RoomPage() {
   if (!user || !room) return null;
   return (
     <PageDataProvider value={{ user, room }}>
-      <MainRoomPage />
+      <HocuspocusInstanceProviderWrapper>
+        <MainRoomPage />
+      </HocuspocusInstanceProviderWrapper>
     </PageDataProvider>
   );
 }

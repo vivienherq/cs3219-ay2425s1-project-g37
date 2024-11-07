@@ -19,12 +19,6 @@ import { handleError } from "~/middlewares/handle-error";
 type StatelessMessage = { type: "chat"; userId: string } | { type: "ai" };
 
 const server = Server.configure({
-  onAuthenticate: async ({ request, documentName }) => {
-    const result = await checkRoomAccessibility(request, getRoom(documentName));
-    if (!result.user || !result.accessible)
-      throw new ExpectedError("Unauthorized", StatusCodes.UNAUTHORIZED);
-    return { user: result.user };
-  },
   onStateless: async ({ document, documentName, payload }) => {
     const data: StatelessMessage = JSON.parse(payload);
     if (data.type === "chat") return document.broadcastStateless(payload);
@@ -64,7 +58,12 @@ app.get("/rooms/:id", async (req, res) => {
   throw new ExpectedError("Unauthorized", StatusCodes.UNAUTHORIZED);
 });
 
-app.ws("/", (ws, req) => server.handleConnection(ws, req));
+app.ws("/collab/:id", async (ws, req) => {
+  const result = await checkRoomAccessibility(req, getRoom(req.params.id));
+  if (!result.user || !result.accessible)
+    throw new ExpectedError("Unauthorized", StatusCodes.UNAUTHORIZED);
+  server.handleConnection(ws, req, { user: result.user });
+});
 
 app.use(handleError);
 
