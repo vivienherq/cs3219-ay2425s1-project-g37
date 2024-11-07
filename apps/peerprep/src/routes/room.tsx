@@ -59,6 +59,7 @@ function useInitialiseHocuspocus() {
   const collaboratorIsOnline = useDebounce(false, rawCollaboratorIsOnline);
   const [stylesheets, setStylesheets] = useState<string[]>([]);
   const [chatPending, setChatPending] = useState(false);
+  const [readOnly, setReadOnly] = useState(true);
   const [{ provider, ...documents }] = useState(() => {
     const ydoc = new Y.Doc();
     const yCodeContent = ydoc.getText("monaco");
@@ -70,6 +71,7 @@ function useInitialiseHocuspocus() {
       url: `ws://localhost:${env.VITE_COLLABORATION_SERVICE_PORT}/collab/${room.id}`,
       name: room.id,
       document: ydoc,
+      token: "dummy token",
     });
     provider.setAwarenessField("user", {
       username: user.username,
@@ -105,12 +107,23 @@ function useInitialiseHocuspocus() {
       const decoded = JSON.parse(payload) as StatelessMessage;
       if (decoded.type === "chat" && decoded.userId !== user.id) setChatPending(true);
     });
-    return { provider, ydoc, yCodeContent, yLanguage, yChatMessages, yAIChatMessages };
+    provider.on("authenticated", () =>
+      setReadOnly(room.alreadyStale || provider.authorizedScope === "readonly"),
+    );
+    return {
+      provider,
+      ydoc,
+      yCodeContent,
+      yLanguage,
+      yChatMessages,
+      yAIChatMessages,
+    };
   });
 
   return {
     provider,
     ...documents,
+    readOnly: !isReady || (isReady && readOnly),
     isReady,
     collaboratorIsOnline,
     stylesheets,
@@ -169,10 +182,11 @@ function Navbar() {
 }
 
 function LanguageSelector() {
-  const { isReady, ydoc, yLanguage } = useHocuspocus();
+  const { isReady, readOnly, ydoc, yLanguage } = useHocuspocus();
   const language = useY(yLanguage) as unknown as string;
   return (
     <Select
+      disabled={readOnly}
       value={isReady ? language || "javascript" : undefined}
       onValueChange={value => {
         ydoc.transact(() => {
@@ -268,7 +282,8 @@ function ChatMessageGroup({ group }: { group: ChatMessageGroupType }) {
 function ChatMessageBox({ ai = false }: { ai?: boolean }) {
   const [message, setMessage] = useState("");
   const { user } = usePageData();
-  const { provider, ydoc, yAIChatMessages, yChatMessages } = useHocuspocus();
+  const { provider, readOnly, ydoc, yAIChatMessages, yChatMessages } = useHocuspocus();
+  const disabled = readOnly || !message.trim();
   function submit() {
     const content = message.trim();
     if (!content) return;
@@ -320,7 +335,7 @@ function ChatMessageBox({ ai = false }: { ai?: boolean }) {
         </div>
         <Button
           type="submit"
-          disabled={!message.trim()}
+          disabled={disabled}
           className="w-auto"
           variants={{ variant: "primary", size: "sm" }}
         >
@@ -388,7 +403,8 @@ function Chat({ ai = false }: { ai?: boolean }) {
 
 function MainRoomPage() {
   const { room } = usePageData();
-  const { provider, stylesheets, chatPending, clearChatPending, yCodeContent } = useHocuspocus();
+  const { provider, readOnly, stylesheets, chatPending, clearChatPending, yCodeContent } =
+    useHocuspocus();
   const [tab, setTab] = useState("problem");
   return (
     <div className="flex h-screen w-screen flex-col px-6">
@@ -447,6 +463,7 @@ function MainRoomPage() {
               theme="vs-dark"
               defaultLanguage="javascript"
               defaultValue="// some comment"
+              options={{ readOnly }}
               onMount={editor => {
                 const editorModel = editor.getModel();
                 if (!editorModel)
