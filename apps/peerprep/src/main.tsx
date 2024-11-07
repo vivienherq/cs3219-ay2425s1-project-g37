@@ -6,6 +6,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import ErrorPage from "~/error";
 import AuthProtectedCenteredLayout from "~/layouts/auth-protected-centered";
 import AuthProtectedEmptyLayout from "~/layouts/auth-protected-empty";
+import ProfileLayout from "~/layouts/profile";
 import PublicNotAuthLayout from "~/layouts/public-not-auth";
 import RootLayout from "~/layouts/root";
 import HistoryPage from "~/routes/history";
@@ -38,8 +39,22 @@ const router = createBrowserRouter([
             element: <AuthProtectedCenteredLayout />,
             children: [
               { index: true, element: <IndexPage /> },
-              { path: "/profile/settings", element: <ProfileSettingsPage /> },
-              { path: "/profile/history", element: <HistoryPage /> },
+              {
+                path: "/profile",
+                element: <ProfileLayout />,
+                children: [
+                  {
+                    path: "/profile/settings",
+                    element: <ProfileSettingsPage />,
+                    handle: { title: "Profile Settings" },
+                  },
+                  {
+                    path: "/profile/history",
+                    element: <HistoryPage />,
+                    handle: { title: "Room History" },
+                  },
+                ],
+              },
             ],
           },
           { path: "/room/:id", element: <RoomPage /> },

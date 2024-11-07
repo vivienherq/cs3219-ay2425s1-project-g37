@@ -1,4 +1,6 @@
+import { LinkButton } from "@peerprep/ui/button";
 import { Link } from "@peerprep/ui/link";
+import { QuestionDifficultyLabel } from "@peerprep/ui/question-difficulty-label";
 import { useAuth, useUserHistory } from "@peerprep/utils/client";
 
 export default function HistoryPage() {
@@ -7,30 +9,37 @@ export default function HistoryPage() {
 
   const { data: history } = useUserHistory(user.id);
   if (!history) return null;
-  return (
-    <div className="container py-6 pb-12">
-      <h1 className="text-main-50 text-2xl">Your History</h1>
-      <div className="mt-6">
-        {history.length === 0 ? (
-          <p>It's empty in here. Go match with someone now!</p>
-        ) : (
-          <ul>
-            {history.map(room => (
-              <li key={room.id} className="flex items-center gap-4 p-2">
-                <div className="flex flex-col">
-                  <span className="text-main-500 text-base">{room.question.title}</span>
-                  <span className="text-main-400 text-sm">
-                    {room.question.createdAt.toLocaleDateString()}
-                  </span>
-                </div>
-                <Link href={`/room/${room.id}`} className="btn-secondary">
-                  View Details
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+
+  if (history.length === 0) {
+    return (
+      <div className="bg-main-900 flex flex-col items-center gap-6 p-9">
+        <div>It's empty in here. Go match with someone now!</div>
+        <LinkButton href="/" variants={{ variant: "primary" }}>
+          Start matching
+        </LinkButton>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <ul className="flex flex-col gap-6">
+      {history.map(room => {
+        const collaborator = room.users.find(u => u.id !== user.id)!;
+        return (
+          <li key={room.id}>
+            <Link href={`/room/${room.id}`} className="bg-main-900 flex flex-col gap-1.5 p-6">
+              <h2 className="line-clamp-2 text-lg text-white">{room.question.title}</h2>
+              <div className="flex flex-row items-center justify-between gap-6">
+                <QuestionDifficultyLabel difficulty={room.question.difficulty} />
+                <div className="text-main-500 text-sm">
+                  With <span className="text-main-300">@{collaborator.username}</span>, on{" "}
+                  {room.createdAt.toLocaleDateString()}
+                </div>
+              </div>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
