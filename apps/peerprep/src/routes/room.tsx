@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@peerprep/ui/tabs";
 import { Textarea } from "@peerprep/ui/text-input";
 import { useAuth, useRoom } from "@peerprep/utils/client";
-import { BotMessageSquare, Send, Tags } from "lucide-react";
+import { BotMessageSquare, Lock, Send, Tags } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useMemo, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
@@ -137,47 +137,63 @@ const [HocuspocusInstanceProvider, useHocuspocus] =
 
 function Navbar() {
   const { user, room } = usePageData();
-  const { collaboratorIsOnline } = useHocuspocus();
+  const { isReady, readOnly, collaboratorIsOnline } = useHocuspocus();
   const collaborator = room.users[0].id === user.id ? room.users[1] : room.users[0];
   return (
-    <nav className="flex flex-row justify-between p-6">
-      <div className="flex flex-row items-center gap-6">
-        <NavLogo forceNativeAnchor />
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-semibold text-white">
-            <Link href={room.question.leetCodeLink}>{room.question.title}</Link>
-          </h1>
-          <div className="flex flex-row items-center gap-6">
-            <QuestionDifficultyLabel difficulty={room.question.difficulty} />
-            <div className="text-main-500 flex flex-row items-center gap-1.5 text-sm">
-              <Tags />
-              <span>{getTagString(room.question.tags)}</span>
+    <div className="flex flex-col">
+      {readOnly && isReady ? (
+        <div className="bg-main-900 text-main-300 -mx-6 flex flex-row items-center justify-center gap-2 px-12 py-1.5 text-sm">
+          <Lock />
+          After 6 hours of inactivity, this room has been locked and is now read-only.
+          <LinkButton
+            href="/"
+            className="w-auto"
+            variants={{ size: "sm", variant: "secondary" }}
+            forceNativeAnchor
+          >
+            Start matching
+          </LinkButton>
+        </div>
+      ) : null}
+      <nav className="flex flex-row justify-between p-6">
+        <div className="flex flex-row items-center gap-6">
+          <NavLogo forceNativeAnchor />
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-semibold text-white">
+              <Link href={room.question.leetCodeLink}>{room.question.title}</Link>
+            </h1>
+            <div className="flex flex-row items-center gap-6">
+              <QuestionDifficultyLabel difficulty={room.question.difficulty} />
+              <div className="text-main-500 flex flex-row items-center gap-1.5 text-sm">
+                <Tags />
+                <span>{getTagString(room.question.tags)}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="flex flex-row items-center gap-9">
-        <div className="flex flex-col gap-1">
-          <span className="text-main-500 text-xs uppercase">Collaborator</span>
-          <div className="flex flex-row items-center gap-3">
-            <Avatar
-              imageUrl={collaborator.imageUrl}
-              username={collaborator.username}
-              className="size-9 border-4 border-amber-500"
-            />
-            <div className="flex flex-col">
-              <span className="text-sm">@{collaborator.username}</span>
-              {collaboratorIsOnline ? (
-                <span className="text-xs text-emerald-500">Online</span>
-              ) : (
-                <span className="text-main-500 text-xs">Offline</span>
-              )}
+        <div className="flex flex-row items-center gap-9">
+          <div className="flex flex-col gap-1">
+            <span className="text-main-500 text-xs uppercase">Collaborator</span>
+            <div className="flex flex-row items-center gap-3">
+              <Avatar
+                imageUrl={collaborator.imageUrl}
+                username={collaborator.username}
+                className="size-9 border-4 border-amber-500"
+              />
+              <div className="flex flex-col">
+                <span className="text-sm">@{collaborator.username}</span>
+                {collaboratorIsOnline ? (
+                  <span className="text-xs text-emerald-500">Online</span>
+                ) : (
+                  <span className="text-main-500 text-xs">Offline</span>
+                )}
+              </div>
             </div>
           </div>
+          <NavAvatar />
         </div>
-        <NavAvatar />
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 }
 
