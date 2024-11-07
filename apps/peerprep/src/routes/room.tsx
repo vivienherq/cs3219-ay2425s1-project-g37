@@ -129,7 +129,7 @@ function Navbar() {
   return (
     <nav className="flex flex-row justify-between p-6">
       <div className="flex flex-row items-center gap-6">
-        <NavLogo />
+        <NavLogo forceNativeAnchor />
         <div className="flex flex-col">
           <h1 className="text-2xl font-semibold text-white">
             <Link href={room.question.leetCodeLink}>{room.question.title}</Link>
