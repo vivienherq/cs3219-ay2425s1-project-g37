@@ -52,7 +52,7 @@ function NavAvatar() {
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link
-              href={`${getOrigin("frontend")}/history`}
+              href={`${getOrigin("frontend")}/profile/history`}
               className="flex w-full items-center justify-between"
             >
               History

@@ -91,6 +91,10 @@ export function decorateUser(user: Omit<User, "imageUrl">): User {
   };
 }
 
+export function stripUser({ id, imageUrl, isAdmin, username }: User) {
+  return { id, imageUrl, isAdmin, username };
+}
+
 export const elysiaAuthPlugin = new Elysia({ name: "check-auth" })
   .use(jwt({ name: "jwt", secret: env.JWT_SECRET }))
   .derive({ as: "scoped" }, async ({ jwt, cookie: { auth_token } }) => {

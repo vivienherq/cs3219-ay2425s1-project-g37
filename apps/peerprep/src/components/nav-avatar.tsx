@@ -34,7 +34,7 @@ export function NavAvatar() {
             <Link href="/profile/settings">User settings</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/history">History</Link>
+            <Link href="/profile/history">History</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         {user.isAdmin ? (
