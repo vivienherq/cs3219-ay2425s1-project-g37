@@ -1,4 +1,3 @@
-import { Avatar } from "@peerprep/ui/avatar";
 import { Button } from "@peerprep/ui/button";
 import { Input } from "@peerprep/ui/text-input";
 import { useAuth, useUpdateUser } from "@peerprep/utils/client";
@@ -6,7 +5,7 @@ import { UserPen } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-function Form() {
+export default function ProfileSettingsPage() {
   const { data: user } = useAuth();
   if (!user) throw new Error("invariant: user is undefined");
 
@@ -20,7 +19,7 @@ function Form() {
 
   return (
     <form
-      className="bg-main-900 flex w-full max-w-lg flex-col gap-6 p-9"
+      className="bg-main-900 flex flex-col gap-6 p-9"
       onSubmit={async e => {
         e.preventDefault();
         if (password && password !== confirmPassword) {
@@ -72,29 +71,5 @@ function Form() {
         </Button>
       </div>
     </form>
-  );
-}
-
-export default function ProfileSettingsPage() {
-  const { data: user } = useAuth();
-  if (!user) return null;
-
-  return (
-    <main className="flex flex-row justify-center gap-6">
-      <div className="flex w-full max-w-72 flex-col gap-6">
-        <h1 className="text-main-50 text-2xl">Profile Settings</h1>
-        <div className="flex flex-row items-center gap-6">
-          <Avatar imageUrl={user.imageUrl} username={user.username} className="size-16 shrink-0" />
-          <div className="flex min-w-0 flex-col">
-            <div className="text-main-50 truncate text-lg">@{user.username}</div>
-            <div className="text-main-500 truncate">{user.email}</div>
-            <div className="text-main-500 mt-1.5 text-xs">
-              Member since {user.createdAt.toLocaleDateString()}
-            </div>
-          </div>
-        </div>
-      </div>
-      <Form />
-    </main>
   );
 }

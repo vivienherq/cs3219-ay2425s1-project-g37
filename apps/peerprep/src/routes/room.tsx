@@ -159,9 +159,6 @@ function Navbar() {
             </div>
           </div>
         </div>
-        <LinkButton href="/" variants={{ variant: "secondary" }} className="w-fit">
-          End session
-        </LinkButton>
         <NavAvatar />
       </div>
     </nav>
@@ -170,7 +167,7 @@ function Navbar() {
 
 function LanguageSelector() {
   const { isReady } = useHocuspocus();
-  const language = useY(yLanguage);
+  const language = useY(yLanguage) as unknown as string;
   return (
     <Select
       value={isReady ? language || "javascript" : undefined}

@@ -7,6 +7,7 @@ import {
   createUser,
   deleteUser,
   getAllUsers,
+  getMatchingHistory,
   getUser,
   updateUser,
   updateUserPrivilege,
@@ -42,7 +43,8 @@ const protectedRoutes = new Elysia({ prefix: "/:id" })
     },
     { body: users.updateSchema },
   )
-  .delete("/", ({ params }) => deleteUser(params.id));
+  .delete("/", ({ params }) => deleteUser(params.id))
+  .get("/history", ({ params }) => getMatchingHistory(params.id));
 
 const publicRoutes = new Elysia().use(elysiaAuthPlugin).post(
   "/",
