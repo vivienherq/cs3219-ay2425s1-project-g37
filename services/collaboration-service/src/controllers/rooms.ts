@@ -3,6 +3,15 @@ import type { Room } from "@peerprep/schemas";
 import { ExpectedError, decorateUser, stripUser } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
+const EARLIEST_NOT_STALE_CREATED_AT = new Date("2024-11-07T20:00:00+08:00");
+
+function roomIsStale(room: { staledAt: Date | null; createdAt: Date }) {
+  return (
+    (room.staledAt !== null && room.staledAt < new Date()) ||
+    room.createdAt < EARLIEST_NOT_STALE_CREATED_AT
+  );
+}
+
 export async function getRoom(roomId: string): Promise<Room> {
   if (roomId.length !== 24) throw new ExpectedError("Invalid room ID", StatusCodes.BAD_REQUEST);
   const room = await db.room.findUnique({
@@ -18,7 +27,7 @@ export async function getRoom(roomId: string): Promise<Room> {
     ...rest,
     userIds: [userIds[0], userIds[1]],
     users: [stripUser(decorateUser(users[0])), stripUser(decorateUser(users[1]))],
-    alreadyStale: room.staledAt !== null && room.staledAt < new Date(),
+    alreadyStale: roomIsStale(room),
   };
 }
 
@@ -43,11 +52,11 @@ export async function makeRoomActiveAgain(roomId: string, forced = false) {
     await db.room.update({ where: { id: roomId }, data: { staledAt: null } });
     return true;
   }
-  const { staledAt } = await db.room.findUniqueOrThrow({
+  const data = await db.room.findUniqueOrThrow({
     where: { id: roomId },
-    select: { staledAt: true },
+    select: { staledAt: true, createdAt: true },
   });
-  const alreadyStale = staledAt && staledAt < new Date();
+  const alreadyStale = roomIsStale(data);
   if (alreadyStale) return false;
   await db.room.update({ where: { id: roomId }, data: { staledAt: null } });
   return true;
