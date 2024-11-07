@@ -159,9 +159,6 @@ function Navbar() {
             </div>
           </div>
         </div>
-        <LinkButton href="/" variants={{ variant: "secondary" }} className="w-fit">
-          End session
-        </LinkButton>
         <NavAvatar />
       </div>
     </nav>
