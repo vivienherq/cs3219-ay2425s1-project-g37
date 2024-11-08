@@ -49,6 +49,7 @@ export async function makeRoomActiveAgain(roomId: string, forced = false) {
   });
   const alreadyStale = roomIsStale(data);
   if (alreadyStale) return false;
+  console.log(`Making room ${roomId} active again`);
   await db.room.update({ where: { id: roomId }, data: { staledAt: null } });
   return true;
 }

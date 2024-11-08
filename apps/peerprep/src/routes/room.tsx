@@ -141,7 +141,7 @@ function Navbar() {
   const collaborator = room.users[0].id === user.id ? room.users[1] : room.users[0];
   return (
     <div className="flex flex-col">
-      {readOnly && isReady ? (
+      {(readOnly && isReady) || room.alreadyStale ? (
         <div className="bg-main-900 text-main-300 -mx-6 flex flex-row items-center justify-center gap-2 px-12 py-1.5 text-sm">
           <Lock />
           After 6 hours of inactivity, this room has been locked and is now read-only.
@@ -335,7 +335,10 @@ function ChatMessageBox({ ai = false }: { ai?: boolean }) {
     >
       <Textarea
         className="h-24 resize-none border-none"
-        placeholder="Say something"
+        placeholder={
+          readOnly ? "This room has been locked and this channel is read-only." : "Say something"
+        }
+        disabled={readOnly}
         value={message}
         onValueChange={setMessage}
         onKeyDown={e => {
