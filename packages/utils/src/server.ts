@@ -1,4 +1,3 @@
-import cors from "@elysiajs/cors";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "@peerprep/db";
 import { env } from "@peerprep/env";
@@ -34,17 +33,6 @@ class ServiceResponse<T = unknown> extends Response {
     });
   }
 }
-
-export const elysiaCorsPlugin = new Elysia({ name: "cors" }).use(
-  cors({
-    origin: [
-      `http://localhost:${env.VITE_PEERPREP_FRONTEND_PORT}`,
-      `http://localhost:${env.VITE_PEERPREP_QUESTION_SPA_PORT}`,
-      /^https?:\/\/(\w+-)?peerprep\.joulev\.dev.*$/,
-    ],
-    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "HEAD"],
-  }),
-);
 
 export const elysiaFormatResponsePlugin = new Elysia({ name: "handle-error" })
   .error({ ExpectedError })

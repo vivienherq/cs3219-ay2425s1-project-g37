@@ -199,7 +199,7 @@ export default function IndexPage() {
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
     | { type: "acknowledgement" }
     | { type: "error"; title: string; message: string }
-  >("matching:/", `ws://localhost/matching`);
+  >("matching:/", "ws://localhost:3000/api/matching");
 
   const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);

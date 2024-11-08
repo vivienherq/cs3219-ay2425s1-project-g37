@@ -3,8 +3,6 @@
   "ui": "tui",
   "globalEnv": [
     "VITE_SELF_HOST",
-    "VITE_PEERPREP_FRONTEND_PORT",
-    "VITE_PEERPREP_QUESTION_SPA_PORT",
     "DATABASE_URL",
     "JWT_SECRET",
     "ADMIN_SIGNUP_TOKEN",

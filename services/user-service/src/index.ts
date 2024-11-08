@@ -1,11 +1,10 @@
-import { elysiaCorsPlugin, elysiaFormatResponsePlugin } from "@peerprep/utils/server";
+import { elysiaFormatResponsePlugin } from "@peerprep/utils/server";
 import { Elysia } from "elysia";
 
 import { authRoutes } from "~/routes/auth";
 import { userRoutes } from "~/routes/users";
 
 const app = new Elysia()
-  .use(elysiaCorsPlugin)
   .use(elysiaFormatResponsePlugin)
   .get("/status", () => new Response("Online"))
   .group("/users", app => app.use(userRoutes))

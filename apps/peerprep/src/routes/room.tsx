@@ -66,7 +66,7 @@ function useInitialiseHocuspocus() {
     const yAIChatMessages = ydoc.getArray<Y.Map<string>>("aIChatMessages");
 
     const provider = new HocuspocusProvider({
-      url: `ws://localhost/collaboration/collab/${room.id}`,
+      url: `ws://localhost:3000/api/collaboration/collab/${room.id}`,
       name: room.id,
       document: ydoc,
     });

@@ -11,7 +11,6 @@ import * as Y from "yjs";
 import { getCompletion } from "~/controllers/ai";
 import { checkRoomAccessibility } from "~/controllers/auth";
 import { getRoom, getYDocFromRoom, storeYDocToRoom } from "~/controllers/rooms";
-import { corsMiddleware } from "~/middlewares/cors";
 import { formatResponse } from "~/middlewares/format-response";
 import { handleError } from "~/middlewares/handle-error";
 
@@ -47,7 +46,6 @@ const server = Server.configure({
 
 const { app } = expressWebsockets(express());
 
-app.use(corsMiddleware);
 app.use(formatResponse);
 
 app.get("/status", (_, res) => void res.send("Online"));

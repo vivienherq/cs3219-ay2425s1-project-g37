@@ -1,11 +1,7 @@
 import { db } from "@peerprep/db";
 import type { Difficulty } from "@peerprep/schemas";
 import { questions } from "@peerprep/schemas/validators";
-import {
-  elysiaAuthPlugin,
-  elysiaCorsPlugin,
-  elysiaFormatResponsePlugin,
-} from "@peerprep/utils/server";
+import { elysiaAuthPlugin, elysiaFormatResponsePlugin } from "@peerprep/utils/server";
 import { Elysia, t } from "elysia";
 
 import { createRoom } from "~/controllers/rooms";
@@ -68,7 +64,6 @@ worker.addEventListener("message", async ({ data }: { data: WorkerResponse }) =>
 });
 
 const app = new Elysia()
-  .use(elysiaCorsPlugin)
   .use(elysiaFormatResponsePlugin)
   .use(elysiaAuthPlugin)
   .get("/status", () => new Response("Online"))
