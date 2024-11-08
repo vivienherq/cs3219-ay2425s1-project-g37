@@ -1,4 +1,3 @@
-import { env } from "@peerprep/env";
 import type { Difficulty } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { cn } from "@peerprep/ui/cn";
@@ -240,7 +239,7 @@ export default function IndexPage() {
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
     | { type: "acknowledgement" }
     | { type: "error"; title: string; message: string }
-  >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
+  >("matching:/", "ws://localhost:3000/api/matching");
 
   const { data: user } = useAuth();
   if (!user) throw new Error("invariant: user is undefined");
