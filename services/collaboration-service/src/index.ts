@@ -10,13 +10,28 @@ import * as Y from "yjs";
 
 import { getCompletion } from "~/controllers/ai";
 import { checkRoomAccessibility } from "~/controllers/auth";
-import { getRoom, getYDocFromRoom, storeYDocToRoom } from "~/controllers/rooms";
+import {
+  getRoom,
+  getYDocFromRoom,
+  makeRoomActiveAgain,
+  scheduleRoomForInactivity,
+  storeYDocToRoom,
+} from "~/controllers/rooms";
 import { formatResponse } from "~/middlewares/format-response";
 import { handleError } from "~/middlewares/handle-error";
 
 type StatelessMessage = { type: "chat"; userId: string } | { type: "ai" };
 
 const server = Server.configure({
+  onAuthenticate: async ({ request, documentName, connection }) => {
+    const roomPromise = getRoom(documentName);
+    const result = await checkRoomAccessibility(request, roomPromise);
+    if (!result.user || !result.accessible)
+      throw new ExpectedError("Unauthorized", StatusCodes.UNAUTHORIZED);
+    const room = await roomPromise;
+    if (room.alreadyStale) connection.readOnly = true;
+    return { user: result.user };
+  },
   onStateless: async ({ document, documentName, payload }) => {
     const data: StatelessMessage = JSON.parse(payload);
     if (data.type === "chat") return document.broadcastStateless(payload);
@@ -36,6 +51,8 @@ const server = Server.configure({
       });
     }
   },
+  afterLoadDocument: ({ documentName }) => makeRoomActiveAgain(documentName),
+  afterUnloadDocument: ({ documentName }) => scheduleRoomForInactivity(documentName),
   extensions: [
     new Database({
       fetch: ({ documentName }) => getYDocFromRoom(documentName),
@@ -57,12 +74,7 @@ app.get("/rooms/:id", async (req, res) => {
   throw new ExpectedError("Unauthorized", StatusCodes.UNAUTHORIZED);
 });
 
-app.ws("/collab/:id", async (ws, req) => {
-  const result = await checkRoomAccessibility(req, getRoom(req.params.id));
-  if (!result.user || !result.accessible)
-    throw new ExpectedError("Unauthorized", StatusCodes.UNAUTHORIZED);
-  server.handleConnection(ws, req, { user: result.user });
-});
+app.ws("/collab/:id", (ws, req) => server.handleConnection(ws, req));
 
 app.use(handleError);
 

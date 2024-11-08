@@ -1,6 +1,6 @@
 import { db } from "@peerprep/db";
 import type { Room } from "@peerprep/schemas";
-import { ExpectedError, decorateUser, stripUser } from "@peerprep/utils/server";
+import { ExpectedError, decorateUser, roomIsStale, stripUser } from "@peerprep/utils/server";
 import { StatusCodes } from "http-status-codes";
 
 export async function getRoom(roomId: string): Promise<Room> {
@@ -18,6 +18,7 @@ export async function getRoom(roomId: string): Promise<Room> {
     ...rest,
     userIds: [userIds[0], userIds[1]],
     users: [stripUser(decorateUser(users[0])), stripUser(decorateUser(users[1]))],
+    alreadyStale: roomIsStale(room),
   };
 }
 
@@ -30,4 +31,25 @@ export async function getYDocFromRoom(roomId: string): Promise<Uint8Array | null
 
 export async function storeYDocToRoom(roomId: string, ydoc: Uint8Array) {
   await db.room.update({ where: { id: roomId }, data: { ydoc: Buffer.from(ydoc) } });
+}
+
+export async function scheduleRoomForInactivity(roomId: string) {
+  const potentialStaleTime = new Date(Date.now() + 1000 * 60 * 60 * 6); // 6 hour
+  await db.room.update({ where: { id: roomId }, data: { staledAt: potentialStaleTime } });
+}
+
+export async function makeRoomActiveAgain(roomId: string, forced = false) {
+  if (forced) {
+    await db.room.update({ where: { id: roomId }, data: { staledAt: null } });
+    return true;
+  }
+  const data = await db.room.findUniqueOrThrow({
+    where: { id: roomId },
+    select: { staledAt: true, createdAt: true },
+  });
+  const alreadyStale = roomIsStale(data);
+  if (alreadyStale) return false;
+  console.log(`Making room ${roomId} active again`);
+  await db.room.update({ where: { id: roomId }, data: { staledAt: null } });
+  return true;
 }
