@@ -1,6 +1,5 @@
 import { Database } from "@hocuspocus/extension-database";
 import { Server } from "@hocuspocus/server";
-import { env } from "@peerprep/env";
 import { ExpectedError } from "@peerprep/utils/server";
 import express from "express";
 import "express-async-errors";
@@ -69,8 +68,4 @@ app.ws("/collab/:id", async (ws, req) => {
 
 app.use(handleError);
 
-app.listen(env.VITE_COLLABORATION_SERVICE_PORT, () => {
-  console.log(
-    `Collaboration service is running at localhost:${env.VITE_COLLABORATION_SERVICE_PORT}`,
-  );
-});
+app.listen(3000, () => console.log("Collaboration service is running"));

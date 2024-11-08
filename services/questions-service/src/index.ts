@@ -1,4 +1,3 @@
-import { env } from "@peerprep/env";
 import { id, questions } from "@peerprep/schemas/validators";
 import {
   ExpectedError,
@@ -42,6 +41,6 @@ const app = new Elysia()
   .use(elysiaFormatResponsePlugin)
   .use(adminOnlyRoutes)
   .use(publicRoutes)
-  .listen(env.VITE_QUESTION_SERVICE_PORT);
+  .listen(3000);
 
 console.log(`Question service is running at ${app.server?.hostname}:${app.server?.port}`);

@@ -1,4 +1,3 @@
-import { env } from "@peerprep/env";
 import type { Difficulty } from "@peerprep/schemas";
 import { Button } from "@peerprep/ui/button";
 import { cn } from "@peerprep/ui/cn";
@@ -200,7 +199,7 @@ export default function IndexPage() {
     | { type: "success"; matched: [string, string]; questionId: string; roomId: string }
     | { type: "acknowledgement" }
     | { type: "error"; title: string; message: string }
-  >("matching:/", `ws://localhost:${env.VITE_MATCHING_SERVICE_PORT}`);
+  >("matching:/", `ws://localhost/matching`);
 
   const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
