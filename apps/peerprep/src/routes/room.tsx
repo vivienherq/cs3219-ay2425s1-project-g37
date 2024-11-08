@@ -1,5 +1,6 @@
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import Editor from "@monaco-editor/react";
+import { env } from "@peerprep/env";
 import type { Room, User } from "@peerprep/schemas";
 import { Avatar } from "@peerprep/ui/avatar";
 import { Button, LinkButton } from "@peerprep/ui/button";
@@ -67,7 +68,7 @@ function useInitialiseHocuspocus() {
     const yAIChatMessages = ydoc.getArray<Y.Map<string>>("aIChatMessages");
 
     const provider = new HocuspocusProvider({
-      url: `ws://localhost:3000/api/collaboration/collab/${room.id}`,
+      url: `${env.VITE_SELF_HOST ? "wss://peerprep.joulev.dev" : "ws://localhost:3000"}/api/collaboration/collab/${room.id}`,
       name: room.id,
       document: ydoc,
       token: "dummy token",
